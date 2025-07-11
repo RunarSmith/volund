@@ -1,0 +1,8 @@
+---
+
+- name: Configuration du container via le rôle container_config
+  hosts: localhost
+  gather_facts: true
+
+  roles:
+    - container_config

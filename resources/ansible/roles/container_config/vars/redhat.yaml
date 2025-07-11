@@ -1,0 +1,26 @@
+---
+
+install_packages:
+  - ca-certificates
+  - curl
+  - git
+  - gnupg
+  - jq
+  - nano
+  - openssl
+  - procps
+  - python3
+  - sudo
+  - vim
+  - wget
+  - yq
+
+# Fedora, Red Hat, CentOS, OracleLinux, etc. (distributions basées sur Red Hat)
+ca_trust_path: /etc/pki/ca-trust/source/anchors/
+
+install_gui_packages_drivers:
+  - pulseaudio
+  #- libasound2
+  - alsa-lib
+  - libavcodec-free
+  - ffmpeg-free

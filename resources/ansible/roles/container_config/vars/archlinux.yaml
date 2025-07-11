@@ -1,0 +1,28 @@
+---
+
+install_packages:
+  - ca-certificates
+  - curl
+  - git
+  - gnupg
+  - jq
+  - nano
+  - openssl
+  - procps
+  - python3
+  - sudo
+  - vim
+  - wget
+  - yq
+  - ca-certificates-utils
+  - python-pip
+  - python-virtualenv
+  - python-pipx
+  - which
+
+ca_trust_path: /etc/ca-certificates/trust-source/anchors/
+
+install_gui_packages_drivers:
+  - pulseaudio
+  - alsa-lib
+  - ffmpeg

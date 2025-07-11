@@ -1,0 +1,17 @@
+#SPDX-License-Identifier: MIT-0
+---
+
+- name: Install argocd client
+  ansible.builtin.include_tasks: argocd.yaml
+
+- name: Install helm client
+  ansible.builtin.include_tasks: helm.yaml
+
+- name: Install k9s
+  ansible.builtin.include_tasks: k9s.yaml
+
+- name: Install kubectl client
+  ansible.builtin.include_tasks: kubectl.yaml
+
+- name: install openshift client
+  ansible.builtin.include_tasks: openshift.yaml

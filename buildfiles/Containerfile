@@ -1,0 +1,14 @@
+
+ARG BASE_IMAGE=debian:latest
+FROM ${BASE_IMAGE}
+
+# Ensure the path to entrypoint.sh is correct; update as needed
+COPY ./assets/entrypoint.sh /.entrypoint.sh
+
+RUN bash /opt/resources/build/install_image.sh
+
+USER smith
+
+WORKDIR /workspace
+
+ENTRYPOINT [ "/.entrypoint.sh" ]

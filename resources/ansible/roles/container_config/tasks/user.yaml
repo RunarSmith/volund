@@ -1,0 +1,45 @@
+---
+
+- name: Créer l'utilisateur par défaut
+  user:
+    name: "{{ default_username }}"
+    uid: "{{ default_user_UID }}"
+    shell: "{{ default_user_shell }}"
+    groups: sudo
+    append: yes
+    state: present
+  when: ansible_os_family in ['debian', 'redhat']
+
+- name: Créer l'utilisateur par défaut
+  user:
+    name: "{{ default_username }}"
+    uid: "{{ default_user_UID }}"
+    shell: "{{ default_user_shell }}"
+    groups: wheel
+    append: yes
+    state: present
+  when: ansible_os_family in ['Archlinux']
+
+- name: Passer le sudo NOPASSWD à l'utilisateur
+  lineinfile:
+    path: /etc/sudoers
+    line: "{{ default_username }} ALL=(ALL) NOPASSWD: ALL"
+    validate: 'visudo -cf %s'
+  when: ansible_os_family in ['debian', 'redhat']
+
+# on arch linux, sudoers.d is used instead of /etc/sudoers
+#- name: Passer le sudo NOPASSWD à l'utilisateur
+#  lineinfile:
+#    path: /etc/sudoers.d/90-{{ default_username }}.conf
+#    line: "wheel ALL=(ALL) NOPASSWD: ALL"
+#    validate: 'visudo -cf %s'
+#  when: ansible_os_family in ['Archlinux']
+
+- name: Passer le sudo NOPASSWD à l'utilisateur (copy file)
+  ansible.builtin.template:
+    src: sudoers.smith.conf.j2
+    dest: "/etc/sudoers.d/90-{{ default_username }}.conf"
+    owner: root
+    group: root
+    mode: '0444'
+  when: ansible_os_family in ['Archlinux']

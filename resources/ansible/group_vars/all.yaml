@@ -1,0 +1,13 @@
+---
+
+# example command to check a varaible :
+# ansible all -i inventory.yaml -m debug -a "var=my_variable_here" -o
+
+resource_path: "/opt/resources/"
+my_resource_path: "/opt/my-resources/"
+
+build_resource_path: "{{ resource_path }}/build/"
+
+default_username: "smith"
+default_user_UID: 1000
+default_user_shell: "/bin/bash"

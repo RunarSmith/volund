@@ -1,0 +1,27 @@
+---
+
+install_packages:
+  - python3-pip
+  - python3-venv
+  - pipx
+  - ca-certificates
+  - curl
+  - git
+  - gnupg
+  - jq
+  - nano
+  - openssl
+  - procps
+  - python3
+  - sudo
+  - vim
+  - wget
+  - yq
+
+ca_trust_path: /usr/local/share/ca-certificates/
+
+install_gui_packages_drivers:
+  - pulseaudio
+  - libasound2
+  - libavcodec-extra
+  - ffmpeg
