@@ -23,5 +23,6 @@ jobs:
 
       - name: Push mirror to GitHub
         run: |
+          cd smith-tools
           git remote add github git@github.com:runarsmith/volund.git
           git push --mirror github
