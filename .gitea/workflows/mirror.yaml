@@ -10,7 +10,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+      #  uses: actions/checkout@v4
+        run: |
+          git -c http.sslVerify=false clone https://gitea.home.lan/fabien/smith-tools.git
 
       - name: Set up SSH
         run: |
