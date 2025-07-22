@@ -37,6 +37,6 @@ cd /opt/resources/ansible
 export ANSIBLE_FORCE_COLOR=True
 export ANSIBLE_ROLES_PATH="/opt/my-resources/ansible/roles:/opt/resources/ansible/roles"
 
-ansible-playbook -i ./inventory.yaml /opt/my-resources/ansible/playbook-${IMAGE_ROLE}.yaml || die "Failed to execute Ansible playbook"
+ansible-playbook -i ./inventory.yaml /opt/my-resources/ansible/playbook-${IMAGE_ROLE}.yaml || exit 1
 
 deactivate

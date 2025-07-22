@@ -37,7 +37,7 @@
 
 - name: Passer le sudo NOPASSWD à l'utilisateur (copy file)
   ansible.builtin.template:
-    src: sudoers.smith.conf.j2
+    src: sudoers.volund.conf.j2
     dest: "/etc/sudoers.d/90-{{ default_username }}.conf"
     owner: root
     group: root

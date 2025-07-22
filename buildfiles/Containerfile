@@ -7,7 +7,7 @@ COPY ./assets/entrypoint.sh /.entrypoint.sh
 
 RUN bash /opt/resources/build/install_image.sh
 
-USER smith
+USER volund
 
 WORKDIR /workspace
 

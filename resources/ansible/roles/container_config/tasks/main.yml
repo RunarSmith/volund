@@ -4,11 +4,11 @@
 - name: Include OS-specific variables.
   ansible.builtin.include_vars: "{{ ansible_os_family | lower }}.yaml"
 
-- name: Installer les paquets nécessaires
-  ansible.builtin.include_tasks: "packages.yaml"
-
 - name: Configurer les certificats
   ansible.builtin.include_tasks: certs.yaml
+
+- name: Installer les paquets nécessaires
+  ansible.builtin.include_tasks: "packages.yaml"
 
 - name: Configurer la locale
   ansible.builtin.include_tasks: locale.yaml
@@ -21,8 +21,8 @@
 
 - name: copy profile file
   ansible.builtin.template:
-    src: profile.smith.sh.j2
-    dest: /etc/profile.d/90-smith.sh
+    src: profile.volund.sh.j2
+    dest: /etc/profile.d/90-volund.sh
     owner: root
     group: root
     mode: '0644'

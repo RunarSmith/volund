@@ -95,9 +95,9 @@ class Configuration {
             # default container shell
             "shell" = "bash"
 
-            "labelSmithImages" = "smith"
-            "labelSmithContainers" = "smith"
-            "labelSmithVolumes" = "smith"
+            "labelImages" = "volund"
+            "labelContainers" = "volund"
+            "labelVolumes" = "volund"
 
             "buildOpts" = "" # "--tls-verify=false"
 
@@ -111,13 +111,12 @@ class Configuration {
             "myResourcesVolume" = @{
                 "name"      = "myresources"
                 "mountPath" = "/opt/my-resources"
-                #"hostPath"  = "${env:USERPROFILE}\smith\my-resources"
-                "hostPath"  = "${ScriptRoot}\my-resources"
+                "hostPath"  = "${env:USERPROFILE}\volund\my-resources"
             }
             "workspaceVolume" = @{
                 "name"      = "workspace"
                 "mountPath" = "/workspace"
-                "hostPath"  = "${env:USERPROFILE}\smith\workspaces"
+                "hostPath"  = "${env:USERPROFILE}\volund\workspaces"
             }
         }
 
@@ -751,9 +750,9 @@ class ImageManager {
 
     [Image[]] ListImages() {
         LogDbg "> Imagemanager::ListImages"
-        $labelSmithImages = $this.Config.get("labelSmithImages")
+        $labelImages = $this.Config.get("labelImages")
 
-        $images = $this.Driver.ListImages( "{0}=true" -f $labelSmithImages ) 
+        $images = $this.Driver.ListImages( "{0}=true" -f $labelImages ) 
 
         LogDbg ( ("images ({0}): {1}" -f ($images.Length ),($images | Out-String)) )
 
@@ -794,7 +793,7 @@ class ImageManager {
             BuildOpts   = $this.config.get("buildOpts")
             Distribution = $distribImageRef
             Labels      = @{ 
-                $this.config.get("labelSmithImages") = "true"
+                $this.config.get("labelImages") = "true"
                 "distribution" = $Distribution
             }
             Volumes     = @(
@@ -822,7 +821,7 @@ class ImageManager {
         Write-Host -ForegroundColor Cyan "ℹ️ re-tagging image as latest"
 
         # untag previous "latest" image
-        $this.Driver.ListImages( $this.config.get("labelSmithImages")+"=true"  ) | Where-Object { ( "localhost/{0}:latest" -f $imageName) -in $_.Names  } | ForEach-Object {
+        $this.Driver.ListImages( $this.config.get("labelImages")+"=true"  ) | Where-Object { ( "localhost/{0}:latest" -f $imageName) -in $_.Names  } | ForEach-Object {
             Write-host ("Removing previous 'latest' tag from image {0} @ {1}" -f $_.Name,$_.Id)
             #podman untag $_.Id ( "localhost/{0}:latest" -f $imageName)
             $this.Driver.UntagImage( $_.Id , ( "localhost/{0}:latest" -f $imageName) )
@@ -852,9 +851,9 @@ class ImageManager {
     }
 
     [void] CleanOldImages() {
-        $labelSmithImages = $this.Config.get("labelSmithImages")
+        $labelImages = $this.Config.get("labelImages")
 
-        $images = $this.Driver.ListImages( "$labelSmithImages=true" )
+        $images = $this.Driver.ListImages( "$labelImages=true" )
         # remove image not with 'latest' tag
         #$images | ForEach-Object { 
         #    Write-Host ("Image {0}:{1} - Labels: {2}" -f $_.Names, $_.Tag, $_.Labels)
@@ -880,7 +879,7 @@ class ImageManager {
             return
         }
 
-        $hasContainers = $this.Driver.ListContainers( $this.config.get("labelSmithContainers")+"=true" ) | Where-Object { $_.Image -eq $Image }
+        $hasContainers = $this.Driver.ListContainers( $this.config.get("labelContainers")+"=true" ) | Where-Object { $_.Image -eq $Image }
         if ($hasContainers) {
             Write-Host -ForegroundColor Red ("Image '{0}' cannot be deleted because it has associated containers." -f $Image)
             exit 1
@@ -1067,7 +1066,7 @@ class ContainerManager {
             $workspacePath = $this.WorkspaceManager.GetWorkspacePath( $Name )
             $BackendMountWorkspace = ( "{0}:{1}" -f $workspacePath,$workspacePathObj.mountPath)
 
-            $labelsList = @(  ( "{0}=true" -f $this.config.Get("labelSmithContainers") )  )
+            $labelsList = @(  ( "{0}=true" -f $this.config.Get("labelContainers") )  )
             $volumesList = @( 
                         $BackendMountResources,
                         $BackendMountMyresources,
@@ -1149,9 +1148,9 @@ class ContainerManager {
     [Container[]] ListContainers() {
 
         LogDbg "> ContainerManager::ListContainer"
-        $labelSmithContainers = $this.Config.get("labelSmithContainers")
+        $labelContainers = $this.Config.get("labelContainers")
 
-        $containers = $this.Driver.ListContainers( "{0}=true" -f $labelSmithContainers ) 
+        $containers = $this.Driver.ListContainers( "{0}=true" -f $labelContainers ) 
 
         LogDbg ( ("containers: ({0}): {1}" -f ($containers.Length ),($containers | Out-String)) )
 
@@ -1203,7 +1202,7 @@ class ContainerListener {
         $this.WorkspaceManager = $WorkspaceManager
         $this.containerid = $containerId
         $workspaceath = $this.WorkspaceManager.GetWorkspacePath($containerId)
-        $this.listenerPath = join-Path $workspaceath ".listerner"
+        $this.listenerPath = join-Path $workspaceath ".listener_id"
         $this.listenerWatchPath = $workspaceath
 
         LogDbg ( "ContainerListener::ContainerListener() - listenerPath: {0}" -f $this.listenerPath)
@@ -1322,8 +1321,8 @@ class VolumeManager {
     
 
     [Volume[]] ListVolumes() {
-        $labelSmithVolumes = $this.Config.get("labelSmithVolumes")
-        $volumes = $this.Driver.ListVolumes( "{0}=true" -f $labelSmithVolumes )
+        $labelVolumes = $this.Config.get("labelVolumes")
+        $volumes = $this.Driver.ListVolumes( "{0}=true" -f $labelVolumes )
 
         LogDbg ( ("volumes: ({0}): {1}" -f ($volumes.Length ),($volumes | Out-String)) )
 
@@ -1351,8 +1350,8 @@ class VolumeManager {
             return
         }
 
-        $labelSmithVolumes = $this.Config.get("labelSmithVolumes")
-        $this.Driver.CreateVolume( $Name, @( ( "{0}=true" -f $labelSmithVolumes ) ) )
+        $labelVolumes = $this.Config.get("labelVolumes")
+        $this.Driver.CreateVolume( $Name, @( ( "{0}=true" -f $labelVolumes ) ) )
 
         LogSuccess "Volume created successfully: $Name"
 
@@ -1375,7 +1374,7 @@ class VolumeManager {
 
 
 $config = [Configuration]::new()
-$config.LoadFromJson((Join-Path $ScriptRoot "config.json"))
+$config.LoadFromJson((Join-Path "${env:USERPROFILE}\volund" "config.json"))
 
 # show debug traces
 if ( $config.Get("debug") -eq $true ) {

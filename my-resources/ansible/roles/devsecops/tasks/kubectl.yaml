@@ -1,8 +1,22 @@
 ---
 
-- name: Install kubectl client
-  ansible.builtin.get_url:
-    url: https://dl.k8s.io/release/v1.29.0/bin/linux/amd64/kubectl
+- name: Get latest kubectl stable version
+  uri:
+    url: https://dl.k8s.io/release/stable.txt
+    return_content: yes
+  register: kubectl_version
+
+- name: Download binary
+  get_url:
+    url: "https://dl.k8s.io/release/{{ kubectl_version.content }}/bin/linux/amd64/kubectl"
     dest: /usr/local/bin/kubectl
     mode: '0755'
-  become: true
+
+- name: Get installed kubectl version
+  command: /usr/local/bin/kubectl version --client
+  register: kubectl_version_output
+  changed_when: false
+
+- name: Display kubectl version
+  debug:
+    msg: "{{ kubectl_version_output.stdout }}"

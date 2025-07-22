@@ -75,6 +75,24 @@ esac
 
 case "${OS_FAMILLY_NAME}" in
     "fedora")
+        cp /opt/my-resources/setup/certs/*.pem /etc/pki/ca-trust/source/anchors/ || die "Failed to copy certificates to /etc/pki/ca-trust/source/anchors/"
+        update-ca-trust || die "Failed to update CA trust"
+        ;;
+    "debian")
+        cp /opt/my-resources/setup/certs/*.pem /usr/local/share/ca-certificates/ || die "Failed to copy certificates to /usr/local/share/ca-certificates/"
+        update-ca-certificates || die "Failed to update CA certificates"
+        ;;
+    "arch")
+        cp /opt/my-resources/setup/certs/*.pem /etc/ca-certificates/trust-source/anchors/ || die "Failed to copy certificates to /etc/ca-certificates/trust-source/anchors/"
+        trust extract-compat || die "Failed to extract CA certificates"
+        ;;
+    *)
+        die "Unsupported OS: ${OS_FAMILLY_NAME}"
+        ;;
+esac
+
+case "${OS_FAMILLY_NAME}" in
+    "fedora")
         packagesList="python3 python3-libdnf5"
         dnf install --quiet --assumeyes $packagesList || die "Failed to install packages: $packagesList"
         ;;
@@ -107,8 +125,8 @@ ansible-playbook -i ./inventory.yaml ./playbook-container-config.yaml || die "Fa
 
 [ -f /opt/my-resources/setup/bin/build_image.sh ] && {
     echo "--- Custom build script found, executing it ----------------"
-    chmod +x /opt/my-resources/setup/bin/build_image.sh || die "Failed to make custom build script executable"
-    /opt/my-resources/setup/bin/build_image.sh || die "Failed to execute custom build script"
+    chmod +x /opt/my-resources/setup/bin/build_image.sh
+    bash /opt/my-resources/setup/bin/build_image.sh || die "Failed to execute custom build script"
 } || {
     echo "--- No custom build script found, skipping execution -------"
 }

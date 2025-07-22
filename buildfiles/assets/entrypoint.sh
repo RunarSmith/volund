@@ -6,5 +6,5 @@ if [ -f $BootScript ]; then
     bash $BootScript
 else
     echo "!!! Boot script $BootScript not found !!!"
-    bash -i
+    bash -i -l
 fi

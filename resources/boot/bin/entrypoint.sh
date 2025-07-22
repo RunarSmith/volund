@@ -8,4 +8,4 @@
 
 # finally get a user shel
 
-bash -i
+bash -i -l

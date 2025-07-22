@@ -8,6 +8,6 @@ my_resource_path: "/opt/my-resources/"
 
 build_resource_path: "{{ resource_path }}/build/"
 
-default_username: "smith"
+default_username: "volund"
 default_user_UID: 1000
 default_user_shell: "/bin/bash"
