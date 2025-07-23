@@ -4,19 +4,19 @@
 - name: Include OS-specific variables.
   ansible.builtin.include_vars: "{{ ansible_os_family | lower }}.yaml"
 
-- name: Configurer les certificats
+- name: Configure certificates
   ansible.builtin.include_tasks: certs.yaml
 
-- name: Installer les paquets nécessaires
+- name: Install required packages
   ansible.builtin.include_tasks: "packages.yaml"
 
-- name: Configurer la locale
+- name: Configure locale
   ansible.builtin.include_tasks: locale.yaml
 
-- name: Configurer l'interface graphique
+- name: Configure graphical user interface
   ansible.builtin.include_tasks: gui.yaml
 
-- name: Configurer les utilisateurs
+- name: Configure users
   ansible.builtin.include_tasks: user.yaml
 
 - name: copy profile file

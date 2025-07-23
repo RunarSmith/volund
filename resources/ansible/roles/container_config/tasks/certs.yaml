@@ -1,11 +1,11 @@
 ---
 
-- name: Vérifier la présence des certificats
+- name: Check presence of certificates files
   stat:
     path: "{{ build_resource_path }}/certs/"
   register: certs_dir
 
-- name: Copier les certificats si sourcePath est défini
+- name: Copy certs if sourcePath is defined
   copy:
     src: "{{ build_resource_path }}/certs/"
     dest: "{{ ca_trust_path }}"
@@ -17,14 +17,14 @@
     - certs_dir.stat.exists
     - certs_dir.stat.isdir
 
-- name: Mettre à jour le CA trust store
+- name: Update CA trust store
   command: update-ca-trust
   when:
     - certs_dir.stat.exists
     - certs_dir.stat.isdir
     - ansible_os_family in ['redhat']
 
-- name: Mettre à jour le CA trust store
+- name: Update CA trust store
   command: update-ca-certificates
   when:
     - certs_dir.stat.exists
@@ -32,7 +32,7 @@
     - certs_dir.stat.mtime > 0
     - ansible_os_family in ['debian']
 
-- name: Mettre à jour le CA trust store
+- name: Update CA trust store
   command: trust extract-compat
   when:
     - certs_dir.stat.exists

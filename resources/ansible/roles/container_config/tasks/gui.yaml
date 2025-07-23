@@ -1,6 +1,6 @@
 ---
 
-- name: Installer les paquets audio
+- name: Install audio packages
   package:
     name: "{{ install_gui_packages_drivers | flatten }}"
     state: present

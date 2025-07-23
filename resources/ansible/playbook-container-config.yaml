@@ -1,6 +1,6 @@
 ---
 
-- name: Configuration du container via le rôle container_config
+- name: Configure the container with the rôle container_config
   hosts: localhost
   gather_facts: true
 

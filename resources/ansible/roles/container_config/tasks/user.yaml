@@ -1,6 +1,6 @@
 ---
 
-- name: Créer l'utilisateur par défaut
+- name: Create default user
   user:
     name: "{{ default_username }}"
     uid: "{{ default_user_UID }}"
@@ -10,7 +10,7 @@
     state: present
   when: ansible_os_family in ['debian', 'redhat']
 
-- name: Créer l'utilisateur par défaut
+- name: Create default user
   user:
     name: "{{ default_username }}"
     uid: "{{ default_user_UID }}"
@@ -20,22 +20,14 @@
     state: present
   when: ansible_os_family in ['Archlinux']
 
-- name: Passer le sudo NOPASSWD à l'utilisateur
+- name: Set sudo to NOPASSWD for this user
   lineinfile:
     path: /etc/sudoers
     line: "{{ default_username }} ALL=(ALL) NOPASSWD: ALL"
     validate: 'visudo -cf %s'
   when: ansible_os_family in ['debian', 'redhat']
 
-# on arch linux, sudoers.d is used instead of /etc/sudoers
-#- name: Passer le sudo NOPASSWD à l'utilisateur
-#  lineinfile:
-#    path: /etc/sudoers.d/90-{{ default_username }}.conf
-#    line: "wheel ALL=(ALL) NOPASSWD: ALL"
-#    validate: 'visudo -cf %s'
-#  when: ansible_os_family in ['Archlinux']
-
-- name: Passer le sudo NOPASSWD à l'utilisateur (copy file)
+- name: Set sudo to NOPASSWD for this user (copy file)
   ansible.builtin.template:
     src: sudoers.volund.conf.j2
     dest: "/etc/sudoers.d/90-{{ default_username }}.conf"

@@ -55,6 +55,30 @@ esac
 
 echo "Detected OS: ${OS_FAMILLY_NAME} (${VERSION_ID})"
 
+echo "--- Install HTTPS certificates -----------------------------"
+
+if compgen -G "/opt/my-resources/setup/certs/*.pem" > /dev/null; then
+    echo "Found custom certificates to install."
+
+    case "${OS_FAMILLY_NAME}" in
+        "fedora")
+            cp /opt/my-resources/setup/certs/*.pem /etc/pki/ca-trust/source/anchors/ || die "Failed to copy certificates to /etc/pki/ca-trust/source/anchors/"
+            update-ca-trust || die "Failed to update CA trust"
+            ;;
+        "debian")
+            cp /opt/my-resources/setup/certs/*.pem /usr/local/share/ca-certificates/ || die "Failed to copy certificates to /usr/local/share/ca-certificates/"
+            update-ca-certificates || die "Failed to update CA certificates"
+            ;;
+        "arch")
+            cp /opt/my-resources/setup/certs/*.pem /etc/ca-certificates/trust-source/anchors/ || die "Failed to copy certificates to /etc/ca-certificates/trust-source/anchors/"
+            trust extract-compat || die "Failed to extract CA certificates"
+            ;;
+        *)
+            die "Unsupported OS: ${OS_FAMILLY_NAME}"
+            ;;
+    esac
+fi
+
 echo "--- Install packages -----------------------------------"
 
 case "${OS_FAMILLY_NAME}" in
@@ -67,24 +91,6 @@ case "${OS_FAMILLY_NAME}" in
         ;;
     "arch")
         pacman -Syu --noconfirm --quiet --noprogressbar || die "Failed to update pacman database"
-        ;;
-    *)
-        die "Unsupported OS: ${OS_FAMILLY_NAME}"
-        ;;
-esac
-
-case "${OS_FAMILLY_NAME}" in
-    "fedora")
-        cp /opt/my-resources/setup/certs/*.pem /etc/pki/ca-trust/source/anchors/ || die "Failed to copy certificates to /etc/pki/ca-trust/source/anchors/"
-        update-ca-trust || die "Failed to update CA trust"
-        ;;
-    "debian")
-        cp /opt/my-resources/setup/certs/*.pem /usr/local/share/ca-certificates/ || die "Failed to copy certificates to /usr/local/share/ca-certificates/"
-        update-ca-certificates || die "Failed to update CA certificates"
-        ;;
-    "arch")
-        cp /opt/my-resources/setup/certs/*.pem /etc/ca-certificates/trust-source/anchors/ || die "Failed to copy certificates to /etc/ca-certificates/trust-source/anchors/"
-        trust extract-compat || die "Failed to extract CA certificates"
         ;;
     *)
         die "Unsupported OS: ${OS_FAMILLY_NAME}"
@@ -109,7 +115,7 @@ case "${OS_FAMILLY_NAME}" in
         ;;
 esac
 
-# Installer Ansible dans un venv pour éviter les conflits dans un container minimal
+# Install Ansible in a virtual env
 python3 -m venv /opt/ansible-venv || die "Failed to create Python virtual environment"
 source /opt/ansible-venv/bin/activate 
 pip install --no-cache-dir --upgrade pip || die "Failed to upgrade pip"
@@ -118,7 +124,7 @@ pip install ansible || die "Failed to install Ansible"
 cd /opt/resources/ansible
 
 echo "=== Starting Ansible playbook =============================="
-# Lancer le playbook (supposé nommé "site.yml") en local
+# Launch the playbook
 export ANSIBLE_FORCE_COLOR=True
 ansible-playbook -i ./inventory.yaml ./playbook-container-config.yaml || die "Failed to execute Ansible playbook"
 
@@ -131,6 +137,6 @@ ansible-playbook -i ./inventory.yaml ./playbook-container-config.yaml || die "Fa
     echo "--- No custom build script found, skipping execution -------"
 }
 
-# Nettoyage de l'environnement virtuel
+# Cleaning
 deactivate
 rm -rf /opt/ansible-venv

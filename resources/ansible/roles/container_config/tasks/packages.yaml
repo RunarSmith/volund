@@ -1,6 +1,6 @@
 ---
 
-- name: Installer les paquets requis
+- name: Install required packages
   package:
     name: "{{ install_packages | flatten }}"
     state: present

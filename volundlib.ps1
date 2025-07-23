@@ -5,6 +5,7 @@ param(
     [string]$Container,
     [string]$Image,
     [string]$Volume,
+    [string]$Version,
 
     # source distribution
 [ValidateSet( "arch", "blackarch", "debian", "fedora", "kali", "parrot" )]
@@ -101,8 +102,6 @@ class Configuration {
 
             "buildOpts" = "" # "--tls-verify=false"
 
-            # "buildBasePath" = $ScriptRoot
-
             "sharedResourcesVolume" = @{
                 "name"      = "sharedResources"
                 "mountPath" = "/opt/resources"
@@ -133,6 +132,18 @@ class Configuration {
             }
         } else {
             LogInfo ("Config file {0} is not found. keeping defaults values" -f $path)
+        }
+    }
+
+    [void]WriteUserConfig([string]$path) {
+        try {
+            $json = $this.Defaults | ConvertTo-Json -Depth 10
+            # create folders if missing
+            New-Item -ItemType Directory -Path (Split-Path -parent $path) -Force | Out-Null
+            Set-Content -Path $path -Value $json -Force
+            LogSuccess ("Configuration saved to {0}" -f $path)
+        } catch {
+            LogError ("Failed to write configuration to {0}: {1}" -f $path, $_.Exception.Message)
         }
     }
 
@@ -321,6 +332,7 @@ class PodmanDriver : IContainerDriver {
 
     [string] BuildImage( [string]$buildPath, [hashtable]$params) {
         $imageName  = $params.Name
+        $imageVersion = $params.Version
         $buildOpts  = $params.BuildOpts
         $baseDistrib = $params.Distribution
         $labels     = $params.Labels
@@ -331,7 +343,7 @@ class PodmanDriver : IContainerDriver {
         
         LogDbg "> PodmanDriver::BuildImage()"
 
-        $imageNameTag = $imageName + ":" + (Get-Date -Format "yyyyMMdd-HHmmss")
+        $imageNameTag = $imageName + ":" + $imageVersion
 
         if (-not $imageName) {
             LogError "Image name is required."
@@ -357,7 +369,7 @@ class PodmanDriver : IContainerDriver {
         $command += " " + "--file " + $buildFile
         $command += " " + $buildDir
 
-        Write-Host ("Building image {0} with distribution {1} ..." -f $imageName, $baseDistrib)
+        Write-Host ("Building image {0} {1} with distribution {2} ..." -f $imageName, $imageVersion, $baseDistrib)
         Write-Host ("Using command: {0}" -f $command)
 
         # Execute the command
@@ -769,7 +781,7 @@ class ImageManager {
         return $imagesout
     }
 
-    [Image] BuildImage( [string]$ImageName, [string]$Distribution ) {
+    [Image] BuildImage( [string]$ImageName, [string]$Distribution, [string]$Version = "latest" ) {
         LogDbg "> Imagemanager::Buildimage"
 
         LogInfo "Ensure bash scripts are in UNIX line ending format for proper image build"
@@ -790,6 +802,7 @@ class ImageManager {
 
         $params = @{
             Name        = $ImageName
+            Version     = $Version
             BuildOpts   = $this.config.get("buildOpts")
             Distribution = $distribImageRef
             Labels      = @{ 
@@ -818,26 +831,30 @@ class ImageManager {
             return $null
         }
         
-        Write-Host -ForegroundColor Cyan "ℹ️ re-tagging image as latest"
+        if ($false) {
+            Write-Host -ForegroundColor Cyan "ℹ️ re-tagging image as latest"
 
-        # untag previous "latest" image
-        $this.Driver.ListImages( $this.config.get("labelImages")+"=true"  ) | Where-Object { ( "localhost/{0}:latest" -f $imageName) -in $_.Names  } | ForEach-Object {
-            Write-host ("Removing previous 'latest' tag from image {0} @ {1}" -f $_.Name,$_.Id)
-            #podman untag $_.Id ( "localhost/{0}:latest" -f $imageName)
-            $this.Driver.UntagImage( $_.Id , ( "localhost/{0}:latest" -f $imageName) )
+            # untag previous "latest" image
+            $this.Driver.ListImages( $this.config.get("labelImages")+"=true"  ) | Where-Object { ( "localhost/{0}:latest" -f $imageName) -in $_.Names  } | ForEach-Object {
+                Write-host ("Removing previous 'latest' tag from image {0} @ {1}" -f $_.Name,$_.Id)
+                #podman untag $_.Id ( "localhost/{0}:latest" -f $imageName)
+                $this.Driver.UntagImage( $_.Id , ( "localhost/{0}:latest" -f $imageName) )
+            }
+            
+            $this.Driver.TagImage( $imgName, ("{0}:latest" -f $imageName) )
+
+            Write-Host -ForegroundColor Cyan "ℹ️ Cleaning old images ..."
+            $this.CleanOldImages()
         }
-        
-        $this.Driver.TagImage( $imgName, ("{0}:latest" -f $imageName) )
-
-        Write-Host -ForegroundColor Cyan "ℹ️ Cleaning old images ..."
-        $this.CleanOldImages()
 
 
-        $image = $this.Driver.Getimage( ("{0}:latest" -f $imageName) )
+        $image = $this.Driver.Getimage( ("{0}:{1}" -f $imageName,$Version) )
 
-        $image.RepoTags | Where-Object { $_ -notlike "*:latest" } | ForEach-Object {
-            write-host ("Removing label {0} from image {1}" -f $_, $image.Id)
-            $this.Driver.UntagImage( $image.Id, $_ )
+        if ($false) {
+            $image.RepoTags | Where-Object { $_ -notlike "*:latest" } | ForEach-Object {
+                write-host ("Removing label {0} from image {1}" -f $_, $image.Id)
+                $this.Driver.UntagImage( $image.Id, $_ )
+            }
         }
 
         if (-not $image) {
@@ -1422,15 +1439,17 @@ switch ($Command) {
         $volumes = $volumeMngr.ListVolumes()
         Write-Host "Volumes disponibles :"
         $volumes | ft -AutoSize
-        
+    }
+    "write_user_config" {
+        $config.WriteUserConfig( (Join-Path "${env:USERPROFILE}\volund" "config.json") )
     }
 # === images ==============================================
     "build"               {
-        if (($Image -eq "") -or ($Distribution -eq "")) {
-            LogError("Missing parameter: -Distribution <Distribution name>")
+        if (($Image -eq "") -or ($Distribution -eq "")  -or ($Version -eq "")) {
+            LogError("Missing parameter: -Distribution <Distribution name> -Version <image version>")
             return
         }
-        $imageMngr.BuildImage( $Image, $Distribution )
+        $imageMngr.BuildImage( $Image, $Distribution, $Version )
     } 
     "lsi"                 { 
         Write-Host "`nImages disponibles :"
@@ -1508,7 +1527,7 @@ switch ($Command) {
         $volumeMngr.RemoveVolume( $Volume )
     }
 # === Others ==============================================
-    default         { Write-Host "Commande inconnue. Utilisez : build, lsi, rmi, start, stop, ls, rm." }
+    default         { Write-Host ("Commande '{0}' inconnue." -f $Command )}
 }
 
 # =========================================================

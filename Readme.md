@@ -33,7 +33,7 @@ Let Volund be your forge: produce, shape, and reuse your customized working envi
 
 1. Clone the repository or download the ZIP:
     ```powershell
-    git clone https://github.com/runarsmith/volund.git
+    git clone https://github.com/RunarSmith/volund.git
     ```
     or download the project as a ZIP and extract it.
 

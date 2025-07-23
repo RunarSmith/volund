@@ -3,11 +3,5 @@
 # add bin path to PATH
 export PATH="$PATH:/truc/bin"
 
-export USERNAME_PRIVILEGED=xxxxxx
-export OPENSHIFT_USERNAME=${USERNAME_PRIVILEGED}
-export FW_USERNAME=${USERNAME_PRIVILEGED}
-
-export WORKSPACE_PATH=/d/utilisateurs/${USERNAME}/workspaces/
-
 # load config for terminal enhancements
 . /truc/bashrc
