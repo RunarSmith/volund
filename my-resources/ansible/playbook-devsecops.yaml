@@ -1,8 +1,0 @@
----
-
-- name: Configuration of container for role devsecops
-  hosts: localhost
-  gather_facts: true
-
-  roles:
-    - devsecops

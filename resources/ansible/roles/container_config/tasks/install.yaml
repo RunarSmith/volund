@@ -1,7 +1,18 @@
 ---
 
+
+
+- name: Install required packages
+  package:
+    name: "{{ install_packages | flatten }}"
+    state: present
+
+
+
+
 - name: Install audio packages
   package:
     name: "{{ install_gui_packages_drivers | flatten }}"
     state: present
+
 

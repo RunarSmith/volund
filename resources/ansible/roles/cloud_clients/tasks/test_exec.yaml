@@ -1,0 +1,22 @@
+---
+
+
+
+
+- name: Ensure Helm is installed
+  command: helm version
+  register: helm_version
+  changed_when: false
+
+
+
+- name: Get installed kubectl version
+  command: kubectl version --client
+  register: kubectl_version_output
+  changed_when: false
+
+- name: Display kubectl version
+  debug:
+    msg: "{{ kubectl_version_output.stdout }}"
+
+

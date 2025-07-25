@@ -1,7 +1,0 @@
-# template of user bashrc file
-
-# add bin path to PATH
-export PATH="$PATH:/truc/bin"
-
-# load config for terminal enhancements
-. /truc/bashrc

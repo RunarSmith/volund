@@ -6,6 +6,7 @@ install_packages:
   - git
   - gnupg
   - jq
+  - less
   - nano
   - openssl
   - procps

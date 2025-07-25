@@ -5,7 +5,7 @@ FROM ${BASE_IMAGE}
 # Ensure the path to entrypoint.sh is correct; update as needed
 COPY ./assets/entrypoint.sh /.entrypoint.sh
 
-RUN bash /opt/resources/build/install_image.sh
+RUN bash /opt/resources/build/build_image.sh
 
 USER volund
 

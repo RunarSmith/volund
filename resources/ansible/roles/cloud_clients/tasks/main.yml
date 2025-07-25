@@ -1,19 +1,13 @@
 #SPDX-License-Identifier: MIT-0
 ---
 
-- name: "{{ ansible_role_name }} :: check requirements"
-  block:
-    - name: Include OS-specific variables.
-      ansible.builtin.include_vars: "{{ ansible_os_family | lower }}.yaml"
-
-
-
 
 - name: "{{ ansible_role_name }} :: check requirements"
   block:
     - name: Precheck
       ansible.builtin.include_tasks: precheck.yaml
   when:
+    - "'devsecops' in active_profiles"
     - "'check' in active_actions"
 
 
@@ -22,14 +16,16 @@
     - name: "Install"
       ansible.builtin.include_tasks: install.yaml
   when:
+    - "'devsecops' in active_profiles"
     - "'install' in active_actions"
 
 
 - name: "{{ ansible_role_name }} :: Configuration"
   block:
-    - name: "Install"
+    - name: "Configuration"
       ansible.builtin.include_tasks: config.yaml
   when:
+    - "'devsecops' in active_profiles"
     - "'config' in active_actions"
 
 
@@ -38,6 +34,7 @@
     - name: "Hardening"
       ansible.builtin.include_tasks: hardening.yaml
   when:
+    - "'devsecops' in active_profiles"
     - "'hardening' in active_actions"
 
 
@@ -46,4 +43,5 @@
     - name: "Testing"
       ansible.builtin.include_tasks: test_exec.yaml
   when:
+    - "'devsecops' in active_profiles"
     - "'check' in active_actions"

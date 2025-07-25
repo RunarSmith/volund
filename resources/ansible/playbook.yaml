@@ -1,0 +1,56 @@
+---
+
+- name: Configuration of container for role devsecops
+  hosts: localhost
+  gather_facts: true
+
+  vars:
+    active_profiles: "{{ lookup('env', 'ACTIVE_PROFILES') | default('') | split(',') }}"
+    active_actions: "{{ lookup('env', 'ACTIVE_ACTIONS') | default('') | split(',') }}"
+
+    allowed_profiles: ["devsecops", "offsec_web","base"]
+    
+    allowed_actions: ["install", "config","hardening","check"] # FIXME: add uninstall action ?
+  
+  pre_tasks:
+    - name: "Ensure active profiles are valids"
+      ansible.builtin.assert:
+        that: >
+          active_profiles | difference(allowed_profiles) | length == 0
+        fail_msg: "active_profiles contain unkown values : {{ active_profiles | difference(allowed_profiles) }}"
+    
+    - name: "Ensure active actions are valids"
+      ansible.builtin.assert:
+        that: >
+          active_actions | difference(allowed_actions) | length == 0
+        fail_msg: "active_actions contain unknown values : {{ active_actions | difference(allowed_actions) }}"
+
+    - name: Display active profiles
+      ansible.builtin.debug:
+        msg: "Profiles : {{ active_profiles | join(', ') }}"
+    
+    - name: Display active actions
+      ansible.builtin.debug:
+        msg: "Actions : {{ active_actions | join(', ') }}"
+
+
+  roles:
+    - container_config
+    
+    - cloud_clients
+
+
+  post_tasks:
+    
+    - name: Display completion message
+      ansible.builtin.debug:
+        msg: ✅ Playbook completed successfully!
+    
+    - name: Display active profiles
+      ansible.builtin.debug:
+        msg: "Profiles : {{ active_profiles | join(', ') }}"
+    
+    - name: Display active actions
+      ansible.builtin.debug:
+        msg: "Actions : {{ active_actions | join(', ') }}"
+

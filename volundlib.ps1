@@ -808,6 +808,8 @@ class ImageManager {
             Labels      = @{ 
                 $this.config.get("labelImages") = "true"
                 "distribution" = $Distribution
+                "build_date" = (Get-Date -Format "yyyy-MM-ddTHH:mm:ssZ")
+                "version" = $Version
             }
             Volumes     = @(
                 $this.config.get("sharedResourcesVolume"), 
@@ -831,31 +833,31 @@ class ImageManager {
             return $null
         }
         
-        if ($false) {
-            Write-Host -ForegroundColor Cyan "ℹ️ re-tagging image as latest"
-
-            # untag previous "latest" image
-            $this.Driver.ListImages( $this.config.get("labelImages")+"=true"  ) | Where-Object { ( "localhost/{0}:latest" -f $imageName) -in $_.Names  } | ForEach-Object {
-                Write-host ("Removing previous 'latest' tag from image {0} @ {1}" -f $_.Name,$_.Id)
-                #podman untag $_.Id ( "localhost/{0}:latest" -f $imageName)
-                $this.Driver.UntagImage( $_.Id , ( "localhost/{0}:latest" -f $imageName) )
-            }
-            
-            $this.Driver.TagImage( $imgName, ("{0}:latest" -f $imageName) )
-
-            Write-Host -ForegroundColor Cyan "ℹ️ Cleaning old images ..."
-            $this.CleanOldImages()
-        }
+#        if ($false) {
+#            Write-Host -ForegroundColor Cyan "ℹ️ re-tagging image as latest"
+#
+#            # untag previous "latest" image
+#            $this.Driver.ListImages( $this.config.get("labelImages")+"=true"  ) | Where-Object { ( "localhost/{0}:latest" -f $imageName) -in $_.Names  } | ForEach-Object {
+#                Write-host ("Removing previous 'latest' tag from image {0} @ {1}" -f $_.Name,$_.Id)
+#                #podman untag $_.Id ( "localhost/{0}:latest" -f $imageName)
+#                $this.Driver.UntagImage( $_.Id , ( "localhost/{0}:latest" -f $imageName) )
+#            }
+#            
+#            $this.Driver.TagImage( $imgName, ("{0}:latest" -f $imageName) )
+#
+#            Write-Host -ForegroundColor Cyan "ℹ️ Cleaning old images ..."
+#            $this.CleanOldImages()
+#        }
 
 
         $image = $this.Driver.Getimage( ("{0}:{1}" -f $imageName,$Version) )
 
-        if ($false) {
-            $image.RepoTags | Where-Object { $_ -notlike "*:latest" } | ForEach-Object {
-                write-host ("Removing label {0} from image {1}" -f $_, $image.Id)
-                $this.Driver.UntagImage( $image.Id, $_ )
-            }
-        }
+#        if ($false) {
+#            $image.RepoTags | Where-Object { $_ -notlike "*:latest" } | ForEach-Object {
+#                write-host ("Removing label {0} from image {1}" -f $_, $image.Id)
+#                $this.Driver.UntagImage( $image.Id, $_ )
+#            }
+#        }
 
         if (-not $image) {
             LogError "Failed to retrieve image after build."
@@ -1429,16 +1431,19 @@ switch ($Command) {
     "init"                { $driver.Start() }
     "info"                { 
         $images = $imageMngr.ListImages()
-        Write-Host "Images disponibles :"
+        Write-Host "Images :"
         $images | ft -AutoSize
         
         $containers = $containerMngr.ListContainers()
-        Write-Host "Containers disponibles :"
+        Write-Host "Containers :"
         $containers | ft -AutoSize
         
         $volumes = $volumeMngr.ListVolumes()
-        Write-Host "Volumes disponibles :"
+        Write-Host "Volumes :"
         $volumes | ft -AutoSize
+
+        Write-Host "Disk space usage :"
+        [ExternalCommandHelper]::ExecCommand("podman system df")
     }
     "write_user_config" {
         $config.WriteUserConfig( (Join-Path "${env:USERPROFILE}\volund" "config.json") )
@@ -1452,7 +1457,7 @@ switch ($Command) {
         $imageMngr.BuildImage( $Image, $Distribution, $Version )
     } 
     "lsi"                 { 
-        Write-Host "`nImages disponibles :"
+        Write-Host "`nImages :"
         $imageMngr.ListImages() | ft -AutoSize
     }
     "rmi"                 {
@@ -1480,7 +1485,7 @@ switch ($Command) {
         $containerMngr.StopContainer( $Container )
     } 
     "ls"                  {
-        Write-Host "`nContainers disponibles :"
+        Write-Host "`nContainers :"
         $containerMngr.ListContainers() | ft -AutoSize
     }
     "rm"                  {
