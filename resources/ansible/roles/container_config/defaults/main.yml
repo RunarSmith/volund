@@ -1,6 +1,4 @@
-#SPDX-License-Identifier: MIT-0
 ---
-# defaults file for container_config
 
 # keep empty for automatic configuration
-TZ: # "Europe/Paris"
+TZ:  # "Europe/Paris"

@@ -1,0 +1,9 @@
+---
+# vars file for common_it
+
+install_packages_os_common:
+  - dnsutils
+  - iproute2
+  - net-tools
+  - openresolv
+  - updog

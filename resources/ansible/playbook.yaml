@@ -8,17 +8,22 @@
     active_profiles: "{{ lookup('env', 'ACTIVE_PROFILES') | default('') | split(',') }}"
     active_actions: "{{ lookup('env', 'ACTIVE_ACTIONS') | default('') | split(',') }}"
 
-    allowed_profiles: ["devsecops", "offsec_web","base"]
-    
-    allowed_actions: ["install", "config","hardening","check"] # FIXME: add uninstall action ?
-  
+    allowed_profiles: ["base", "devsecops", "offensivesec", "offensivesec_web"]
+
+    allowed_actions: ["install", "config", "hardening", "check"]
+
+    # Archlinux: Archlinux, BlackArch
+    # Debian: Kali, Debian
+    # RedHat: Fedora
+    allowed_os_familly: ["Archlinux", "Debian", "hardening", "check"]
+
   pre_tasks:
     - name: "Ensure active profiles are valids"
       ansible.builtin.assert:
         that: >
           active_profiles | difference(allowed_profiles) | length == 0
         fail_msg: "active_profiles contain unkown values : {{ active_profiles | difference(allowed_profiles) }}"
-    
+
     - name: "Ensure active actions are valids"
       ansible.builtin.assert:
         that: >
@@ -28,29 +33,41 @@
     - name: Display active profiles
       ansible.builtin.debug:
         msg: "Profiles : {{ active_profiles | join(', ') }}"
-    
+
     - name: Display active actions
       ansible.builtin.debug:
         msg: "Actions : {{ active_actions | join(', ') }}"
+    
+    - name: Include OS-specific variables
+      ansible.builtin.debug:
+        msg:
+          - "OS Familly:   {{ ansible_os_family }}"
+          - "Distribution: {{ ansible_distribution }}"
+          - "Version:      {{ ansible_distribution_version }}"
+          - "Architecture: {{ ansible_architecture}}"
 
 
   roles:
-    - container_config
-    
+    - container_config  # base configuration for the container
+    - burpsuite
     - cloud_clients
-
+    - common_it
+    - common_services
+    - cracking
+    - exploitdb
+    - metasploit
+    - network_scan
+    - web_audit
 
   post_tasks:
-    
     - name: Display completion message
       ansible.builtin.debug:
         msg: ✅ Playbook completed successfully!
-    
+
     - name: Display active profiles
       ansible.builtin.debug:
         msg: "Profiles : {{ active_profiles | join(', ') }}"
-    
+
     - name: Display active actions
       ansible.builtin.debug:
         msg: "Actions : {{ active_actions | join(', ') }}"
-

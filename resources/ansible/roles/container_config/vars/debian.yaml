@@ -5,12 +5,7 @@ install_packages:
   - python3-venv
   - pipx
   - ca-certificates
-  - curl
-  - git
-  - gnupg
-  - jq
-  - nano
-  - openssl
+  - firefox-esr
   - procps
   - python3
   - sudo

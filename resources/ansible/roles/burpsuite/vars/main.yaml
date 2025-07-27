@@ -1,0 +1,6 @@
+---
+# vars file for burpsuite
+
+install_packages_os_common:
+  - burpsuite
+  - burpsuite-extensions

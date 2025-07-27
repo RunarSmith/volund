@@ -1,0 +1,9 @@
+---
+# vars file for cracking
+
+install_packages_os_common:
+  - fcrackzip
+  - hashcat
+  - hydra
+  - john
+  - seclists

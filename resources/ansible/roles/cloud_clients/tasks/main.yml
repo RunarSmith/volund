@@ -1,6 +1,4 @@
-#SPDX-License-Identifier: MIT-0
 ---
-
 
 - name: "{{ ansible_role_name }} :: check requirements"
   block:
@@ -10,7 +8,6 @@
     - "'devsecops' in active_profiles"
     - "'check' in active_actions"
 
-
 - name: "{{ ansible_role_name }} :: Installation"
   block:
     - name: "Install"
@@ -18,7 +15,6 @@
   when:
     - "'devsecops' in active_profiles"
     - "'install' in active_actions"
-
 
 - name: "{{ ansible_role_name }} :: Configuration"
   block:
@@ -28,7 +24,6 @@
     - "'devsecops' in active_profiles"
     - "'config' in active_actions"
 
-
 - name: "{{ ansible_role_name }} :: Hardening"
   block:
     - name: "Hardening"
@@ -36,7 +31,6 @@
   when:
     - "'devsecops' in active_profiles"
     - "'hardening' in active_actions"
-
 
 - name: "{{ ansible_role_name }} :: Installation tests"
   block:

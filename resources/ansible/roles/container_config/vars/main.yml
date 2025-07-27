@@ -1,5 +1,73 @@
 ---
 
+install_packages_os_common:
+  - asciinema
+  - autoconf
+  - automake
+  - binutils
+  - chromium  # FIXME: extract to web browser list
+  - cmake
+  - curl
+  - diffutils
+  - dos2unix
+  - fzf
+  - gcc
+  - git
+  - gnupg
+  - gzip
+  - jq
+  - less
+  - logrotate
+  - make
+  - man-db
+  - nano
+  - p7zip
+  - plocate
+  - python3
+  - screen
+  - sudo
+  - tar
+  - tidy
+  - time
+  - tmux
+  - tree
+  - unrar
+  - unzip
+  - vim
+  - xz      # FIXME: xz-utils on kali ?
+  - wget
+  - yq
+  - zip
+  - zsh
+
+install_packages_go:
+  - go
+
+# FIXME: huh ? on kali:
+#      - openjdk-17-jre
+#      - openjdk-17-jdk
+#      - openjdk-17-jdk-headless
+install_packages_java:
+  - jdk11-openjdk
+  - jre11-openjdk
+  - jre11-openjdk-headless
+  - jdk17-openjdk
+  - jre17-openjdk
+  - jre17-openjdk-headless
+
+install_packages_perl:
+  - perl
+
+install_packages_node:
+  - npm
+
+install_packages_ruby:
+  - ruby
+  - ruby-bundler
+
+install_packages_rust:
+  - rustup
+
 install_gui_packages_drivers_common:
   - pulseaudio
   - libasound2

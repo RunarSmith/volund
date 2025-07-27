@@ -1,8 +1,17 @@
+---
+
 extends: default
 
 rules:
+  comments:
+    min-spaces-from-content: 1
+  comments-indentation: false
+  braces:
+    max-spaces-inside: 1
+  # 120 chars should be enough for ansible files, but don't fail if a line is longer
   line-length:
     max: 120
-  indentation:
-    spaces: 2
-    indent-sequences: false
+    level: warning
+  octal-values:
+    forbid-implicit-octal: true
+    forbid-explicit-octal: true

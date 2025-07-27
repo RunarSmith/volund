@@ -1,0 +1,6 @@
+---
+# vars file for web_audit
+
+install_packages_os_common:
+  - gobuster
+  - wfuzz

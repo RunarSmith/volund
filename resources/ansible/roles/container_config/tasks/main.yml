@@ -1,13 +1,9 @@
-#SPDX-License-Identifier: MIT-0
 ---
 
 - name: "{{ ansible_role_name }} :: check requirements"
   block:
     - name: Include OS-specific variables.
       ansible.builtin.include_vars: "{{ ansible_os_family | lower }}.yaml"
-
-
-
 
 - name: "{{ ansible_role_name }} :: check requirements"
   block:
@@ -16,14 +12,12 @@
   when:
     - "'check' in active_actions"
 
-
 - name: "{{ ansible_role_name }} :: Installation"
   block:
     - name: "Install"
       ansible.builtin.include_tasks: install.yaml
   when:
     - "'install' in active_actions"
-
 
 - name: "{{ ansible_role_name }} :: Configuration"
   block:
@@ -32,14 +26,12 @@
   when:
     - "'config' in active_actions"
 
-
 - name: "{{ ansible_role_name }} :: Hardening"
   block:
     - name: "Hardening"
       ansible.builtin.include_tasks: hardening.yaml
   when:
     - "'hardening' in active_actions"
-
 
 - name: "{{ ansible_role_name }} :: Installation tests"
   block:

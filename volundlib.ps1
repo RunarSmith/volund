@@ -2,10 +2,12 @@
 param(
     [Parameter(Mandatory=$true)]
     [string]$Command,
+
     [string]$Container,
     [string]$Image,
     [string]$Volume,
-    [string]$Version,
+    [string]$Version = "0.0.1",
+    [string]$VpnConfig = $null,
 
     # source distribution
 [ValidateSet( "arch", "blackarch", "debian", "fedora", "kali", "parrot" )]
@@ -89,6 +91,12 @@ class Configuration {
             "debug" = $false
             "debugexecs" = $false
             "Driver" = "podman"
+
+            "podman" = @{
+                "init" = @{
+                    "command" = "podman machine init --rootful=false --user-mode-networking=true"
+                }
+            }
 
             "templateDir" = "${ScriptRoot}\buildfiles"
             "containerfile" = "Containerfile"
@@ -254,6 +262,13 @@ class IContainerDriver {
 
 class PodmanDriver : IContainerDriver {
     
+    [Configuration]$Config
+
+    PodmanDriver([Configuration]$config) {
+        $this.Config = $config
+        LogDbg ("> PodmanDriver::PodmanDriver() - config: {0}" -f ($this.Config | out-string))
+    }
+
     [string] IsRunning() {
         LogDbg("> PodmanDriver::IsRunning()")
         try {
@@ -302,14 +317,39 @@ class PodmanDriver : IContainerDriver {
             [ExternalCommandHelper]::ExecCommand("wsl --terminate podman-machine-default")
             [ExternalCommandHelper]::ExecCommand("wsl --terminate podman-net-usermode")
             [ExternalCommandHelper]::ExecCommand("wsl --shutdown")
+        } catch {
+            LogWarn "Problème d'arrêt des images WSL."
+            # exit 1
+        }
+
+        try {
+
+write-host $this.config.get("podman")
+write-host $this.config.get("podman").init
+write-host $this.config.get("podman").init.command
+
 
             # initialise / create the VM
-            [ExternalCommandHelper]::ExecCommand("podman machine init ; echo OK") # force to ignore error
+            if ($this.config.get("podman").init.command) {
+                LogInfo( "Initializing Podman WSL image")
+                [ExternalCommandHelper]::ExecCommand($this.config.get("podman").init.command + " ; echo OK")
+            } else {
+                LogInfo( "Initializing Podman WSL image with default command")
+                [ExternalCommandHelper]::ExecCommand("podman machine init  ; echo OK")
+            }
+            #[ExternalCommandHelper]::ExecCommand("podman machine init ; echo OK") # force to ignore error
             #[ExternalCommandHelper]::ExecCommand("podman info")
 
-            LogInfo("set podman in user mode networking")
-            [ExternalCommandHelper]::ExecCommand("podman machine set --user-mode-networking")
+            #LogInfo("set podman in user mode networking")
+            # [ExternalCommandHelper]::ExecCommand("podman machine set --user-mode-networking")
 
+            #[ExternalCommandHelper]::ExecCommand("podman machine set --rootful=false --user-mode-networking=false")
+        } catch {
+            LogWarn "Problème d'init de Podman."
+            #exit 1
+        }
+
+        try {
             LogInfo( "start podman (and its wsl image)")
             [ExternalCommandHelper]::ExecCommand("podman machine start")
         } catch {
@@ -518,7 +558,7 @@ class PodmanDriver : IContainerDriver {
         $venvs   = $params.Envs
         $containerHostname = $params.hostname
         
-        $command = "run -it --name " + $Name
+        $command = "run -it --cap-add=NET_ADMIN --privileged --name " + $Name
         $volumes | ForEach-Object {
             $command += ( " --volume {0}" -f $_ )
         }
@@ -795,6 +835,15 @@ class ImageManager {
                 [IO.File]::WriteAllText($file, $text)
             }
         }
+        Get-ChildItem -Path $this.config.get("myResourcesVolume").HostPath -Recurse | ForEach-Object {
+            if ($_.PSIsContainer -eq $false) { # skip directories
+                #(Get-Content $_.FullName) | Set-Content $_.FullName 
+                $file = $_.FullName
+                # Replace CR+LF with LF
+                $text = [IO.File]::ReadAllText($file) -replace "`r`n", "`n"
+                [IO.File]::WriteAllText($file, $text)
+            }
+        }
 
         # change between parameter / real distribution name on dockerhub
         $distribImageRef = $this.Distributions[$Distribution]
@@ -1052,13 +1101,18 @@ class ContainerManager {
         $this.ContainerListener = $null
     }
 
-    [Container] StartContainer([string]$Name, [string]$ImageName, [string]$Volume, [boolean]$WithGui, [Boolean]$OpenWorkspace) {
+    [Container] StartContainer([string]$Name, [string]$ImageName, [string]$Volume, [boolean]$WithGui, [Boolean]$OpenWorkspace, [string]$VpnConfig = $null) {
         LogDbg ( "> ContainerManager::StartContainer() - c:{0} iamge:{1} Gui:{2} openWorkspece:{3}" -f $Name,$ImageName,$WithGui, $OpenWorkspace)
         
         $workspaceFilePath = $this.WorkspaceManager.GetWorkspacePath( $Name )
         $this.ContainerListener = [ContainerListener]::new( $this.WorkspaceManager, $Name )
 
         $this.ContainerListener.Start()
+
+        if ( $VpnConfig -and -not (Test-Path -Path $VpnConfig) ) {
+            LogError ("VPN configuration file '{0}' does not exist." -f $VpnConfig)
+            return $null
+        }
 
         $rslt = $this.Driver.GetContainer( $Name )
         if ( $null -eq $rslt ) {
@@ -1091,6 +1145,12 @@ class ContainerManager {
                         $BackendMountMyresources,
                         $BackendMountWorkspace
                     )
+            if ($VpnConfig) {
+                $BackendMountVpn = ( "{0}:/opt/openvpn-config.ovpn" -f $VpnConfig )
+                $volumesList += @($BackendMountVpn)
+                $labelsList += @( "VPNConfig=true" )
+            }
+
             $envsList = @()
 
             if ( $WithGui) {
@@ -1412,7 +1472,7 @@ if (-not $driverType) {
 }
 
 # Create the driver instance based on the configuration
-$driver = [PodmanDriver]::new()
+$driver = [PodmanDriver]::new( $config )
 #$driver.init()
 if ( ( $Command -ne "init" ) -and ( $driver.isRunning() -ne "running" )) { 
     #LogError "Podman n'est pas installé ou introuvable dans le PATH."
@@ -1442,8 +1502,8 @@ switch ($Command) {
         Write-Host "Volumes :"
         $volumes | ft -AutoSize
 
-        Write-Host "Disk space usage :"
-        [ExternalCommandHelper]::ExecCommand("podman system df")
+        Write-Host "`n`nDisk space usage :`n"
+        podman system df
     }
     "write_user_config" {
         $config.WriteUserConfig( (Join-Path "${env:USERPROFILE}\volund" "config.json") )
@@ -1474,7 +1534,12 @@ switch ($Command) {
             return
         }
 
-        $containerMngr.StartContainer( $Container, $Image, $Volume, $WithGui.IsPresent, $OpenWorkspace)
+        #if ($Image -ne ""){
+        #    LogError("Missing parameter: -Container <container name> -Image <base image name> [-WithGui] [-OpenWorkspace] [-VpnConfig <opvn config file>]")
+        #    return
+        #}
+
+        $containerMngr.StartContainer( $Container, $Image, $Volume, $WithGui.IsPresent, $OpenWorkspace, $VpnConfig)
     } 
     "stop"                {
         if ($Container -eq "") {

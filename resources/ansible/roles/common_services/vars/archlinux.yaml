@@ -1,0 +1,6 @@
+---
+# vars file for common_services
+
+install_packages:
+  - gnu-netcat
+  - python-pyftpdlib

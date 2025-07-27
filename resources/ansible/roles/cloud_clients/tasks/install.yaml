@@ -1,32 +1,8 @@
 ---
 
-
-- name: Install argocd client
+- name: Install required packages (common for all OS)
   package:
-    name: argocd
-    state: present
-#  ansible.builtin.get_url:
-#    url: https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
-#    dest: /usr/local/bin/argocd
-#    mode: '0755'
-#  become: true
-
-
-
-#- name: Download Helm install script
-#  get_url:
-#    url: https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
-#    dest: /tmp/get_helm.sh
-#    mode: '0755'
-
-#- name: Run Helm install script
-#  command: /tmp/get_helm.sh
-#  args:
-#    creates: /usr/local/bin/helm
-
-- name: Install Helm
-  package:
-    name: helm
+    name: "{{ install_packages_os_common | flatten }}"
     state: present
 
 - name: install helm plugin unittest
@@ -37,56 +13,9 @@
   environment:
     USER: "{{ default_username }}"
 
-
-#- name: Install k9s
-#  ansible.builtin.get_url:
-#    url: https://github.com/derailed/k9s/releases/latest/download/k9s_Linux_amd64.tar.gz
-#    dest: /tmp/k9s_Linux_amd64.tar.gz
-#  become: true
-
-#- name: Extract k9s binary
-#  ansible.builtin.unarchive:
-#    src: /tmp/k9s_Linux_amd64.tar.gz
-#    dest: /usr/local/bin/
-#    remote_src: yes
-#    creates: /usr/local/bin/k9s
-#  become: true
-
-#- name: Ensure k9s binary is executable
-#  ansible.builtin.file:
-#    path: /usr/local/bin/k9s
-#    mode: '0755'
-#  become: true
-
-- name: Install k9s
-  package:
-    name: k9s
-    state: present
-
-
-
-#- name: Get latest kubectl stable version
-#  uri:
-#    url: https://dl.k8s.io/release/stable.txt
-#    return_content: yes
-#  register: kubectl_version
-
-#- name: Download binary
-#  get_url:
-#    url: "https://dl.k8s.io/release/{{ kubectl_version.content }}/bin/linux/amd64/kubectl"
-#    dest: /usr/local/bin/kubectl
-#    mode: '0755'
-
-- name: Install kubectl
-  package:
-    name: kubectl
-    state: present
-
-
-
 - name: Install OpenShift CLI (oc)
   ansible.builtin.get_url:
-    url: https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest/openshift-client-linux.tar.gz
+    url: "{{ oc_client_url }}"
     dest: /tmp/openshift-client-linux.tar.gz
   become: true
 
@@ -94,7 +23,7 @@
   ansible.builtin.unarchive:
     src: /tmp/openshift-client-linux.tar.gz
     dest: /usr/local/bin/
-    remote_src: yes
+    remote_src: true
     creates: /usr/local/bin/oc
   become: true
 
@@ -103,10 +32,3 @@
     path: /usr/local/bin/oc
     mode: '0755'
   become: true
-
-
-- name: Install stern
-  package:
-    name: stern
-    state: present
-

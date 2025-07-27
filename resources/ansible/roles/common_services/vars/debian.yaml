@@ -1,0 +1,7 @@
+---
+# vars file for common_services
+
+install_packages:
+  - netcat-traditional
+  - ftp
+  - python3-pyftpdlib

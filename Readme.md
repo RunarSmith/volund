@@ -67,6 +67,10 @@ Let Volund be your forge: produce, shape, and reuse your customized working envi
 - **Configuration Management:** Ansible for reliable, reproducible provisioning
 - **Host System:** Windows (via PowerShell scripting), leveraging WSL
 
+## Limitations & known issues
+
+- **Windows folder sharing:** When host folders are mounted into containers via Podman/Docker, the underlying filesystems differ (NTFS vs. Linux). As a result, running `chown` or `chmod` inside the container on these volumes may fail or have no effect. This is a known limitation of cross-platform volume, and impact volumes `workspace`, `resources`, and `my-resources`.
+
 ## Contributing
 
 Contributions, issues, and feature requests are welcome! Please open an issue or submit a pull request on GitHub.

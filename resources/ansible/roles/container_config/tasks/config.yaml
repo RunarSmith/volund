@@ -1,13 +1,11 @@
 ---
 
-
-# ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ #> /etc/timezone
-
+# -- system date & timezone ----------------------------------
 
 - name: Get timezone from ipapi.co if TZ is undefined or empty
   ansible.builtin.uri:
     url: https://ipapi.co/timezone
-    return_content: yes
+    return_content: true
   register: timezone_response
   when: TZ is undefined or TZ == None or TZ | length == 0
 
@@ -24,7 +22,7 @@
     src: "/usr/share/zoneinfo/{{ timezone }}"
     dest: /etc/localtime
     state: link
-    force: yes
+    force: true
 
 - name: Write timezone to /etc/timezone
   ansible.builtin.copy:
@@ -34,11 +32,15 @@
     group: root
     mode: '0644'
 
+# --- profile & user --------------------------------------
 
-
-
-
-
+- name: copy profile file
+  ansible.builtin.template:
+    src: profile.volund.sh.j2
+    dest: /etc/profile.d/90-volund.sh
+    owner: root
+    group: root
+    mode: '0644'
 
 - name: Create default user
   user:
@@ -46,7 +48,7 @@
     uid: "{{ default_user_UID }}"
     shell: "{{ default_user_shell }}"
     groups: sudo
-    append: yes
+    append: true
     state: present
   when: ansible_os_family in ['debian', 'redhat']
 
@@ -56,7 +58,7 @@
     uid: "{{ default_user_UID }}"
     shell: "{{ default_user_shell }}"
     groups: wheel
-    append: yes
+    append: true
     state: present
   when: ansible_os_family in ['Archlinux']
 
@@ -72,19 +74,9 @@
     path: /etc/sudoers
     line: "%wheel ALL=(ALL) NOPASSWD: ALL"
     validate: 'visudo -cf %s'
-#  ansible.builtin.template:
-#    src: sudoers.volund.conf.j2
-#    dest: "/etc/sudoers.d/90-{{ default_username }}.conf"
-#    owner: root
-#    group: root
-#    mode: '0444'
   when: ansible_os_family in ['Archlinux']
 
-
-
-
-
-
+# --- ca-certificates -----------------------------------------
 
 - name: Check presence of certificates files
   stat:
@@ -100,7 +92,7 @@
         owner: root
         group: root
         mode: '0644'
-        remote_src: yes
+        remote_src: true
 
     - name: Update CA trust store
       command: update-ca-trust
@@ -122,15 +114,91 @@
     - certs_dir.stat.exists
     - certs_dir.stat.isdir
 
+# --- Archlinux AUR packages ---------------------------------
 
+- name: Configure AUR packages building (Archlinux)
+  block:
+    - name: create user aur_user to build AUR packages
+      ansible.builtin.user: name=aur_builder
 
-- name: copy profile file
-  ansible.builtin.template:
-    src: profile.volund.sh.j2
-    dest: /etc/profile.d/90-volund.sh
-    owner: root
-    group: root
-    mode: '0644'
+    - name: add user aur_builder to sudoers
+      ansible.builtin.lineinfile:
+        path: /etc/sudoers.d/aur_builder-allow-to-sudo-pacman
+        state: present
+        line: "aur_builder ALL=(ALL) NOPASSWD: /usr/bin/pacman"
+        validate: /usr/sbin/visudo -cf %s
+        create: true
+
+    - name: Clone paru PKGBUILD
+      git:
+        repo: https://aur.archlinux.org/paru-bin.git
+        dest: "/tmp/paru-bin"
+        update: true
+
+    - name: give rights to 'aur_builder' user on compilation files
+      ansible.builtin.file:
+        dest: "/tmp/paru-bin/"
+        owner: aur_builder
+        group: aur_builder
+        mode: 'u=rwX,g=rX,o=rX'
+        recurse: true
+
+    - name: Build 'paru'
+      command:
+        chdir: "/tmp/paru-bin"
+        cmd: "makepkg -si --noconfirm"
+      become: true
+      become_user: aur_builder
+
+    - name: cleaning
+      ansible.builtin.file:
+        path: "/tmp/paru-bin/"
+        state: absent
+  when: ansible_os_family == 'Archlinux'
+
+# --- openvpn ------------------------------------------------
+
+- name: set openvpn logrotate configuration
+  ansible.builtin.copy:
+    src: logrotate_vpn
+    dest: /etc/logrotate.d/volund_vpn
+
+- name: Create openvpn log directory
+  ansible.builtin.file:
+    path: /var/log/openvpn
+    state: directory
+    owner: "{{ default_username }}"
+    group: "{{ default_username }}"
+    mode: '0775'
+
+# --- tmux ------------------------------------------------
+
+- name: set tmux configuration
+  ansible.builtin.copy:
+    src: tmux.conf
+    dest: /root/.tmux.conf
+
+# --- vim ------------------------------------------------
+
+- name: Install The Ultimate vimrc
+  ansible.builtin.git:
+    repo: https://github.com/amix/vimrc.git
+    dest: /root/.vim_runtime
+    depth: 1
+
+- name: call install script of The Ultimate vimrc
+  script: "/root/.vim_runtime/install_awesome_vimrc.sh"
+
+# --- ruby ------------------------------------------------
+
+- name: bundle set path
+  command: "bundle config path vendor/"
+
+# https://wiki.archlinux.org/title/RVM#Using_RVM
+- name: get install script for rvm
+  shell: "curl -L https://get.rvm.io | bash"
+
+# --- entrypoint -----------------------------------------------
 
 - name: Make /.entrypoint.sh executable
   ansible.builtin.file:
@@ -138,4 +206,3 @@
     mode: '0755'
     owner: root
     group: root
-

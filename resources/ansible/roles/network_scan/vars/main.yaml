@@ -1,0 +1,12 @@
+---
+# vars file for network_scan
+
+install_packages_os_common:
+  - autorecon
+  - chisel
+  - sslscan
+  - nmap
+  - openssl
+  - putty
+  - ssh
+  - sshpass

@@ -1,5 +1,0 @@
-skip_list:
-  - experimental
-  - yaml
-warn_list:
-  - name[missing]

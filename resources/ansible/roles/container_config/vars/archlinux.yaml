@@ -2,20 +2,9 @@
 
 install_packages:
   - ca-certificates
-  - curl
-  - git
-  - gnupg
-  - jq
-  - less
-  - nano
-  - openssl
-  - procps
-  - python3
-  - sudo
-  - vim
-  - wget
-  - yq
   - ca-certificates-utils
+  - firefox  # FIXME: extract to web browser list (firefox-esr)
+  - procps
   - python-pip
   - python-virtualenv
   - python-pipx

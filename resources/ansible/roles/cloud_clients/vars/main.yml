@@ -1,3 +1,11 @@
-#SPDX-License-Identifier: MIT-0
 ---
 # vars file for devsecops
+
+install_packages_os_common:
+  - argocd
+  - helm
+  - k9s
+  - kubectl
+  - stern
+
+oc_client_url: https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest/openshift-client-linux.tar.gz

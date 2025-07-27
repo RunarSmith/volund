@@ -1,0 +1,47 @@
+---
+# tasks file for cracking
+
+- name: "{{ ansible_role_name }} :: check requirements"
+  block:
+    - name: Include OS-specific variables.
+      ansible.builtin.include_vars: "{{ ansible_os_family | lower }}.yaml"
+
+- name: "{{ ansible_role_name }} :: check requirements"
+  block:
+    - name: Precheck
+      ansible.builtin.include_tasks: precheck.yaml
+  when:
+    - "'offensivesec' in active_profiles"
+    - "'check' in active_actions"
+
+- name: "{{ ansible_role_name }} :: Installation"
+  block:
+    - name: "Install"
+      ansible.builtin.include_tasks: install.yaml
+  when:
+    - "'offensivesec' in active_profiles"
+    - "'install' in active_actions"
+
+- name: "{{ ansible_role_name }} :: Configuration"
+  block:
+    - name: "Configuration"
+      ansible.builtin.include_tasks: config.yaml
+  when:
+    - "'offensivesec' in active_profiles"
+    - "'config' in active_actions"
+
+- name: "{{ ansible_role_name }} :: Hardening"
+  block:
+    - name: "Hardening"
+      ansible.builtin.include_tasks: hardening.yaml
+  when:
+    - "'offensivesec' in active_profiles"
+    - "'hardening' in active_actions"
+
+- name: "{{ ansible_role_name }} :: Installation tests"
+  block:
+    - name: "Testing"
+      ansible.builtin.include_tasks: test_exec.yaml
+  when:
+    - "'offensivesec' in active_profiles"
+    - "'check' in active_actions"
