@@ -1,0 +1,11 @@
+---
+# vars file for web_browser
+
+install_packages_os_common:
+  - chromium
+
+install_gui_packages_drivers_common:
+  - pulseaudio
+  - libasound2
+  - libavcodec-extra
+  - ffmpeg

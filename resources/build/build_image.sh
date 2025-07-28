@@ -67,7 +67,6 @@ export OS_FAMILLY_NAME="undefined"
 . /etc/os-release
 OS_FAMILLY_NAME=${ID}
 
-
 case "${ID}" in
     "blackarch" )   OS_FAMILLY_NAME="arch"      ;;
     "kali")         OS_FAMILLY_NAME="debian"    ;;
@@ -106,7 +105,19 @@ if compgen -G "/opt/my-resources/setup/certs/*.pem" > /dev/null; then
             update-ca-trust || die "Failed to update CA trust"
             ;;
         "debian")
-            cp /opt/my-resources/setup/certs/*.pem /usr/local/share/ca-certificates/ || die "Failed to copy certificates to /usr/local/share/ca-certificates/"
+            apt update -qqy
+            apt install -qqy --no-install-recommends ca-certificates || die "Failed to install ca-certificates package"
+
+            pushd /opt/my-resources/setup/certs
+            for cert in *.pem; do
+                if [ -f "$cert" ]; then
+                    echo "Installing certificate: $cert"
+                    cp "$cert" /usr/local/share/ca-certificates/ || die "Failed to copy certificate $cert to /usr/local/share/ca-certificates/"
+                else
+                    echo "No certificates found in /opt/my-resources/setup/certs/"
+                fi
+            done
+            popd
             update-ca-certificates || die "Failed to update CA certificates"
             ;;
         "arch")

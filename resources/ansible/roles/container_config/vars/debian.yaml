@@ -5,7 +5,6 @@ install_packages:
   - python3-venv
   - pipx
   - ca-certificates
-  - firefox-esr
   - procps
   - python3
   - sudo
@@ -15,8 +14,5 @@ install_packages:
 
 ca_trust_path: /usr/local/share/ca-certificates/
 
-install_gui_packages_drivers:
-  - pulseaudio
-  - libasound2
-  - libavcodec-extra
-  - ffmpeg
+install_packages_go:
+  - golang

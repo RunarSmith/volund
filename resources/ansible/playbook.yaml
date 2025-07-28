@@ -49,6 +49,7 @@
 
   roles:
     - container_config  # base configuration for the container
+
     - burpsuite
     - cloud_clients
     - common_it
@@ -57,7 +58,9 @@
     - exploitdb
     - metasploit
     - network_scan
+    - openvpn_client
     - web_audit
+    - web_browsers
 
   post_tasks:
     - name: Display completion message

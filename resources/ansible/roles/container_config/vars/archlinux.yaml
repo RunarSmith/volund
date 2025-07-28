@@ -3,16 +3,15 @@
 install_packages:
   - ca-certificates
   - ca-certificates-utils
-  - firefox  # FIXME: extract to web browser list (firefox-esr)
   - procps
   - python-pip
   - python-virtualenv
   - python-pipx
   - which
+  - xz
 
 ca_trust_path: /etc/ca-certificates/trust-source/anchors/
 
-install_gui_packages_drivers:
-  - pulseaudio
-  - alsa-lib
-  - ffmpeg
+
+install_packages_go:
+  - go

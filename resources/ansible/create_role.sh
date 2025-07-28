@@ -66,11 +66,14 @@ cat <<EOF > $role/tasks/install.yaml
   package:
     name: "{{ install_packages_os_common | flatten }}"
     state: present
+  when : install_packages_os_common is defined and install_packages_os_common | length > 0
 
 - name: Install required packages (OS specific)
   package:
     name: "{{ install_packages | flatten }}"
     state: present
+  when : install_packages is defined and install_packages | length > 0
+
 EOF
 
 cat <<EOF > $role/tasks/main.yml

@@ -5,7 +5,6 @@ install_packages_os_common:
   - autoconf
   - automake
   - binutils
-  - chromium  # FIXME: extract to web browser list
   - cmake
   - curl
   - diffutils
@@ -31,17 +30,12 @@ install_packages_os_common:
   - time
   - tmux
   - tree
-  - unrar
   - unzip
   - vim
-  - xz      # FIXME: xz-utils on kali ?
   - wget
   - yq
   - zip
   - zsh
-
-install_packages_go:
-  - go
 
 # FIXME: huh ? on kali:
 #      - openjdk-17-jre
@@ -67,9 +61,3 @@ install_packages_ruby:
 
 install_packages_rust:
   - rustup
-
-install_gui_packages_drivers_common:
-  - pulseaudio
-  - libasound2
-  - libavcodec-extra
-  - ffmpeg

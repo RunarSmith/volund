@@ -2,7 +2,6 @@
 
 install_packages:
   - ca-certificates
-  - firefox-esr
   - openssl
   - procps
   - python3
@@ -14,8 +13,5 @@ install_packages:
 # Fedora, Red Hat, CentOS, OracleLinux, etc. (distributions basées sur Red Hat)
 ca_trust_path: /etc/pki/ca-trust/source/anchors/
 
-install_gui_packages_drivers:
-  - pulseaudio
-  - alsa-lib
-  - libavcodec-free
-  - ffmpeg-free
+install_packages_go:
+  - go

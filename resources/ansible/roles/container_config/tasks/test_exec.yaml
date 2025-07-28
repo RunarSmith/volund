@@ -1,0 +1,26 @@
+---
+
+# --- user ------------------------------------------------
+
+- name: "Ensure user {{ default_username }} exists"
+  ansible.builtin.getent:
+    database: passwd
+    key: "{{ default_username }}"
+  register: user_exists
+
+- name: "Fail if user {{ default_username }} do not exists"
+  ansible.builtin.fail:
+    msg: "User {{ default_username }} do not exists"
+  when: user_exists is not defined or user_exists is falsy
+
+- name: "Ensure user {{ default_username }} can execute sudo commands without password"
+  ansible.builtin.command: sudo -l -U {{ default_username }}
+  register: sudo_check
+  changed_when: false
+  become_user: "{{ default_username }}"
+
+- name: "Ensure user {{ default_username }} can execute sudo commands without password"
+  ansible.builtin.assert:
+    that:
+      - "'(ALL) NOPASSWD: ALL' in sudo_check.stdout"
+    fail_msg: "L'utilisateur {{ default_username }} ne peut pas utiliser sudo sans mot de passe"

@@ -1,0 +1,28 @@
+---
+# tasks file for web_browser
+
+# --- chrome ----------------------------------------------
+
+- name: Ensure chrome is installed
+  ansible.builtin.command: chrome --version
+  register: chrome_version
+  changed_when: false
+  failed_when: chrome_version.rc != 0
+
+- name: Display chrome version
+  when: chrome_version is defined and chrome_version.stdout is defined
+  ansible.builtin.debug:
+    var: chrome_version.stdout
+
+# --- firefox ---------------------------------------------
+
+- name: Ensure Firefox is installed
+  ansible.builtin.command: firefox --version
+  register: firefox_version
+  changed_when: false
+  failed_when: firefox_version.rc != 0
+
+- name: Display Firefox version
+  when: firefox_version is defined and firefox_version.stdout is defined
+  ansible.builtin.debug:
+    var: firefox_version.stdout

@@ -1,0 +1,15 @@
+---
+# tasks file for openvpn_client
+
+- name: set openvpn logrotate configuration
+  ansible.builtin.copy:
+    src: logrotate_vpn
+    dest: /etc/logrotate.d/volund_vpn
+
+- name: Create openvpn log directory
+  ansible.builtin.file:
+    path: /var/log/openvpn
+    state: directory
+    owner: "{{ default_username }}"
+    group: "{{ default_username }}"
+    mode: '0775'

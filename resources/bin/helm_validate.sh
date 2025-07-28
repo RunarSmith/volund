@@ -4,7 +4,9 @@
 
 # Note: This script assumes that Helm and the necessary plugins (like helm-unittest) are installed.
 
-set -e
+# set -e
+# set -o pipefail
+# set -x
 
 ChartPath="$1"
 if [ -z "$ChartPath" ]; then

@@ -43,14 +43,14 @@
     mode: '0644'
 
 - name: Create default user
-  user:
+  ansible.builtin.user:
     name: "{{ default_username }}"
     uid: "{{ default_user_UID }}"
     shell: "{{ default_user_shell }}"
     groups: sudo
     append: true
     state: present
-  when: ansible_os_family in ['debian', 'redhat']
+  when: ansible_os_family in ['Debian', 'RedHat']
 
 - name: Create default user
   user:
@@ -67,7 +67,7 @@
     path: /etc/sudoers
     line: "{{ default_username }} ALL=(ALL) NOPASSWD: ALL"
     validate: 'visudo -cf %s'
-  when: ansible_os_family in ['debian', 'redhat']
+  when: ansible_os_family in ['Debian', 'RedHat']
 
 - name: Set sudo to NOPASSWD for this user (wheel group)
   lineinfile:
@@ -97,13 +97,13 @@
     - name: Update CA trust store
       command: update-ca-trust
       when:
-        - ansible_os_family in ['redhat']
+        - ansible_os_family in ['RedHat']
 
     - name: Update CA trust store
       command: update-ca-certificates
       when:
         - certs_dir.stat.mtime > 0
-        - ansible_os_family in ['debian']
+        - ansible_os_family in ['Debian']
 
     - name: Update CA trust store
       command: trust extract-compat
@@ -156,21 +156,6 @@
         state: absent
   when: ansible_os_family == 'Archlinux'
 
-# --- openvpn ------------------------------------------------
-
-- name: set openvpn logrotate configuration
-  ansible.builtin.copy:
-    src: logrotate_vpn
-    dest: /etc/logrotate.d/volund_vpn
-
-- name: Create openvpn log directory
-  ansible.builtin.file:
-    path: /var/log/openvpn
-    state: directory
-    owner: "{{ default_username }}"
-    group: "{{ default_username }}"
-    mode: '0775'
-
 # --- tmux ------------------------------------------------
 
 - name: set tmux configuration
@@ -191,12 +176,12 @@
 
 # --- ruby ------------------------------------------------
 
-- name: bundle set path
-  command: "bundle config path vendor/"
+#- name: bundle set path
+#  command: "bundle config path vendor/"
 
 # https://wiki.archlinux.org/title/RVM#Using_RVM
-- name: get install script for rvm
-  shell: "curl -L https://get.rvm.io | bash"
+#- name: get install script for rvm
+#  shell: "curl -L https://get.rvm.io | bash"
 
 # --- entrypoint -----------------------------------------------
 

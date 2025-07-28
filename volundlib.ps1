@@ -109,6 +109,7 @@ class Configuration {
             "labelVolumes" = "volund"
 
             "buildOpts" = "" # "--tls-verify=false"
+            "pullOpts" = ""  # "--tls-verify=false"
 
             "sharedResourcesVolume" = @{
                 "name"      = "sharedResources"
@@ -848,6 +849,12 @@ class ImageManager {
         # change between parameter / real distribution name on dockerhub
         $distribImageRef = $this.Distributions[$Distribution]
         LogDbg( ( "Distribution ref: {0} -> {1}" -f $Distribution, $distribImageRef) )
+
+        [ExternalCommandHelper]::ExecCommand(("podman pull $distribImageRef {0}" -f $this.config.get("pullOpts")))
+        if ($LastExitCode -ne 0) { 
+            LogError "Failed to pull base distribution image: $distribImageRef"
+            return $null
+        }
 
         $params = @{
             Name        = $ImageName
