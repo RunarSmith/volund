@@ -1,15 +1,17 @@
 ---
 
-- name: Ensure Helm is installed
-  command: helm version
-  register: helm_version
-  changed_when: false
+# --- applications ----------------------------------------
 
-- name: Get installed kubectl version
-  command: kubectl version --client
-  register: kubectl_version_output
-  changed_when: false
+- name: "Check if {{ item }} is installed"
+  ansible.builtin.command: "{{ item }}"
+  register: app_check
+  ignore_errors: true
+  loop: "{{ test_commands }}"
+  loop_control:
+    loop_var: item
 
-- name: Display kubectl version
-  debug:
-    msg: "{{ kubectl_version_output.stdout }}"
+- name: "Assert all required applications are installed"
+  ansible.builtin.assert:
+    that:
+      - "app_check.results | selectattr('rc', 'eq', 0) | list | length == test_commands | length"
+    fail_msg: "One or more required applications are missing or not executable."

@@ -1,6 +1,10 @@
 ---
 # vars file for common_services
 
-install_packages:
+install_packages_os:
+  - inetutils
   - gnu-netcat
+  - nfs-utils
   - python-pyftpdlib
+  - smb
+  

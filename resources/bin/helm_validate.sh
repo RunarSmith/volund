@@ -66,7 +66,12 @@ fi
 echo "Helm chart dependencies updated successfully."
 
 echo "=== Validating Helm chart in $ChartPath ===================="
-helm lint --strict .
+if [ -f ./values.yaml ]; then
+  echo "=>> Using 'values.yaml' for validation."
+  helm lint --strict . --values values.yaml
+else
+  helm lint --strict .
+fi
 if [ $? -ne 0 ]; then
   echo "Helm chart validation failed."
   exit 1
@@ -76,7 +81,16 @@ echo "Helm chart validation successful."
 
 echo "=== Resolve Helm chart templating =========================="
 echo "Resolving Helm chart tempalting..."
-helm template . > $yamlResult
+if [ ! -d "./templates" ]; then
+  echo "Error: No templates directory found in $ChartPath."
+  exit 1
+fi
+if [ -f values.yaml ]; then
+  echo "=>> Using 'values.yaml' for templating."
+  helm template . --values values.yaml > $yamlResult
+else
+  helm template . > $yamlResult
+fi
 if [ $? -ne 0 ]; then
   echo "Helm chart templating failed."
   exit 1
@@ -94,7 +108,7 @@ rules:
     level: warning
   indentation:
     level: warning
-    indent-sequences: consistent
+
   # 120 chars should be enough, but don't fail if a line is longer
   line-length:
     max: 120

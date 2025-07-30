@@ -136,20 +136,23 @@ case "${OS_FAMILLY_NAME}" in
     "fedora")
         dnf upgrade --refresh  --assumeyes || die "Failed to update dnf database"
 
-        packagesList="python3 python3-libdnf5"
+        #packagesList="python3 python3-libdnf5"
+        packagesList="python3 pipx"
         dnf install --quiet --assumeyes $packagesList || die "Failed to install packages: $packagesList"
         ;;
     "debian")
         apt update -o "Apt::Cmd::Disable-Script-Warning=1" -qq  || die "Failed to update apt database"
         apt upgrade -o "Apt::Cmd::Disable-Script-Warning=1" -qqy  || die "Failed to update apt packages"
 
-        packagesList="python3 python3-pip python3-venv"
+        #packagesList="python3 python3-pip python3-venv"
+        packagesList="python3 pipx"
         apt install -o "Apt::Cmd::Disable-Script-Warning=1" -qq --yes $packagesList || die "Failed to install packages: $packagesList"
         ;;
     "arch")
         pacman -Syu --noconfirm --quiet --noprogressbar || die "Failed to update pacman database"
 
-        packagesList="python3 python-pip python-virtualenv"
+        #packagesList="python3 python-pip python-virtualenv"
+        packagesList="python3 python-pipx"
         pacman -S --noconfirm --quiet --noprogressbar $packagesList || die "Failed to install packages: $packagesList"
         ;;
     *)
@@ -159,10 +162,14 @@ esac
 
 print_step "Install Ansible in a virtual env"
 
-python3 -m venv /opt/ansible-venv || die "Failed to create Python virtual environment"
-source /opt/ansible-venv/bin/activate 
-pip install --no-cache-dir --upgrade pip || die "Failed to upgrade pip"
-pip install ansible || die "Failed to install Ansible"
+#python3 -m venv /opt/ansible-venv || die "Failed to create Python virtual environment"
+#source /opt/ansible-venv/bin/activate 
+#pip install --no-cache-dir --upgrade pip || die "Failed to upgrade pip"
+#pip install ansible || die "Failed to install Ansible"
+
+python3 -m pipx ensurepath || die "Failed to ensure pipx path"
+export PATH=$PATH:$HOME/.local/bin:$HOME/.local/pipx/venvs/ansible/bin/:$HOME/.local/share/pipx/venvs/ansible/bin/
+python3 -m pipx install ansible || die "Failed to install Ansible with pipx"
 
 cd /opt/resources/ansible
 
@@ -204,8 +211,9 @@ fi
 
 print_header "Cleaning"
 
-deactivate
-rm -rf /opt/ansible-venv
+#deactivate
+#rm -rf /opt/ansible-venv
+pipx uninstall ansible || die "Failed to uninstall Ansible with pipx"
 
 # =========================================================
 

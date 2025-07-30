@@ -1,5 +1,23 @@
 ---
 
+# --- applications ----------------------------------------
+
+- name: "Check if {{ item }} is installed"
+  ansible.builtin.command: "{{ item }}"
+  register: app_check
+  ignore_errors: true
+  loop: "{{ test_commands }}"
+  loop_control:
+    loop_var: item
+  become: true
+  become_user: "{{ default_username }}"
+
+- name: "Assert all required applications are installed"
+  ansible.builtin.assert:
+    that:
+      - "app_check.results | selectattr('rc', 'eq', 0) | list | length == test_commands | length"
+    fail_msg: "One or more required applications are missing or not executable."
+
 # --- user ------------------------------------------------
 
 - name: "Ensure user {{ default_username }} exists"

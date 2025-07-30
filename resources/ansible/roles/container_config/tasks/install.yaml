@@ -1,11 +1,16 @@
 ---
 
-- name: Install required packages (common for all OS)
+- name: Install required packages
   package:
-    name: "{{ install_packages_os_common | flatten }}"
+    name: >-
+      {{
+        (install_packages.archive | default([])) +
+        (install_packages.devel   | default([])) +
+        (install_packages.python  | default([])) +
+        (install_packages.system  | default([])) +
+        (install_packages.utils   | default([])) +
+        (install_packages.web     | default([])) +
+        (install_packages_os      | default([]))
+      }}
     state: present
-
-- name: Install required packages (OS specific)
-  package:
-    name: "{{ install_packages | flatten }}"
-    state: present
+  become: true

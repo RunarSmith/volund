@@ -23,6 +23,7 @@
     dest: /etc/localtime
     state: link
     force: true
+  become: true
 
 - name: Write timezone to /etc/timezone
   ansible.builtin.copy:
@@ -31,6 +32,7 @@
     owner: root
     group: root
     mode: '0644'
+  become: true
 
 # --- profile & user --------------------------------------
 
@@ -41,6 +43,7 @@
     owner: root
     group: root
     mode: '0644'
+  become: true
 
 - name: Create default user
   ansible.builtin.user:
@@ -51,6 +54,7 @@
     append: true
     state: present
   when: ansible_os_family in ['Debian']
+  become: true
 
 - name: Create default user
   user:
@@ -61,6 +65,7 @@
     append: true
     state: present
   when: ansible_os_family in ['Archlinux', 'RedHat']
+  become: true
 
 - name: Set sudo to NOPASSWD for this user
   lineinfile:
@@ -68,6 +73,7 @@
     line: "{{ default_username }} ALL=(ALL) NOPASSWD: ALL"
     validate: 'visudo -cf %s'
   when: ansible_os_family in ['Debian', 'RedHat']
+  become: true
 
 - name: Set sudo to NOPASSWD for this user (wheel group)
   lineinfile:
@@ -75,6 +81,7 @@
     line: "%wheel ALL=(ALL) NOPASSWD: ALL"
     validate: 'visudo -cf %s'
   when: ansible_os_family in ['Archlinux']
+  become: true
 
 # --- ca-certificates -----------------------------------------
 
@@ -108,6 +115,7 @@
       command: trust extract-compat
       when:
         - ansible_os_family in ['Archlinux']
+  become: true
   when:
     - certs_dir.stat.exists
     - certs_dir.stat.isdir
@@ -117,7 +125,9 @@
 - name: Configure AUR packages building (Archlinux)
   block:
     - name: create user aur_user to build AUR packages
-      ansible.builtin.user: name=aur_builder
+      ansible.builtin.user: 
+        name: aur_builder
+      become: true
 
     - name: add user aur_builder to sudoers
       ansible.builtin.lineinfile:
@@ -126,6 +136,7 @@
         line: "aur_builder ALL=(ALL) NOPASSWD: /usr/bin/pacman"
         validate: /usr/sbin/visudo -cf %s
         create: true
+      become: true
 
     - name: Clone paru PKGBUILD
       git:
@@ -171,3 +182,4 @@
     mode: '0755'
     owner: root
     group: root
+  become: true

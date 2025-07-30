@@ -1,32 +1,59 @@
 ---
 
-install_packages_os_common:
-  - autoconf
-  - automake
-  - binutils
-  - cmake
-  - curl
-  - diffutils
-  - dos2unix
-  - fzf
-  - gcc
-  - git
-  - gnupg
-  - gzip
-  - jq
-  - less
-  - logrotate
-  - make
-  - p7zip
-  - plocate
-  - python3
-  - sudo
-  - tar
-  - tidy
-  - time
-  - tk
-  - tree
-  - unzip
-  - wget
-  - yq
-  - zip
+install_packages:
+  archive:
+    - gzip
+    - p7zip
+    - tar
+    - unzip
+    - zip
+  devel:
+    - autoconf
+    - automake
+    - cmake
+    - gcc
+    - git
+    - make
+  python:
+    - python3
+  system:
+    - logrotate
+    - plocate
+    - sudo
+  utils:
+    - binutils
+    - diffutils
+    - dos2unix
+    - fzf
+    - gnupg
+    - jq
+    - less
+    - tidy
+    - time
+    - tk
+    - tree
+    - yq
+  web:
+    - curl
+    - openssl
+    - wget
+
+
+test_commands:
+  - curl --version
+  - git --version
+  - jq --version
+  - man --version
+  - openssl version
+  - p7zip --help
+  - pip --version
+  - pipx --version
+  - python3 --version
+  - sudo --version
+  - tar --version
+  - tree --version
+  - unzip --help
+  - which ssh
+  - wget --version
+  - yq --version
+  - zip -h2

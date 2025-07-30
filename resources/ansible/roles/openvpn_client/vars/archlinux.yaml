@@ -4,4 +4,4 @@
 install_packages_os:
 
 
-install_packages: "{{ install_packages_os_common  | default([]) }}"
+install_packages: "{{ (install_packages_os_common | default([])) + (install_packages_os | default([])) }}"

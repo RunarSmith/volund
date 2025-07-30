@@ -41,7 +41,7 @@
     - cloud_clients
     - common_it
     - common_services
-    - network_scan
+    #- network_scan
     - openvpn_client
     - user_env
     - web_browsers

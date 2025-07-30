@@ -1,7 +1,16 @@
 ---
 # vars file for devsecops
 
-install_packages_os_common:
+install_packages:
   - yamllint
 
 oc_client_url: https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest/openshift-client-linux.tar.gz
+
+
+test_commands:
+  - oc version
+  - helm version
+  - k9s version
+  - kubectl version --client
+  - stern --version
+  - yamllint --version

@@ -1,7 +1,7 @@
 ---
-# tasks file for common_it
+# tasks file for common_services
 
-- name: Install required packages
+- name: Install required packages (OS specific)
   package:
     name: >-
       {{

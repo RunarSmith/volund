@@ -2,11 +2,8 @@
 # vars file for common_services
 
 install_packages_os_common:
-  - inetutils
-  - nfs-utils
   - rlwrap
   - samba
-  - smb
   - smbclient
   - snmp
   - socat

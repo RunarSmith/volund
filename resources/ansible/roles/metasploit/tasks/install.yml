@@ -1,10 +1,6 @@
 ---
 # tasks file for metasploit
 
-- name: Install required packages (common for all OS)
-  package:
-    name: "{{ install_packages_os_common | flatten }}"
-    state: present
 
 - name: Install required packages (OS specific)
   package:

@@ -3,5 +3,7 @@
 append_path '{{ resource_path }}/bin'
 append_path '{{ my_resource_path }}/bin'
 
+export PATH
+
 # source he custom resource file if any
 [ -f {{ my_resource_path }}/setup/bashrc ] && . {{ my_resource_path }}/setup/bashrc
