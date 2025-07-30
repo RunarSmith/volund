@@ -4,11 +4,29 @@
 
 # Note: This script assumes that Helm and the necessary plugins (like helm-unittest) are installed.
 
-# set -e
-# set -o pipefail
-# set -x
+#set -e
+#set -x
 
+# source folder containing "Chart.yaml" file
 ChartPath="$1"
+# 
+yamlResult="$2"
+
+tmpPath=$(mktemp --directory "/tmp/lint-XXXXXX")
+srcPath="$tmpPath/sources/"
+venvPath="$tmpPath/venv"
+
+mkdir -p $srcPath/
+cp -r $ChartPath/* $srcPath/
+
+
+on_exit(){
+  rm -fr $tmpPath
+}
+
+trap 'on_exit' EXIT
+
+
 if [ -z "$ChartPath" ]; then
   echo "Usage: $0 <path_to_helm_chart>"
   exit 1
@@ -19,32 +37,27 @@ if [ ! -d "$ChartPath" ]; then
   exit 1
 fi
 
-
-if [ ! -d /opt/ansible-venv ]; then
-    python3 -m venv /opt/ansible-venv 
+if [ -z "$yamlResult" ]; then
+  yamlResult="$(pwd)/helm_template_output.yaml"
 fi
 
-source /opt/ansible-venv/bin/activate 
+echo "Result file will be: $yamlResult"
 
-if [ ! -f /opt/ansible-venv/bin/yamllint ]; then
-    pip install --no-cache-dir --upgrade pip
+echo "=== Installing venv ========================================"
+python3 -m venv $venvPath 
 
-    pip install ansible ansible-lint yamllint
-fi
+source $venvPath/bin/activate 
 
-# --- Validate the Helm chart -----------------------------
-echo "Validating Helm chart in $ChartPath..."
-helm lint "$ChartPath"
-if [ $? -ne 0 ]; then
-  echo "Helm chart validation failed."
-  exit 1
-fi
+echo "=== Installing tools ======================================="
+pip install --no-cache-dir --upgrade pip
 
-echo "Helm chart validation successful."
+pip install yamllint
 
-# --- Update helm dependencies ----------------------------
+pushd $srcPath > /dev/null
+
+echo "=== Update helm dependencies ==============================="
 echo "Updating Helm chart dependencies..."
-helm dependency update "$ChartPath"
+helm dependency update .
 if [ $? -ne 0 ]; then
   echo "Helm chart dependency update failed."
   exit 1
@@ -52,9 +65,18 @@ fi
 
 echo "Helm chart dependencies updated successfully."
 
-# --- Resolve Helm chart templating -----------------------
+echo "=== Validating Helm chart in $ChartPath ===================="
+helm lint --strict .
+if [ $? -ne 0 ]; then
+  echo "Helm chart validation failed."
+  exit 1
+fi
+
+echo "Helm chart validation successful."
+
+echo "=== Resolve Helm chart templating =========================="
 echo "Resolving Helm chart tempalting..."
-helm template "$ChartPath" > /tmp/helm_template_output.yaml
+helm template . > $yamlResult
 if [ $? -ne 0 ]; then
   echo "Helm chart templating failed."
   exit 1
@@ -62,9 +84,23 @@ fi
 
 echo "Helm chart templating successful."
 
-# --- Validate the rendered YAML ---------------------------
+echo "=== Validate the rendered YAML ============================="
 echo "Validating rendered YAML..."
-yamllint /tmp/helm_template_output.yaml
+cat <<EOF > .yamllint
+extends: default
+rules:
+rules:
+  braces:
+    level: warning
+  indentation:
+    level: warning
+    indent-sequences: consistent
+  # 120 chars should be enough, but don't fail if a line is longer
+  line-length:
+    max: 120
+    level: warning
+EOF
+yamllint $yamlResult
 if [ $? -ne 0 ]; then 
   echo "YAML validation failed."
   exit 1
@@ -72,10 +108,10 @@ fi
 
 echo "YAML validation successful."
 
-# --- Execute helm unit tests -----------------------------
-if [ -d "$ChartPath/tests" ]; then
+echo "=== Execute helm unit tests ================================"
+if [ -d "./tests" ]; then
   echo "Executing Helm tests..."
-  helm unittest "$ChartPath"
+  helm unittest "."
   if [ $? -ne 0 ]; then
     echo "Helm tests failed."
     exit 1
@@ -87,7 +123,6 @@ fi
 echo "Helm tests executed successfully."
 
 # Clean up
-rm -f /tmp/helm_template_output.yaml
 echo "All validations completed successfully."
 
 # --- End of script ----------------------------------------

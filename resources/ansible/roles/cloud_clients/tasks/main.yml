@@ -5,7 +5,6 @@
     - name: Precheck
       ansible.builtin.include_tasks: precheck.yaml
   when:
-    - "'devsecops' in active_profiles"
     - "'check' in active_actions"
 
 - name: "{{ ansible_role_name }} :: Installation"
@@ -13,7 +12,6 @@
     - name: "Install"
       ansible.builtin.include_tasks: install.yaml
   when:
-    - "'devsecops' in active_profiles"
     - "'install' in active_actions"
 
 - name: "{{ ansible_role_name }} :: Configuration"
@@ -21,7 +19,6 @@
     - name: "Configuration"
       ansible.builtin.include_tasks: config.yaml
   when:
-    - "'devsecops' in active_profiles"
     - "'config' in active_actions"
 
 - name: "{{ ansible_role_name }} :: Hardening"
@@ -29,7 +26,6 @@
     - name: "Hardening"
       ansible.builtin.include_tasks: hardening.yaml
   when:
-    - "'devsecops' in active_profiles"
     - "'hardening' in active_actions"
 
 - name: "{{ ansible_role_name }} :: Installation tests"
@@ -37,5 +33,4 @@
     - name: "Testing"
       ansible.builtin.include_tasks: test_exec.yaml
   when:
-    - "'devsecops' in active_profiles"
     - "'check' in active_actions"

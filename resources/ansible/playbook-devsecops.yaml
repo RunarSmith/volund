@@ -35,17 +35,15 @@
           - "Version:      {{ ansible_distribution_version }}"
           - "Architecture: {{ ansible_architecture}}"
 
-
   roles:
     - container_config  # base configuration for the container
 
     - cloud_clients
     - common_it
     - common_services
-
+    - network_scan
     - openvpn_client
     - user_env
-
     - web_browsers
 
   post_tasks:

@@ -3,10 +3,9 @@
 set -e
 
 role=$1
-profile=$2
 
-if [ -z "$role" ] || [ -z "$profile" ]; then
-  echo "Usage: $0 <role> <profile>"
+if [ -z "$role" ]; then
+  echo "Usage: $0 <role>"
   exit 1
 fi
 
@@ -90,7 +89,6 @@ cat <<EOF > $role/tasks/main.yml
     - name: Precheck
       ansible.builtin.include_tasks: precheck.yaml
   when:
-    - "'$profile' in active_profiles"
     - "'check' in active_actions"
 
 - name: "{{ ansible_role_name }} :: Installation"
@@ -98,7 +96,6 @@ cat <<EOF > $role/tasks/main.yml
     - name: "Install"
       ansible.builtin.include_tasks: install.yaml
   when:
-    - "'$profile' in active_profiles"
     - "'install' in active_actions"
 
 - name: "{{ ansible_role_name }} :: Configuration"
@@ -106,7 +103,6 @@ cat <<EOF > $role/tasks/main.yml
     - name: "Configuration"
       ansible.builtin.include_tasks: config.yaml
   when:
-    - "'$profile' in active_profiles"
     - "'config' in active_actions"
 
 - name: "{{ ansible_role_name }} :: Hardening"
@@ -114,7 +110,6 @@ cat <<EOF > $role/tasks/main.yml
     - name: "Hardening"
       ansible.builtin.include_tasks: hardening.yaml
   when:
-    - "'$profile' in active_profiles"
     - "'hardening' in active_actions"
 
 - name: "{{ ansible_role_name }} :: Installation tests"
@@ -122,7 +117,6 @@ cat <<EOF > $role/tasks/main.yml
     - name: "Testing"
       ansible.builtin.include_tasks: test_exec.yaml
   when:
-    - "'$profile' in active_profiles"
     - "'check' in active_actions"
 EOF
 

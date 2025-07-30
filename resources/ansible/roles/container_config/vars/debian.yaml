@@ -1,18 +1,18 @@
 ---
 
 install_packages:
-  - python3-pip
-  - python3-venv
-  - pipx
   - ca-certificates
+  - man
+  - man-db
+  - openssh-client
+  - pipx
   - procps
   - python3
+  - python3-pip
+  - python3-venv
   - sudo
   - vim
   - wget
   - yq
 
 ca_trust_path: /usr/local/share/ca-certificates/
-
-install_packages_go:
-  - golang

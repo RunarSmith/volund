@@ -2,10 +2,10 @@
 # vars file for web_browser
 
 install_packages:
-  - firefox-esr
+  - firefox
 
 install_gui_packages_drivers:
-  - pulseaudio
+  #- pulseaudio
   - alsa-lib
   - libavcodec-free
   - ffmpeg-free

@@ -325,11 +325,6 @@ class PodmanDriver : IContainerDriver {
 
         try {
 
-write-host $this.config.get("podman")
-write-host $this.config.get("podman").init
-write-host $this.config.get("podman").init.command
-
-
             # initialise / create the VM
             if ($this.config.get("podman").init.command) {
                 LogInfo( "Initializing Podman WSL image")

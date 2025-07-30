@@ -4,10 +4,12 @@
 # --- chrome ----------------------------------------------
 
 - name: Ensure chrome is installed
-  ansible.builtin.command: chrome --version
+  ansible.builtin.command: chromium --version
   register: chrome_version
   changed_when: false
   failed_when: chrome_version.rc != 0
+  when:
+    - ansible_os_family not in ['RedHat']
 
 - name: Display chrome version
   when: chrome_version is defined and chrome_version.stdout is defined

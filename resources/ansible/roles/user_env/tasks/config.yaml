@@ -1,0 +1,29 @@
+---
+# tasks file for user_env
+
+# --- tmux ------------------------------------------------
+
+- name: set tmux configuration
+  ansible.builtin.copy:
+    src: tmux.conf
+    dest: /root/.tmux.conf
+
+# --- vim ------------------------------------------------
+
+- name: Install The Ultimate vimrc
+  ansible.builtin.git:
+    repo: https://github.com/amix/vimrc.git
+    dest: /root/.vim_runtime
+    depth: 1
+
+- name: call install script of The Ultimate vimrc
+  script: "/root/.vim_runtime/install_awesome_vimrc.sh"
+
+# --- ruby ------------------------------------------------
+
+#- name: bundle set path
+#  command: "bundle config path vendor/"
+
+# https://wiki.archlinux.org/title/RVM#Using_RVM
+#- name: get install script for rvm
+#  shell: "curl -L https://get.rvm.io | bash"

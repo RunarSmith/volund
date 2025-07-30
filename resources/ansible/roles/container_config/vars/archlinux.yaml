@@ -3,6 +3,9 @@
 install_packages:
   - ca-certificates
   - ca-certificates-utils
+  - man-db
+  - base-devel
+  - openssh
   - procps
   - python-pip
   - python-virtualenv

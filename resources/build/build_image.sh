@@ -112,7 +112,7 @@ if compgen -G "/opt/my-resources/setup/certs/*.pem" > /dev/null; then
             for cert in *.pem; do
                 if [ -f "$cert" ]; then
                     echo "Installing certificate: $cert"
-                    cp "$cert" /usr/local/share/ca-certificates/ || die "Failed to copy certificate $cert to /usr/local/share/ca-certificates/"
+                    cp "$cert" /usr/local/share/ca-certificates/$(basename $cert).crt || die "Failed to copy certificate $cert to /usr/local/share/ca-certificates/"
                 else
                     echo "No certificates found in /opt/my-resources/setup/certs/"
                 fi
@@ -179,21 +179,26 @@ echo "role:    $IMAGE_ROLE"
 echo "distrib: $IMAGE_DISTRIBUTION"
 
 export ANSIBLE_FORCE_COLOR=True
-export ACTIVE_PROFILES=${IMAGE_ROLE}
 export ACTIVE_ACTIONS=install,config,check,hardening
-ansible-playbook -i ./inventory.yaml ./playbook.yaml || die "Failed to execute Ansible playbook"
+if [ -f ./playbook-${IMAGE_ROLE}.yaml ]; then
+    echo "===> Using playbook-${IMAGE_ROLE}.yaml <==="
+    ansible-playbook -i ./inventory.yaml ./playbook-${IMAGE_ROLE}.yaml || die "Failed to execute Ansible playbook"
+else
+    echo "===> Using playbook.yaml <==="
+    ansible-playbook -i ./inventory.yaml ./playbook.yaml || die "Failed to execute Ansible playbook"
+fi
 
 # =========================================================
 
 print_header "Execute Custom Build Script (my-resources)"
 
-[ -f /opt/my-resources/setup/bin/build_image.sh ] && {
+if [ -f /opt/my-resources/setup/bin/build_image.sh ]; then
     echo "--- Custom build script found, executing it ----------------"
-    chmod +x /opt/my-resources/setup/bin/build_image.sh
+    # chmod +x /opt/my-resources/setup/bin/build_image.sh
     bash /opt/my-resources/setup/bin/build_image.sh || die "Failed to execute custom build script"
-} || {
+else
     echo "--- No custom build script found, skipping execution -------"
-}
+fi
 
 # =========================================================
 
@@ -205,3 +210,5 @@ rm -rf /opt/ansible-venv
 # =========================================================
 
 print_header "Done"
+
+exit 0

@@ -1,0 +1,17 @@
+---
+
+# Translation of architecture names :
+#
+# Name	      Ansible name  Binaire name (GitHub, Docker, etc.)
+# x86_64	    x86_64	      amd64
+# ARM 64-bit	aarch64	      arm64
+# ARM 32-bit	armv7l	      arm ou armv7
+# PowerPC	    ppc64le	      ppc64le
+# RISC-V	    riscv64	      riscv64
+# 
+# Ansible name: is given from builtin variable `ansible_architecture`
+- name: Determine hardware architecture
+  set_fact:
+    binary_arch_name: >-
+      {% if ansible_architecture == 'x86_64' %}amd64{% elif ansible_architecture == 'aarch64' %}arm64{% else %}unsupported{% endif %}
+# Call it as : `{{ binary_arch_name }}`

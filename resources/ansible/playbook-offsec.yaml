@@ -39,13 +39,17 @@
   roles:
     - container_config  # base configuration for the container
 
-    - cloud_clients
+    - burpsuite
+    
     - common_it
     - common_services
-
+    - cracking
+    - exploitdb
+    - metasploit
+    - network_scan
     - openvpn_client
     - user_env
-
+    - web_audit
     - web_browsers
 
   post_tasks:

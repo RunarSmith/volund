@@ -5,6 +5,74 @@
     name: "{{ install_packages_os_common | flatten }}"
     state: present
 
+# === argocd cli ==========================================
+
+- name: Appeler l'API GitHub pour récupérer les infos de la dernière release
+  uri:
+    url: https://api.github.com/repos/argoproj/argo-cd/releases/latest
+    return_content: yes
+  register: github_release
+
+- name: Extraire le tag de version depuis la réponse JSON
+  set_fact:
+    argocd_version: "{{ github_release.json.tag_name }}"
+
+- name: Télécharger le binaire Argo CD CLI
+  get_url:
+    url: "https://github.com/argoproj/argo-cd/releases/download/{{ argocd_version }}/argocd-linux-{{ binary_arch_name }}"
+    dest: "/tmp/argocd"
+    mode: '0555'
+
+- name: Installer le binaire Argo CD CLI
+  copy:
+    src: "/tmp/argocd"
+    dest: "/usr/local/bin/argocd"
+    remote_src: yes
+    mode: '0555'
+
+- name: Supprimer le fichier temporaire
+  file:
+    path: "/tmp/argocd"
+    state: absent
+
+# === helm ================================================
+
+- name: Récupérer la dernière version de Helm depuis GitHub
+  uri:
+    url: https://api.github.com/repos/helm/helm/releases/latest
+    return_content: yes
+  register: helm_release
+
+- name: Extraire le tag de version
+  set_fact:
+    helm_version: "{{ helm_release.json.tag_name }}"
+
+- name: Télécharger l'archive Helm
+  get_url:
+    url: "https://get.helm.sh/helm-{{ helm_version }}-linux-{{ binary_arch_name }}.tar.gz"
+    dest: "/tmp/helm.tar.gz"
+
+- name: Extraire l'archive Helm
+  unarchive:
+    src: "/tmp/helm.tar.gz"
+    dest: "/tmp/"
+    remote_src: yes
+
+- name: Installer le binaire Helm
+  copy:
+    src: "/tmp/linux-{{ binary_arch_name }}/helm"
+    dest: "/usr/local/bin/helm"
+    mode: '0755'
+    remote_src: yes
+
+- name: Nettoyer les fichiers temporaires
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - "/tmp/helm.tar.gz"
+    - "/tmp/linux-{{ binary_arch_name }}"
+
 - name: install helm plugin unittest
   become: false
   ansible.builtin.command:
@@ -12,6 +80,47 @@
     chdir: "{{ ansible_env.HOME }}"
   environment:
     USER: "{{ default_username }}"
+
+# === k9s =================================================
+
+- name: Récupérer la dernière version de K9s
+  uri:
+    url: https://api.github.com/repos/derailed/k9s/releases/latest
+    return_content: yes
+  register: k9s_release
+
+- name: Définir la version de K9s
+  set_fact:
+    k9s_version: "{{ k9s_release.json.tag_name }}"
+
+- name: Télécharger et extraire K9s
+  unarchive:
+    src: "https://github.com/derailed/k9s/releases/download/{{ k9s_version }}/k9s_Linux_{{ binary_arch_name }}.tar.gz"
+    dest: /tmp/
+    remote_src: yes
+
+- name: Installer K9s
+  copy:
+    src: "/tmp/k9s"
+    dest: "/usr/local/bin/k9s"
+    mode: '0755'
+    remote_src: yes
+
+# === kubectl =============================================
+
+- name: Récupérer la dernière version stable de kubectl
+  uri:
+    url: https://dl.k8s.io/release/stable.txt
+    return_content: yes
+  register: kubectl_version
+
+- name: Télécharger kubectl
+  get_url:
+    url: "https://dl.k8s.io/release/{{ kubectl_version.content | trim }}/bin/linux/{{ binary_arch_name }}/kubectl"
+    dest: "/usr/local/bin/kubectl"
+    mode: '0755'
+
+# === openshift cli oc ====================================
 
 - name: Install OpenShift CLI (oc)
   ansible.builtin.get_url:
@@ -32,3 +141,37 @@
     path: /usr/local/bin/oc
     mode: '0755'
   become: true
+
+# === stern ===============================================
+
+- name: Récupérer la dernière version de Stern
+  uri:
+    url: https://api.github.com/repos/stern/stern/releases/latest
+    return_content: yes
+  register: stern_release
+
+- name: Définir la version de Stern
+  set_fact:
+    stern_version: "{{ stern_release.json.tag_name }}"
+
+- name: Récupérer l'URL de téléchargement de Stern pour linux_amd64
+  set_fact:
+    stern_download_url: "{{ stern_release.json.assets | selectattr('browser_download_url', 'search', '_linux_amd64\\.tar\\.gz$') | map(attribute='browser_download_url') | list | first }}"
+
+- name: Télécharger Stern
+  get_url:
+    url: "{{ stern_download_url }}"
+    dest: "/tmp/stern.tar.gz"
+
+- name: Extraire Stern
+  unarchive:
+    src: "/tmp/stern.tar.gz"
+    dest: "/tmp/"
+    remote_src: yes
+
+- name: Installer Stern
+  copy:
+    src: "/tmp/stern"
+    dest: "/usr/local/bin/stern"
+    mode: '0755'
+    remote_src: yes
