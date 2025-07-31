@@ -38,7 +38,6 @@
   roles:
     - container_config  # base configuration for the container
 
-    - cloud_clients
     - common_it
     - common_services
 

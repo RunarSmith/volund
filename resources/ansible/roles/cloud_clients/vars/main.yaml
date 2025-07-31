@@ -3,6 +3,7 @@
 
 install_packages:
   - yamllint
+  - trivy
 
 oc_client_url: https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest/openshift-client-linux.tar.gz
 
@@ -13,4 +14,5 @@ test_commands:
   - k9s version
   - kubectl version --client
   - stern --version
+  - trivy --version
   - yamllint --version

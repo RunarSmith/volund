@@ -14,18 +14,15 @@ yamlResult="$2"
 
 tmpPath=$(mktemp --directory "/tmp/lint-XXXXXX")
 srcPath="$tmpPath/sources/"
-venvPath="$tmpPath/venv"
 
 mkdir -p $srcPath/
 cp -r $ChartPath/* $srcPath/
-
 
 on_exit(){
   rm -fr $tmpPath
 }
 
 trap 'on_exit' EXIT
-
 
 if [ -z "$ChartPath" ]; then
   echo "Usage: $0 <path_to_helm_chart>"
@@ -38,26 +35,19 @@ if [ ! -d "$ChartPath" ]; then
 fi
 
 if [ -z "$yamlResult" ]; then
-  yamlResult="$(pwd)/helm_template_output.yaml"
+  yamlResult="$(pwd)/helm-output.yaml"
 fi
+trivyReport="$(pwd)/trivy-report.md"
 
 echo "Result file will be: $yamlResult"
-
-echo "=== Installing venv ========================================"
-python3 -m venv $venvPath 
-
-source $venvPath/bin/activate 
-
-echo "=== Installing tools ======================================="
-pip install --no-cache-dir --upgrade pip
-
-pip install yamllint
 
 pushd $srcPath > /dev/null
 
 echo "=== Update helm dependencies ==============================="
 echo "Updating Helm chart dependencies..."
-helm dependency update .
+set -x
+  helm dependency update .
+set +x
 if [ $? -ne 0 ]; then
   echo "Helm chart dependency update failed."
   exit 1
@@ -68,9 +58,13 @@ echo "Helm chart dependencies updated successfully."
 echo "=== Validating Helm chart in $ChartPath ===================="
 if [ -f ./values.yaml ]; then
   echo "=>> Using 'values.yaml' for validation."
-  helm lint --strict . --values values.yaml
+  set -x
+    helm lint --strict . --values values.yaml
+  set -x
 else
-  helm lint --strict .
+  set -x
+    helm lint --strict .
+  set +x
 fi
 if [ $? -ne 0 ]; then
   echo "Helm chart validation failed."
@@ -81,13 +75,11 @@ echo "Helm chart validation successful."
 
 echo "=== Resolve Helm chart templating =========================="
 echo "Resolving Helm chart tempalting..."
-if [ ! -d "./templates" ]; then
-  echo "Error: No templates directory found in $ChartPath."
-  exit 1
-fi
 if [ -f values.yaml ]; then
   echo "=>> Using 'values.yaml' for templating."
-  helm template . --values values.yaml > $yamlResult
+  set -x
+    helm template . --values values.yaml > $yamlResult
+  set +x
 else
   helm template . > $yamlResult
 fi
@@ -108,13 +100,17 @@ rules:
     level: warning
   indentation:
     level: warning
+    spaces: 2
+    indent-sequences: whatever
 
   # 120 chars should be enough, but don't fail if a line is longer
   line-length:
     max: 120
     level: warning
 EOF
-yamllint $yamlResult
+set -x
+  yamllint $yamlResult
+set +x
 if [ $? -ne 0 ]; then 
   echo "YAML validation failed."
   exit 1
@@ -125,7 +121,9 @@ echo "YAML validation successful."
 echo "=== Execute helm unit tests ================================"
 if [ -d "./tests" ]; then
   echo "Executing Helm tests..."
-  helm unittest "."
+  set -x
+    helm unittest "."
+  set +x
   if [ $? -ne 0 ]; then
     echo "Helm tests failed."
     exit 1
@@ -136,9 +134,12 @@ fi
 
 echo "Helm tests executed successfully."
 
+echo "=== Execute trivy / SAST ==================================="
+set -x
+  trivy config --no-progress --format markdown --output $trivyReport $yamlResult
+set +x
+
 # Clean up
 echo "All validations completed successfully."
 
 # --- End of script ----------------------------------------
-
-deactivate

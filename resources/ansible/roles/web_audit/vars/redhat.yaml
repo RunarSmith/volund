@@ -1,4 +1,4 @@
 ---
 # vars file for web_audit
 
-install_packages:
+install_packages: []

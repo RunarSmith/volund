@@ -8,7 +8,7 @@
 # ARM 32-bit	armv7l	      arm ou armv7
 # PowerPC	    ppc64le	      ppc64le
 # RISC-V	    riscv64	      riscv64
-# 
+#
 # Ansible name: is given from builtin variable `ansible_architecture`
 - name: Determine hardware architecture
   set_fact:

@@ -5,5 +5,5 @@ install_packages_os_common:
   - rlwrap
   - samba
   - smbclient
-  - snmp
+  # - snmp
   - socat

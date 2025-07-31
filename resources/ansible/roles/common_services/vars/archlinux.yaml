@@ -7,4 +7,3 @@ install_packages_os:
   - nfs-utils
   - python-pyftpdlib
   - smb
-  

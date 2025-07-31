@@ -5,7 +5,7 @@ install_packages:
   - firefox
 
 install_gui_packages_drivers:
-  #- pulseaudio
+  # - pulseaudio
   - alsa-lib
   - libavcodec-free
   - ffmpeg-free

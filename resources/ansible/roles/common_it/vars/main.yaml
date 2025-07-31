@@ -6,4 +6,4 @@ install_packages_os_common:
   - iproute2
   - net-tools
   - openresolv
-  #- updog
+  # - updog

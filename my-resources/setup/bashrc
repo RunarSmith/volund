@@ -1,2 +1,2 @@
 # template of user bashrc file
-
+# This is called from /etc/profile, and is common to all users.

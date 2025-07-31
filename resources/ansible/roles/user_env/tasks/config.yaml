@@ -6,24 +6,29 @@
 - name: set tmux configuration
   ansible.builtin.copy:
     src: tmux.conf
-    dest: /root/.tmux.conf
+    dest: "/home/{{ default_username }}/.tmux.conf"
+    user: "{{ default_username }}"
+    group: "{{ default_username }}"
+  become_user: "{{ default_username }}"
 
 # --- vim ------------------------------------------------
 
-- name: Install The Ultimate vimrc
-  ansible.builtin.git:
-    repo: https://github.com/amix/vimrc.git
-    dest: /root/.vim_runtime
-    depth: 1
+#- name: Install The Ultimate vimrc
+#  ansible.builtin.git:
+#    repo: https://github.com/amix/vimrc.git
+#    dest: "/home/{{ default_username }}/.vim_runtime"
+#    depth: 1
+#  become_user: "{{ default_username }}"
 
-- name: call install script of The Ultimate vimrc
-  script: "/root/.vim_runtime/install_awesome_vimrc.sh"
+#- name: call install script of The Ultimate vimrc
+#  script: "/home/{{ default_username }}/.vim_runtime/install_awesome_vimrc.sh"
+#  become_user: "{{ default_username }}"
 
 # --- ruby ------------------------------------------------
 
-#- name: bundle set path
+# - name: bundle set path
 #  command: "bundle config path vendor/"
 
 # https://wiki.archlinux.org/title/RVM#Using_RVM
-#- name: get install script for rvm
+# - name: get install script for rvm
 #  shell: "curl -L https://get.rvm.io | bash"

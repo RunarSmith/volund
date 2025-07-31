@@ -125,7 +125,7 @@
 - name: Configure AUR packages building (Archlinux)
   block:
     - name: create user aur_user to build AUR packages
-      ansible.builtin.user: 
+      ansible.builtin.user:
         name: aur_builder
       become: true
 
@@ -151,6 +151,7 @@
         group: aur_builder
         mode: 'u=rwX,g=rX,o=rX'
         recurse: true
+      become: true
 
     - name: Build 'paru'
       command:
@@ -163,8 +164,8 @@
       ansible.builtin.file:
         path: "/tmp/paru-bin/"
         state: absent
+      become: true
   when: ansible_os_family == 'Archlinux'
-
 
 # --- python ----------------------------------------------
 

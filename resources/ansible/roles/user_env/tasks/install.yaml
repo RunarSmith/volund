@@ -6,44 +6,42 @@
     name: "{{ install_packages_os_common | flatten }}"
     state: present
 
-#- name: Install required packages (OS specific)
+# - name: Install required packages (OS specific)
 #  package:
 #    name: "{{ install_packages | flatten }}"
 #    state: present
 
-
-
-#- name: Install go
+# - name: Install go
 #  package:
 #    name: "{{ install_packages_go | flatten }}"
 #    state: present
 
-#- name: Install Java
+# - name: Install Java
 #  package:
 #    name: "{{ install_packages_java | flatten }}"
 #    state: present
 
-#- name: Install node JS
+# - name: Install node JS
 #  package:
 #    name: "{{ install_packages_node | flatten }}"
 #    state: present
 
-#- name: Install perl
+# - name: Install perl
 #  package:
 #    name: "{{ install_packages_perl | flatten }}"
 #    state: present
 
-#- name: Install ruby
+# - name: Install ruby
 #  package:
 #    name: "{{ install_packages_ruby | flatten }}"
 #    state: present
 
-#- name: Install rust
+# - name: Install rust
 #  package:
 #    name: "{{ install_packages_rust | flatten }}"
 #    state: present
 
-#- name: Install rust
+# - name: Install rust
 #  package:
 #    name:
 #      - base-devel

@@ -9,7 +9,6 @@ install_packages_os_common:
   - vim
   - zsh
   
-
 # FIXME: huh ? on kali:
 #      - openjdk-17-jre
 #      - openjdk-17-jdk

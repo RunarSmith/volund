@@ -1,19 +1,24 @@
 ---
 # tasks file for openvpn_client
 
-#- name: Install required packages (common for all OS)
+# - name: Install required packages (common for all OS)
 #  package:
 #    name: "{{ install_packages_os_common | default([]) }}"
 #    state: present
 
 - name: Install required packages (OS specific)
   package:
-    name: "{{ install_packages }}"
+    name: >-
+      {{
+        (install_packages_os        | default([]) ) +
+        (install_packages_os_common | default([]) )
+      }}
     state: present
+  become: true
 #  when: (install_packages | default([])) | length > 0
 
 
-#- name: Install required packages (OS specific)
+# - name: Install required packages (OS specific)
 #  package:
 #    name: "{{ install_packages | flatten }}"
 #    state: present

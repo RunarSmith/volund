@@ -220,58 +220,20 @@ class ExternalCommandHelper {
 }
 
 # =========================================================
-# = Driver Interface
-# =========================================================
-
-class IContainerDriver {
-
-    [boolean] IsRunning()           { throw "NotImplemented" }
-    [void] Start()                  { throw "NotImplemented" }
-    [void] Stop()                   { throw "NotImplemented" }
-    
-    # powershell 5 do not really support method overloading
-    [Object[]] ListImages ()  { throw "NotImplemented" }
-    [Object[]] ListImages ([string]$filterLabel)  { throw "NotImplemented" }
-    [Object[]] ListContainers()         { throw "NotImplemented" }
-    [Object[]] ListContainers( [string]$filterLabel )         { throw "NotImplemented" }
-
-    [string] BuildImage( [string]$buildPath, [hashtable]$params) { throw "NotImplemented" }
-    [void] RemoveImage([string]$imageId) { throw "NotImplemented" }
-    [object] Getimage([string]$imageName) { throw "NotImplemented" }
-    [void] TagImage([string]$imageId, [string]$tag) { throw "NotImplemented" }
-    [void] UntagImage([string]$imageId, [string]$tag) { throw "NotImplemented" }
-
-    [string] CreateContainer([string]$Name, [string]$ImageName, [hashtable]$params ) { throw "NotImplemented" }
-    [void] StartContainer([hashtable]$params) { throw "NotImplemented" }
-    [void] StopContainer([hashtable]$params) { throw "NotImplemented" }
-    [object] GetContainer([string]$containerId) { throw "NotImplemented" }
-    [void] RemoveContainer([string]$containerId) { throw "NotImplemented" }
-
-    [string] CreateVolume([string]$Name) { throw "NotImplemented" }
-    [void] RemoveVolume([string]$volumeId) { throw "NotImplemented" }
-    [Object[]] ListVolumes()         { throw "NotImplemented" }
-    [Object[]] ListVolumes( [string]$filterLabel )         { throw "NotImplemented" }
-    [object] GetVolume([string]$volumeId) { throw "NotImplemented" }
-
-    [void] RunShell([string]$containerId) { throw "NotImplemented" }
-}
-
-
-# =========================================================
 # = Podman Driver Implementation
 # =========================================================
 
-class PodmanDriver : IContainerDriver {
+class ContainerDriver {
     
     [Configuration]$Config
 
-    PodmanDriver([Configuration]$config) {
+    ContainerDriver([Configuration]$config) {
         $this.Config = $config
-        LogDbg ("> PodmanDriver::PodmanDriver() - config: {0}" -f ($this.Config | out-string))
+        LogDbg ("> ContainerDriver::ContainerDriver() - config: {0}" -f ($this.Config | out-string))
     }
 
     [string] IsRunning() {
-        LogDbg("> PodmanDriver::IsRunning()")
+        LogDbg("> ContainerDriver::IsRunning()")
         try {
             [ExternalCommandHelper]::ExecCommand("podman --version")
         } catch {
@@ -279,17 +241,10 @@ class PodmanDriver : IContainerDriver {
             return $null
         }
 
-        #try {
-        #    [ExternalCommandHelper]::ExecCommand("podman info --format json")
-        #} catch {
-        #    LogError "Podman est installé mais ne répond pas correctement. Vérifier que le service est actif."
-        #    return $false
-        #}
-
         # test running status of the podman machine
         try {
             $status = [ExternalCommandHelper]::ExecCommand("podman machine inspect --format '{{.State}}'")
-            LogDbg("< PodmanDriver::IsRunning() - $status")
+            LogDbg("< ContainerDriver::IsRunning() - $status")
             return $status #-eq "running"
         } catch {
             LogError "Podman not responding to inspect"
@@ -300,7 +255,7 @@ class PodmanDriver : IContainerDriver {
     }
 
     [void] Start() {
-        LogDbg "> PodmanDriver::Start()"
+        LogDbg "> ContainerDriver::Start()"
 
         if ( $this.isRunning() -eq "running") { 
             LogSuccess "podman is already running"
@@ -324,7 +279,6 @@ class PodmanDriver : IContainerDriver {
         }
 
         try {
-
             # initialise / create the VM
             if ($this.config.get("podman").init.command) {
                 LogInfo( "Initializing Podman WSL image")
@@ -333,13 +287,6 @@ class PodmanDriver : IContainerDriver {
                 LogInfo( "Initializing Podman WSL image with default command")
                 [ExternalCommandHelper]::ExecCommand("podman machine init  ; echo OK")
             }
-            #[ExternalCommandHelper]::ExecCommand("podman machine init ; echo OK") # force to ignore error
-            #[ExternalCommandHelper]::ExecCommand("podman info")
-
-            #LogInfo("set podman in user mode networking")
-            # [ExternalCommandHelper]::ExecCommand("podman machine set --user-mode-networking")
-
-            #[ExternalCommandHelper]::ExecCommand("podman machine set --rootful=false --user-mode-networking=false")
         } catch {
             LogWarn "Problème d'init de Podman."
             #exit 1
@@ -353,17 +300,17 @@ class PodmanDriver : IContainerDriver {
             exit 1
         }
        LogSuccess "Podman service started successfully."
-       LogDbg "< PodmanDriver::Start()"
+       LogDbg "< ContainerDriver::Start()"
     }
 
     [void] Stop() {
-        LogDbg "> PodmanDriver::Stop()"
+        LogDbg "> ContainerDriver::Stop()"
         try {
             [ExternalCommandHelper]::ExecCommand("podman machine stop")
         } catch {
             LogWarn ("Podman machine already stopped or failed to stop.")
         }
-        LogDbg "< PodmanDriver::Stop()"
+        LogDbg "< ContainerDriver::Stop()"
     }
 
     [string] BuildImage( [string]$buildPath, [hashtable]$params) {
@@ -377,7 +324,7 @@ class PodmanDriver : IContainerDriver {
         $buildDir   = $params.BuildDir
         $buildFile  = $params.BuildFile
         
-        LogDbg "> PodmanDriver::BuildImage()"
+        LogDbg "> ContainerDriver::BuildImage()"
 
         $imageNameTag = $imageName + ":" + $imageVersion
 
@@ -419,14 +366,14 @@ class PodmanDriver : IContainerDriver {
 
         LogSuccess "Image built successfully: $imageNameTag"
 
-        LogDbg "< PodmanDriver::BuildImage()"
+        LogDbg "< ContainerDriver::BuildImage()"
 
         return $imageNameTag
     }
 
 
     [object[]] ListObjects( [string]$object, [string[]]$params , [string]$filterLabel = $null) {
-        LogDbg ("> PodmanDriver::ListObjects() - {0} - filter:{1}" -f $object,$filterLabel)
+        LogDbg ("> ContainerDriver::ListObjects() - {0} - filter:{1}" -f $object,$filterLabel)
         try {
             if ($filterLabel) {
                 $objects = [ExternalCommandHelper]::ExecCommand("podman $object list $params  --filter label=`"$filterLabel`" --format json")
@@ -449,7 +396,7 @@ class PodmanDriver : IContainerDriver {
     }
 
     [object] GetObject( [string]$object, [string]$Name ) {
-        LogDbg ("> PodmanDriver::GetObject() - {0} - name:{1}" -f $object,$Name)
+        LogDbg ("> ContainerDriver::GetObject() - {0} - name:{1}" -f $object,$Name)
 
         [ExternalCommandHelper]::ExecCommand("podman $object exists $Name")
         if ( $LastExitCode -ne 0 ) {
@@ -466,33 +413,22 @@ class PodmanDriver : IContainerDriver {
     }
 
     [object[]] ListImages( ) {
-        LogDbg "> PodmanDriver::ListImages()"
+        LogDbg "> ContainerDriver::ListImages()"
         return $this.ListObjects( "image", @(""), $null )
     }
 
     [object[]] ListImages( [string]$filterLabel ) {
-        LogDbg ("> PodmanDriver::ListImages() filter:{0}" -f $filterLabel)
+        LogDbg ("> ContainerDriver::ListImages() filter:{0}" -f $filterLabel)
         return $this.ListObjects( "image", @(""), $filterLabel )
     }
 
     [object] GetImage([string]$imageName) {
-        LogDbg "> PodmanDriver::GetImage()"
+        LogDbg "> ContainerDriver::GetImage()"
         return $this.GetObject("image",$imageName)
-
-    #    podman image exists $imageName
-    #    if ( $LastExitCode -ne 0 ) {
-    #        return $null
-    #    }
-#
-    #    LogInfo "Inspecting image: $imageName"
-#
-    #    $res = podman image inspect $imageName
-#
-    #    return $res | ConvertFrom-Json
     }
 
     [void] TagImage([string]$imageId, [string]$tag) {
-        LogDbg "> PodmanDriver::TagImage()"
+        LogDbg "> ContainerDriver::TagImage()"
         try {
             [ExternalCommandHelper]::ExecCommand("podman tag $imageId $tag")
             LogSuccess "Image tagged successfully: $tag"
@@ -502,7 +438,7 @@ class PodmanDriver : IContainerDriver {
     }
 
     [void] UntagImage([string]$imageId, [string]$tag) {
-        LogDbg "> PodmanDriver::UntagImage()"
+        LogDbg "> ContainerDriver::UntagImage()"
         try {
             [ExternalCommandHelper]::ExecCommand("podman untag $imageId $tag")
             LogSuccess "Image untagged successfully: $tag"
@@ -512,7 +448,7 @@ class PodmanDriver : IContainerDriver {
     }
 
     [void] RemoveImage([string]$imageId) {
-        LogDbg "> PodmanDriver::RemoveImage()"
+        LogDbg "> ContainerDriver::RemoveImage()"
         try {
             [ExternalCommandHelper]::ExecCommand("podman rmi $imageId")
             LogSuccess "Image removed successfully: $imageId"
@@ -522,7 +458,7 @@ class PodmanDriver : IContainerDriver {
     }
 
     [void] CleanImages() {
-        LogDbg "> PodmanDriver::CleanImages()"
+        LogDbg "> ContainerDriver::CleanImages()"
         try {
             [ExternalCommandHelper]::ExecCommand("podman image prune --force")
         } catch {
@@ -530,9 +466,8 @@ class PodmanDriver : IContainerDriver {
         }
     }
 
-
     [string] CreateContainer([string]$Name, [string]$ImageName, [hashtable]$params) {
-        LogDbg "> PodmanDriver::CreateContainer()"
+        LogDbg "> ContainerDriver::CreateContainer()"
 
         if (-not $Name) {
             LogError "Container name is required."
@@ -569,7 +504,6 @@ class PodmanDriver : IContainerDriver {
         $command += (" --hostname {0}" -f $containerHostname)
         $command += " " + $ImageName
 
-        #podman run -it --name $Name $params $ImageName
         $res = [ExternalCommandHelper]::RunCommandInteractive( "podman", ( $command -split ' ' ))
 
         if ($res -ne 0) {
@@ -582,30 +516,28 @@ class PodmanDriver : IContainerDriver {
 
 
     [object[]] ListContainers() {
-        LogDbg ("> PodmanDriver::ListContainers()")
+        LogDbg ("> ContainerDriver::ListContainers()")
         return $this.ListObjects( "container", @("-a"),  $null )
     }
 
     [object[]] ListContainers( [string]$filterLabel ) {
-        LogDbg ("> PodmanDriver::ListContainers() filter:{0}" -f $filterLabel)
+        LogDbg ("> ContainerDriver::ListContainers() filter:{0}" -f $filterLabel)
         return $this.ListObjects( "container", @("-a"), $filterLabel )
     }
 
     [object] GetContainer([string]$containerId) {
-        LogDbg ("> PodmanDriver::GetContainers() - {0}" -f $containerId)
+        LogDbg ("> ContainerDriver::GetContainers() - {0}" -f $containerId)
         return $this.GetObject("container",$containerId)
     }
 
     [void] StartContainer([string]$Name, [string]$shell) {
-        LogDbg "> PodmanDriver::StartContainer()"
+        LogDbg "> ContainerDriver::StartContainer()"
         try {
             
             Write-Host -ForegroundColor Cyan "ℹ️ Starting container $Name"
             #   -a, --attach               Attach container's STDOUT and STDERR
             #   -i, --interactive          Make STDIN available to the contained process
             #   -t, --tty                  Allocate a pseudo-TTY
-            # podman container start -it $Name $shell
-
             $res = [ExternalCommandHelper]::RunCommandInteractive( "podman", @( "start", "-ia", $Name ))
 
             if ($res -ne 0) {
@@ -618,11 +550,10 @@ class PodmanDriver : IContainerDriver {
         } catch {
             LogError "Failed to start container: $_"
         }
-
     }
 
     [void] StopContainer([hashtable]$params) {
-        LogDbg "> PodmanDriver::StopContainer()"
+        LogDbg "> ContainerDriver::StopContainer()"
         $containerId = $params.Id
         try {
             [ExternalCommandHelper]::ExecCommand("podman container stop  --time 2 $containerId")
@@ -633,7 +564,7 @@ class PodmanDriver : IContainerDriver {
     }
 
     [void] RemoveContainer([string]$containerId) {
-        LogDbg "> PodmanDriver::RemoveContainer()"
+        LogDbg "> ContainerDriver::RemoveContainer()"
         try {
             [ExternalCommandHelper]::ExecCommand("podman container rm -f $containerId")
            LogSuccess "Container removed successfully: $containerId"
@@ -642,17 +573,13 @@ class PodmanDriver : IContainerDriver {
         }
     }
 
-
-
-
     [void] RunShell([string]$containerId) {
-        LogDbg "> PodmanDriver::RunShell()"
+        LogDbg "> ContainerDriver::RunShell()"
         [ExternalCommandHelper]::RunCommandInteractive('podman', @('exec', '-it', $containerId, 'bash'))
     }
 
-
     [object[]] ListVolumes() {
-        LogDbg "> PodmanDriver::ListVolumes()"
+        LogDbg "> ContainerDriver::ListVolumes()"
         try {
             $volumes = [ExternalCommandHelper]::ExecCommand("podman volume list --format json") | ConvertFrom-Json
             return $volumes
@@ -663,7 +590,7 @@ class PodmanDriver : IContainerDriver {
     }
 
     [object[]] ListVolumes( [string]$filterLabel ) {
-        LogDbg "> PodmanDriver::ListVolumes()"
+        LogDbg "> ContainerDriver::ListVolumes()"
         try {
             $volumes = [ExternalCommandHelper]::ExecCommand("podman volume list --filter label=`"$filterLabel`" --format json")
             return $volumes | ConvertFrom-Json
@@ -673,10 +600,8 @@ class PodmanDriver : IContainerDriver {
         }
     }
 
-
-
     [string] CreateVolume([string]$Name, [string[]]$labels) {
-        LogDbg "> PodmanDriver::CreateVolume()"
+        LogDbg "> ContainerDriver::CreateVolume()"
         $labelParams=""
         $labels | ForEach-Object {
             $labelParams += ( " --label {0}" -f $_ )
@@ -686,7 +611,7 @@ class PodmanDriver : IContainerDriver {
     }
 
     [object] GetVolume([string]$volumeId) {
-        LogDbg "> PodmanDriver::GetVolume()"
+        LogDbg "> ContainerDriver::GetVolume()"
         [ExternalCommandHelper]::ExecCommand("podman volume exists $volumeId")
         if ( $LastExitCode -ne 0 ) {
             return $null
@@ -701,9 +626,8 @@ class PodmanDriver : IContainerDriver {
         }
     }
     
-
     [void] RemoveVolume([string]$volumeId) {
-        LogDbg "> PodmanDriver::RemoveVolume()"
+        LogDbg "> ContainerDriver::RemoveVolume()"
         try {
             [ExternalCommandHelper]::ExecCommand("podman volume rm $volumeId")
            LogSuccess "Volume removed successfully: $volumeId"
@@ -711,8 +635,6 @@ class PodmanDriver : IContainerDriver {
             LogError "Failed to remove volume: $_"
         }
     }
-
-
 }
 
 # =========================================================
@@ -728,20 +650,18 @@ class Container {
         $this.Name = $name
     }
 
-    [void] Start([IContainerDriver]$driver) {
+    [void] Start([ContainerDriver]$driver) {
         # Appeler le driver pour démarrer le conteneur
     }
 
-    [void] Stop([IContainerDriver]$driver) {
+    [void] Stop([ContainerDriver]$driver) {
         # Appeler le driver pour stopper le conteneur
     }
 
-    [void] RunShell([IContainerDriver]$driver) {
+    [void] RunShell([ContainerDriver]$driver) {
         $driver.RunShell($this.Id)
     }
 }
-
-
 
 class Volume {
     [string]$Name
@@ -750,11 +670,11 @@ class Volume {
         $this.Name = $name
     }
 
-    #[void] Create([IContainerDriver]$driver, [hashtable]$params) {
+    #[void] Create([ContainerDriver]$driver, [hashtable]$params) {
     #    $driver.CreateVolume($params)
     #}
 
-    [void] Remove([IContainerDriver]$driver) {
+    [void] Remove([ContainerDriver]$driver) {
         # Implémentation pour supprimer le volume
     }
 }
@@ -778,7 +698,7 @@ class Image {
 # =========================================================
 
 class ImageManager {
-    [IContainerDriver]$Driver
+    [ContainerDriver]$Driver
     [Configuration]$Config
 
     # wonvert parameter name to dockerhub ref name
@@ -791,7 +711,7 @@ class ImageManager {
         "parrot"    = "parrotsec/security:latest"
     }
 
-    ImageManager([IContainerDriver]$driver, [Configuration]$config) {
+    ImageManager([ContainerDriver]$driver, [Configuration]$config) {
         $this.Driver = $driver
         $this.Config = $config
     }
@@ -1091,12 +1011,12 @@ class WorkspaceManager {
 
 
 class ContainerManager {
-    [IContainerDriver]$Driver
+    [ContainerDriver]$Driver
     [Configuration]$Config
     [WorkspaceManager]$WorkspaceManager
     [ContainerListener]$ContainerListener
 
-    ContainerManager([IContainerDriver]$driver, [Configuration]$config, [WorkspaceManager]$workspaceManager) {
+    ContainerManager([ContainerDriver]$driver, [Configuration]$config, [WorkspaceManager]$workspaceManager) {
         $this.Driver = $driver
         $this.Config = $config
         $this.WorkspaceManager = $workspaceManager
@@ -1305,7 +1225,7 @@ class ContainerListener {
         }
 
         try {
-            $proc = Get-Process -Id $jobPid -ErrorAction Stop
+            Get-Process -Id $jobPid -ErrorAction Stop | Out-Null
         } catch {
             LogDbg "Listener process not found or not running."
             Remove-Item -Path $this.listenerPath -Force
@@ -1315,7 +1235,6 @@ class ContainerListener {
         LogDbg ("Listener is running with PID: {0}" -f $jobPid)
         return $true
     }
-
 
     [void] Start( ) {
         LogDbg ("> ContainerListener::Start()")
@@ -1392,10 +1311,10 @@ class ContainerListener {
 # =========================================================
 
 class VolumeManager {
-    [IContainerDriver]$Driver
+    [ContainerDriver]$Driver
     [Configuration]$Config
 
-    VolumeManager([IContainerDriver]$driver, [Configuration]$config) {
+    VolumeManager([ContainerDriver]$driver, [Configuration]$config) {
         $this.Driver = $driver
         $this.Config = $config
     }
@@ -1420,9 +1339,6 @@ class VolumeManager {
         return $volumesout
     }
 
-
-    
-
     [void] CreateVolume( [string]$name ) {
 
         $rslt = $this.Driver.GetVolume( $Name )
@@ -1435,7 +1351,6 @@ class VolumeManager {
         $this.Driver.CreateVolume( $Name, @( ( "{0}=true" -f $labelVolumes ) ) )
 
         LogSuccess "Volume created successfully: $Name"
-
     }
 
     [void] RemoveVolume([string]$volumeId) {
@@ -1452,7 +1367,6 @@ class VolumeManager {
 # FIXME: verifier la coherence des parametres
 
 # Vérifie Podman avant toute commande
-
 
 $config = [Configuration]::new()
 $config.LoadFromJson((Join-Path "${env:USERPROFILE}\volund" "config.json"))
@@ -1474,12 +1388,17 @@ if (-not $driverType) {
 }
 
 # Create the driver instance based on the configuration
-$driver = [PodmanDriver]::new( $config )
-#$driver.init()
-if ( ( $Command -ne "init" ) -and ( $driver.isRunning() -ne "running" )) { 
-    #LogError "Podman n'est pas installé ou introuvable dans le PATH."
-    LogError "Container driver is not running. Please start the service."
-    exit 1
+$driver = [ContainerDriver]::new( $config )
+
+if ( $driver.isRunning() -ne "running" ) {
+    LogInfo "Container driver is not running, starting it now..."
+    $driver.Start()
+
+    if ( $driver.isRunning() -ne "running" ) {
+        LogError "Could not start Container Driver !"
+        exit 1
+    }
+
 }
 
 $imageMngr = [ImageManager]::new( $driver, $config )
@@ -1487,22 +1406,19 @@ $workspaceManager = [WorkspaceManager]::new( $config )
 $containerMngr = [ContainerManager]::new( $driver, $config, $workspaceManager )
 $volumeMngr = [VolumeManager]::new( $driver, $config )
 
-
-
 switch ($Command) {
-    "init"                { $driver.Start() }
     "info"                { 
         $images = $imageMngr.ListImages()
         Write-Host "Images :"
-        $images | ft -AutoSize
+        $images | Format-Table -AutoSize
         
         $containers = $containerMngr.ListContainers()
         Write-Host "Containers :"
-        $containers | ft -AutoSize
+        $containers | Format-Table -AutoSize
         
         $volumes = $volumeMngr.ListVolumes()
         Write-Host "Volumes :"
-        $volumes | ft -AutoSize
+        $volumes | Format-Table -AutoSize
 
         Write-Host "`n`nDisk space usage :`n"
         podman system df
@@ -1520,7 +1436,7 @@ switch ($Command) {
     } 
     "lsi"                 { 
         Write-Host "`nImages :"
-        $imageMngr.ListImages() | ft -AutoSize
+        $imageMngr.ListImages() | Format-Table -AutoSize
     }
     "rmi"                 {
         if ($Image -eq "") {
@@ -1536,11 +1452,6 @@ switch ($Command) {
             return
         }
 
-        #if ($Image -ne ""){
-        #    LogError("Missing parameter: -Container <container name> -Image <base image name> [-WithGui] [-OpenWorkspace] [-VpnConfig <opvn config file>]")
-        #    return
-        #}
-
         $containerMngr.StartContainer( $Container, $Image, $Volume, $WithGui.IsPresent, $OpenWorkspace, $VpnConfig)
     } 
     "stop"                {
@@ -1553,7 +1464,7 @@ switch ($Command) {
     } 
     "ls"                  {
         Write-Host "`nContainers :"
-        $containerMngr.ListContainers() | ft -AutoSize
+        $containerMngr.ListContainers() | Format-Table -AutoSize
     }
     "rm"                  {
         if ($Container -eq "") {
@@ -1564,8 +1475,6 @@ switch ($Command) {
     }
     # other
     "start-listener"      {
-        #Init-ContainerDescriptor -shortName $Container -imageName "$Image"
-        #Start-Listener
         if ($Container -eq "") {
             LogError("Missing parameter: -Container <container name>")
             return
@@ -1582,7 +1491,7 @@ switch ($Command) {
 # === Volumes =============================================
     "lsv"                  {
         Write-Host "`nContainers disponibles :"
-        $volumeMngr.ListVolumes() | ft -AutoSize
+        $volumeMngr.ListVolumes() | Format-Table -AutoSize
     }
     "newv"                 { 
         if ($Volume -eq "") {

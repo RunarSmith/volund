@@ -15,4 +15,3 @@
   package:
     name: "{{ install_gui_packages_drivers | flatten }}"
     state: present
-

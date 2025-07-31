@@ -3,7 +3,7 @@
 install_packages:
   archive:
     - gzip
-    - p7zip
+    # - p7zip
     - tar
     - unzip
     - zip
@@ -38,14 +38,13 @@ install_packages:
     - openssl
     - wget
 
-
 test_commands:
   - curl --version
   - git --version
   - jq --version
   - man --version
   - openssl version
-  - p7zip --help
+  # - p7zip --help
   - pip --version
   - pipx --version
   - python3 --version
