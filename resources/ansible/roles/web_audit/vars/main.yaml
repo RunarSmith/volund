@@ -3,4 +3,12 @@
 
 install_packages_os_common:
   - gobuster
-  - wfuzz
+
+test_commands: []
+
+install_pipx_tools:
+  - dirsearch
+  - sqlmap
+  - wafw00f
+  - argcomplete
+  - bypass-url-parser

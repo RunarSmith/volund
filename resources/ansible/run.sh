@@ -11,7 +11,7 @@ which ansible-playbook 2>/dev/null || pipx install ansible
 pushd /opt/resources/ansible >/dev/null || exit 1
 
 export ANSIBLE_FORCE_COLOR=True
-export ACTIVE_ACTIONS=install,config,check,hardening
+export ACTIVE_ACTIONS=install,config,check,data,hardening
 export ANSIBLE_ROLES_PATH="/opt/my-resources/ansible/roles:/opt/resources/ansible/roles"
 
 ansible-playbook -i ./inventory.yaml "$playbook" 

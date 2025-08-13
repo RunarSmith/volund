@@ -3,3 +3,5 @@
 
 install_packages_os_common:
   - metasploit
+
+test_commands: []

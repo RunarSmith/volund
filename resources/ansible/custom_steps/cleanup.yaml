@@ -1,0 +1,12 @@
+---
+
+#
+# clean temporary failes
+#
+
+- name: Temporary files cleanup
+  ansible.builtin.file:
+    path: "{{ path }}/{{ item }}"
+    state: absent
+  loop: "{{ cleanup_files }}"
+  become: true

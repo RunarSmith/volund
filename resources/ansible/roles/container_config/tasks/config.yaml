@@ -124,18 +124,27 @@
 
 - name: Configure AUR packages building (Archlinux)
   block:
-    - name: create user aur_user to build AUR packages
-      ansible.builtin.user:
-        name: aur_builder
-      become: true
+    #- name: create user aur_user to build AUR packages
+    #  ansible.builtin.user:
+    #    name: aur_builder
+        #group: aur_builder
+    #    comment: "AUR builder user"
+    #    shell: /bin/bash
+    #  become: true
 
-    - name: add user aur_builder to sudoers
-      ansible.builtin.lineinfile:
-        path: /etc/sudoers.d/aur_builder-allow-to-sudo-pacman
-        state: present
-        line: "aur_builder ALL=(ALL) NOPASSWD: /usr/bin/pacman"
-        validate: /usr/sbin/visudo -cf %s
-        create: true
+    #- name: add user aur_builder to sudoers
+    #  ansible.builtin.lineinfile:
+    #    path: /etc/sudoers.d/aur_builder-allow-to-sudo-pacman
+    #    state: present
+    #    line: "aur_builder ALL=(ALL) NOPASSWD: /usr/bin/pacman"
+    #    validate: /usr/sbin/visudo -cf %s
+    #    create: true
+    #  become: true
+    
+    - name: cleaning
+      ansible.builtin.file:
+        path: "/tmp/paru-bin/"
+        state: absent
       become: true
 
     - name: Clone paru PKGBUILD
@@ -144,22 +153,82 @@
         dest: "/tmp/paru-bin"
         update: true
 
-    - name: give rights to 'aur_builder' user on compilation files
+    - name: changing owner
       ansible.builtin.file:
-        dest: "/tmp/paru-bin/"
-        owner: aur_builder
-        group: aur_builder
-        mode: 'u=rwX,g=rX,o=rX'
+        path: "/tmp/paru-bin/"
+        state: directory
+        owner: nobody
+        group: nobody
+        mode: 'u=rwx,g=rwx,o=rwx'
         recurse: true
+      become: true
+
+    #- name: give rights to 'aur_builder' user on compilation files
+    #  ansible.builtin.file:
+    #    dest: "/tmp/paru-bin/"
+    #    owner: aur_builder
+    #    group: aur_builder
+    #    mode: 'u=rwx,g=rwx,o=rx'
+    #    recurse: true
+    #  become: true
+
+    #- name: ensure PKGBUILD is in Unix format
+    #  command:
+    #    chdir: "/tmp/paru-bin/"
+    #    cmd: "dos2unix PKGBUILD > PKGBUILD.2 ; mv PKGBUILD.2 PKGBUILD"
+    #  become_user: aur_builder
+
+    - name: ensure PKGBUILD is in Unix format
+      ansible.builtin.command:
+        chdir: "/tmp/paru-bin/"
+        cmd: "runuser -u nobody -- dos2unix PKGBUILD"
       become: true
 
     - name: Build 'paru'
       command:
-        chdir: "/tmp/paru-bin"
-        cmd: "makepkg -si --noconfirm"
+        chdir: "/tmp/paru-bin/"
+        cmd: "runuser -u nobody -- makepkg --syncdeps --noconfirm"
       become: true
-      become_user: aur_builder
+      #become_user: aur_builder
 
+    - name: changing owner
+      ansible.builtin.file:
+        path: "/tmp/paru-bin/"
+        state: directory
+        owner: "{{ default_username }}"
+        recurse: true
+      become: true
+
+    - name: search for files with .pkg.tar.zst extension except for *debug* files
+      find:
+        paths: "/tmp/paru-bin/"
+        patterns: "*.pkg.tar.zst"
+        recurse: true
+        file_type: file
+        excludes:
+          - "*debug*"
+      register: found_packages
+
+    - name: debug found packages
+      ansible.builtin.debug:
+        msg: "Found packages: {{ found_packages.files }}"
+
+    - name: installing 'paru'
+      command:
+        chdir: "/tmp/paru-bin/"
+     #   cmd: "runuser -u {{ default_username }} -- makepkg --install --clean --noconfirm"
+     # become_user: "{{ default_username }}"
+        cmd: "pacman -U {{ item.path }} --noconfirm --needed"
+      become: true
+      when: found_packages.matched > 0
+      with_items: "{{ found_packages.files }}"
+
+    #- name: installing 'paru'
+    #  command:
+    #    chdir: "/tmp/paru-bin/"
+    #    cmd: "makepkg --clean --noconfirm"
+    #  become_user: aur_builder
+      
     - name: cleaning
       ansible.builtin.file:
         path: "/tmp/paru-bin/"
@@ -177,10 +246,15 @@
 
 # --- entrypoint -----------------------------------------------
 
+- name: ensure /.entrypoint.sh is in Unix format
+  ansible.builtin.command:
+    cmd: "dos2unix /.entrypoint.sh"
+  become: true
+
 - name: Make /.entrypoint.sh executable
   ansible.builtin.file:
     path: /.entrypoint.sh
     mode: '0755'
-    owner: root
-    group: root
+    owner: "{{ default_username }}"
+    #group: root
   become: true

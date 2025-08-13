@@ -5,24 +5,46 @@
 
 - name: set tmux configuration
   ansible.builtin.copy:
-    src: tmux.conf
+    src: tmux/tmux.conf
     dest: "/home/{{ default_username }}/.tmux.conf"
-    user: "{{ default_username }}"
+    owner: "{{ default_username }}"
     group: "{{ default_username }}"
   become_user: "{{ default_username }}"
 
-# --- vim ------------------------------------------------
+# --- (neo)vim ------------------------------------------------
 
-#- name: Install The Ultimate vimrc
-#  ansible.builtin.git:
-#    repo: https://github.com/amix/vimrc.git
-#    dest: "/home/{{ default_username }}/.vim_runtime"
-#    depth: 1
-#  become_user: "{{ default_username }}"
+# nvim config
+- name: Clone LazyVim starter config
+  ansible.builtin.git:
+    repo: https://github.com/LazyVim/starter
+    dest: "/home/{{ default_username }}/.config/nvim"
+    depth: 1
+    update: no
+  become_user: "{{ default_username }}"
 
-#- name: call install script of The Ultimate vimrc
-#  script: "/home/{{ default_username }}/.vim_runtime/install_awesome_vimrc.sh"
-#  become_user: "{{ default_username }}"
+- name: remove default init.lua
+  ansible.builtin.file:
+    path: "/home/{{ default_username }}/.config/nvim/init.lua"
+    state: absent
+    force: yes
+  become_user: "{{ default_username }}"
+
+- name: replace default init.lua with custom one
+  ansible.builtin.copy:
+    src: vim/init.lua
+    dest: "/home/{{ default_username }}/.config/nvim/init.lua"
+    owner: "{{ default_username }}"
+    group: "{{ default_username }}"
+  become_user: "{{ default_username }}"
+
+- name: Sync LazyVim plugins
+  ansible.builtin.command:
+    cmd: nvim --headless +"Lazy! sync" +qa
+  become_user: "{{ default_username }}"
+  environment:
+    HOME: "/home/{{ default_username }}"
+  register: lazyvim_sync
+  changed_when: false
 
 # --- ruby ------------------------------------------------
 

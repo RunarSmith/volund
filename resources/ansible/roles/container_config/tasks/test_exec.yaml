@@ -1,23 +1,5 @@
 ---
 
-# --- applications ----------------------------------------
-
-- name: "Check if {{ item }} is installed"
-  ansible.builtin.command: "{{ item }}"
-  register: app_check
-  ignore_errors: true
-  loop: "{{ test_commands }}"
-  loop_control:
-    loop_var: item
-  become: true
-  become_user: "{{ default_username }}"
-
-- name: "Assert all required applications are installed"
-  ansible.builtin.assert:
-    that:
-      - "app_check.results | selectattr('rc', 'eq', 0) | list | length == test_commands | length"
-    fail_msg: "One or more required applications are missing or not executable."
-
 # --- user ------------------------------------------------
 
 - name: "Ensure user {{ default_username }} exists"
@@ -42,3 +24,11 @@
     that:
       - "'(ALL) NOPASSWD: ALL' in sudo_check.stdout"
     fail_msg: "L'utilisateur {{ default_username }} ne peut pas utiliser sudo sans mot de passe"
+
+# --- applications ----------------------------------------
+
+- name: execute test commands
+  include_tasks: "{{ role_path }}/../../custom_steps/test_applications_exec.yaml"
+  vars:
+    commands_list: "{{ test_commands }}"
+    username: "{{ default_username }}"

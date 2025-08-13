@@ -16,3 +16,14 @@ test_commands:
   - stern --version
   - trivy --version
   - yamllint --version
+
+cleanup_temp:
+  - helm.tar.gz
+  - argocd
+  - k9s
+  - "linux-{{ binary_arch_name }}" # left by k9s
+  - README.md                      # left by k9s
+  - LICENSE                        # left by k9s
+  - "k9s_Linux_{{ binary_arch_name }}.tar.gz"
+  - stern
+  - openshift-client-linux.tar.gz

@@ -1,0 +1,13 @@
+---
+# tasks file for env_java
+
+- name: Install required packages (common for all OS)
+  package:
+    name: >-
+      {{
+        (install_packages_os        | default([]) ) +
+        (install_packages_os_common | default([]) )
+      }}
+    state: present
+  when : install_packages_os_common is defined and install_packages_os_common | length > 0
+

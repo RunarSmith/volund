@@ -1,42 +1,5 @@
 ---
 # tasks file for common_it
 
-- name: "{{ ansible_role_name }} :: check requirements"
-  block:
-    - name: Include OS-specific variables.
-      ansible.builtin.include_vars: "{{ ansible_os_family | lower }}.yaml"
-
-- name: "{{ ansible_role_name }} :: check requirements"
-  block:
-    - name: Precheck
-      ansible.builtin.include_tasks: precheck.yaml
-  when:
-    - "'check' in active_actions"
-
-- name: "{{ ansible_role_name }} :: Installation"
-  block:
-    - name: "Install"
-      ansible.builtin.include_tasks: install.yaml
-  when:
-    - "'install' in active_actions"
-
-- name: "{{ ansible_role_name }} :: Configuration"
-  block:
-    - name: "Configuration"
-      ansible.builtin.include_tasks: config.yaml
-  when:
-    - "'config' in active_actions"
-
-- name: "{{ ansible_role_name }} :: Hardening"
-  block:
-    - name: "Hardening"
-      ansible.builtin.include_tasks: hardening.yaml
-  when:
-    - "'hardening' in active_actions"
-
-- name: "{{ ansible_role_name }} :: Installation tests"
-  block:
-    - name: "Testing"
-      ansible.builtin.include_tasks: test_exec.yaml
-  when:
-    - "'check' in active_actions"
+- name: "Standard Role Main"
+  ansible.builtin.include_tasks: "{{ role_path }}/../../custom_steps/role_main_standard.yaml"

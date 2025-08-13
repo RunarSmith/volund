@@ -1,50 +1,35 @@
 ---
 # tasks file for user_env
 
+- name: cleanup temporary files
+  include_tasks: "{{ role_path }}/../../custom_steps/cleanup.yaml"
+  vars:
+    path: /tmp
+    cleanup_files: "{{ cleanup_temp }}"
+  when: cleanup_temp is defined and cleanup_temp | length > 0
+
 - name: Install required packages (common for all OS)
   package:
-    name: "{{ install_packages_os_common | flatten }}"
+    name: >-
+      {{
+        (install_packages_os        | default([]) ) +
+        (install_packages_os_common | default([]) )
+      }}
     state: present
+  become: true
+  when : install_packages_os_common is defined and install_packages_os_common | length > 0
 
-# - name: Install required packages (OS specific)
-#  package:
-#    name: "{{ install_packages | flatten }}"
-#    state: present
+- name: install pipx tools
+  community.general.pipx:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ install_pipx_tools | default([]) }}"
+  when: install_pipx_tools is defined and install_pipx_tools | length >
+  become_user: "{{ ansible_user }}"
 
-# - name: Install go
-#  package:
-#    name: "{{ install_packages_go | flatten }}"
-#    state: present
-
-# - name: Install Java
-#  package:
-#    name: "{{ install_packages_java | flatten }}"
-#    state: present
-
-# - name: Install node JS
-#  package:
-#    name: "{{ install_packages_node | flatten }}"
-#    state: present
-
-# - name: Install perl
-#  package:
-#    name: "{{ install_packages_perl | flatten }}"
-#    state: present
-
-# - name: Install ruby
-#  package:
-#    name: "{{ install_packages_ruby | flatten }}"
-#    state: present
-
-# - name: Install rust
-#  package:
-#    name: "{{ install_packages_rust | flatten }}"
-#    state: present
-
-# - name: Install rust
-#  package:
-#    name:
-#      - base-devel
-#      - fakeroot
-#    state: present
-#  when: ansible_distribution == "Archlinux"
+- name: cleanup temporary files
+  include_tasks: "{{ role_path }}/../../custom_steps/cleanup.yaml"
+  vars:
+    path: /tmp
+    cleanup_files: "{{ cleanup_temp }}"
+  when: cleanup_temp is defined and cleanup_temp | length > 0

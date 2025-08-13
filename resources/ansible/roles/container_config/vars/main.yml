@@ -2,6 +2,7 @@
 
 install_packages:
   archive:
+    - bzip2
     - gzip
     # - p7zip
     - tar
@@ -12,19 +13,26 @@ install_packages:
     - automake
     - cmake
     - gcc
+    - gdb
     - git
     - make
   python:
     - python3
   system:
+    - bash
+    - btop
     - logrotate
+    - mise
     - plocate
     - sudo
   utils:
     - binutils
+    - bison
     - diffutils
     - dos2unix
+    - expect
     - fzf
+    - glow
     - gnupg
     - jq
     - less

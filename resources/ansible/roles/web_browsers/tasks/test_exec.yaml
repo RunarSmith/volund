@@ -1,30 +1,10 @@
 ---
 # tasks file for web_browser
 
-# --- chrome ----------------------------------------------
+# --- applications ----------------------------------------
 
-- name: Ensure chrome is installed
-  ansible.builtin.command: chromium --version
-  register: chrome_version
-  changed_when: false
-  failed_when: chrome_version.rc != 0
-  when:
-    - ansible_os_family not in ['RedHat']
-
-- name: Display chrome version
-  when: chrome_version is defined and chrome_version.stdout is defined
-  ansible.builtin.debug:
-    var: chrome_version.stdout
-
-# --- firefox ---------------------------------------------
-
-- name: Ensure Firefox is installed
-  ansible.builtin.command: firefox --version
-  register: firefox_version
-  changed_when: false
-  failed_when: firefox_version.rc != 0
-
-- name: Display Firefox version
-  when: firefox_version is defined and firefox_version.stdout is defined
-  ansible.builtin.debug:
-    var: firefox_version.stdout
+- name: execute test commands
+  include_tasks: "{{ role_path }}/../../custom_steps/test_applications_exec.yaml"
+  vars:
+    commands_list: "{{ test_commands }}"
+    username: "{{ default_username }}"

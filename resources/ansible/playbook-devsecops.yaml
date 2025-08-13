@@ -7,9 +7,8 @@
   vars:
     active_actions: "{{ lookup('env', 'ACTIVE_ACTIONS') | default('') | split(',') }}"
 
-    allowed_profiles: ["base", "devsecops", "offensivesec", "offensivesec_web"]
 
-    allowed_actions: ["install", "config", "hardening", "check"]
+    allowed_actions: ["install", "config", "data", "hardening", "check"]
 
     # Archlinux: Archlinux, BlackArch
     # Debian: Kali, Debian
@@ -38,13 +37,24 @@
   roles:
     - container_config  # base configuration for the container
 
-    - cloud_clients
     - common_it
     - common_services
-    #- network_scan
     - openvpn_client
     - user_env
     - web_browsers
+
+    - cloud_clients
+    
+    # SAST tools
+    # trivy
+    # anchore
+    # grype
+    # kube-bench : bonnes pratiques Kubernetes CIS Benchmark
+    # kube-hunter : Kubernetes security assessment tool
+    # etc.
+
+    # ansible
+    # nuclei ?
 
   post_tasks:
     - name: Display completion message

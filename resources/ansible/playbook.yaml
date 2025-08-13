@@ -7,9 +7,7 @@
   vars:
     active_actions: "{{ lookup('env', 'ACTIVE_ACTIONS') | default('') | split(',') }}"
 
-    allowed_profiles: ["base", "devsecops", "offensivesec", "offensivesec_web"]
-
-    allowed_actions: ["install", "config", "hardening", "check"]
+    allowed_actions: ["install", "config", "data", "hardening", "check"]
 
     # Archlinux: Archlinux, BlackArch
     # Debian: Kali, Debian
@@ -40,10 +38,8 @@
 
     - common_it
     - common_services
-
     - openvpn_client
     - user_env
-
     - web_browsers
 
   post_tasks:

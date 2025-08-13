@@ -136,7 +136,7 @@ echo "Helm tests executed successfully."
 
 echo "=== Execute trivy / SAST ==================================="
 set -x
-  trivy config --no-progress --format markdown --output $trivyReport $yamlResult
+  trivy config --output $trivyReport $yamlResult
 set +x
 
 # Clean up

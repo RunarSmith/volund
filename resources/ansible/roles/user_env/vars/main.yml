@@ -3,12 +3,16 @@
 
 install_packages_os_common:
   - asciinema
+  - kitty
   - nano
+  - neovim
   - screen
   - tmux
   - vim
   - zsh
-  
+
+install_pipx_tools: []
+
 # FIXME: huh ? on kali:
 #      - openjdk-17-jre
 #      - openjdk-17-jdk
@@ -33,3 +37,5 @@ install_packages_ruby:
 
 install_packages_rust:
   - rustup
+
+test_commands: []

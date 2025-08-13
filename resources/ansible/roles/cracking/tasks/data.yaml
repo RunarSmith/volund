@@ -1,0 +1,33 @@
+---
+
+- name: cleanup target repo
+  include_tasks: "{{ role_path }}/../../custom_steps/cleanup.yaml"
+  vars:
+    path: "{{ data_root_path }}"
+    cleanup_files:
+      - lists
+
+- name: Create dictionary root path
+  file: 
+    path: "{{ dictionary_root_path }}"
+    state: directory
+    mode: '0755'
+  become: true
+
+- name: Download dictionaries files
+  ansible.builtin.get_url:
+    url: "{{ item.url }}"
+    dest: "{{ dictionary_root_path }}/{{ item.path }}"
+  loop: "{{ dictionaries_files }}"
+  when: dictionaries_files | length > 0
+  become: true
+
+- name: Clone dictionaries repos
+  ansible.builtin.git:
+    repo: "{{ item.url }}"
+    dest: "{{ dictionary_root_path }}{{ item.path }}"
+    clone: true
+    update: true
+  loop: "{{ dictionaries_repos }}"
+  when: dictionaries_repos | length > 0
+  become: true

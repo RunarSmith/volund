@@ -9,3 +9,7 @@ install_gui_packages_drivers_common:
   - libasound2
   - libavcodec-extra
   - ffmpeg
+
+test_commands:
+  - chromium --version
+  - firefox --version

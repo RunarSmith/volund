@@ -7,9 +7,7 @@
   vars:
     active_actions: "{{ lookup('env', 'ACTIVE_ACTIONS') | default('') | split(',') }}"
 
-    allowed_profiles: ["base", "devsecops", "offensivesec", "offensivesec_web"]
-
-    allowed_actions: ["install", "config", "hardening", "check"]
+    allowed_actions: ["install", "config", "data", "hardening", "check"]
 
     # Archlinux: Archlinux, BlackArch
     # Debian: Kali, Debian
@@ -37,21 +35,64 @@
 
 
   roles:
-    - container_config  # base configuration for the container
+    #- container_config  # base configuration for the container
 
-    - burpsuite
+    #- common_it
+    #- common_services
+    #- openvpn_client
+    #- user_env
+    #- web_browsers
     
-    - common_it
-    - common_services
-    - cracking
-    - exploitdb
-    - metasploit
-    - network_scan
-    - openvpn_client
-    - user_env
-    - web_audit
-    - web_browsers
+        # OSINT tools
+        # theHarvester
+        # recon-ng
 
+        # common enumeration tools
+        #- network_scan
+        # amass, nmap, masscan, dnsenum, dnsrecon, subfinder, httpx, waybackurls, gauplus
+
+        # networks tools
+        # chisel
+      
+        # vuln DBs
+        #- exploitdb
+
+        # vuln scanners
+        # nessus / openvas
+    
+    # web audit
+    #- web_audit
+    #- burpsuite
+        # nikto
+        # OWASP ZAP
+        # SQLMap
+        # XSSstrike
+        # ffuf / dirsearch
+
+        # AD audit
+        # impacket
+        # bloodhound
+        # ldapsearch
+        # crackmapexec
+
+    # cloud audit
+    #- cloud_clients
+
+    # cracking
+    - name: cracking
+      vars:
+        data_root_path: /opt/data/
+    # hydra
+    # hashcat
+    # cewl
+
+    # C2
+    - metasploit
+    # empire
+    # sliver
+
+    - reverse_engineering
+    
   post_tasks:
     - name: Display completion message
       ansible.builtin.debug:

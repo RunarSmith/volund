@@ -7,6 +7,12 @@
     state: present
   become: true
 
+- name: cleanup temporary files
+  include_tasks: "{{ role_path }}/../../custom_steps/cleanup.yaml"
+  vars:
+    path: /tmp
+    cleanup_files: "{{ cleanup_temp }}"
+
 # === argocd cli ==========================================
 
 - name: Appeler l'API GitHub pour récupérer les infos de la dernière release
@@ -32,11 +38,6 @@
     remote_src: yes
     mode: '0555'
   become: true
-
-- name: Supprimer le fichier temporaire
-  file:
-    path: "/tmp/argocd"
-    state: absent
 
 # === helm ================================================
 
@@ -69,19 +70,17 @@
     remote_src: yes
   become: true
 
-- name: Nettoyer les fichiers temporaires
-  file:
-    path: "{{ item }}"
-    state: absent
-  loop:
-    - "/tmp/helm.tar.gz"
-    - "/tmp/linux-{{ binary_arch_name }}"
+- name: install helm plugin unittest
+  ansible.builtin.command:
+    cmd: helm plugin list
+  register: helm_plugin_list
+  become_user: "{{ default_username }}"
 
 - name: install helm plugin unittest
-  become: false
   ansible.builtin.command:
     cmd: helm plugin install https://github.com/helm-unittest/helm-unittest.git
   become_user: "{{ default_username }}"
+  when: helm_plugin_list.stdout is search('^unittest')
 
 # === k9s =================================================
 
@@ -179,3 +178,10 @@
     mode: '0755'
     remote_src: yes
   become: true
+
+
+- name: cleanup temporary files
+  include_tasks: "{{ role_path }}/../../custom_steps/cleanup.yaml"
+  vars:
+    path: /tmp
+    cleanup_files: "{{ cleanup_temp }}"

@@ -3,3 +3,6 @@
 
 install_packages_os_common:
   - openvpn
+
+test_commands:
+  - openvpn --version

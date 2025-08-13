@@ -2,8 +2,13 @@
 # vars file for common_services
 
 install_packages_os_common:
+  - filezilla
+  - gnu-netcat
   - rlwrap
   - samba
   - smbclient
   # - snmp
   - socat
+  - websocat
+
+test_commands: []

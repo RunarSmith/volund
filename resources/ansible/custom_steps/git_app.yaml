@@ -1,0 +1,37 @@
+---
+
+# install an application that is simply downloaded from git(hub) and directly available
+
+#
+# vars/main.yaml:
+# tools_links:
+#   - link: /usr/local/bin/something
+#     file: something.sh
+#
+# - name: execute test commands
+#   include_tasks: "{{ role_path }}/../../custom_steps/git_app.yaml"
+#   vars:
+#     repo_url: http://github.com/owner/repo.git
+#     local_path: /opt/local/tool_name/
+#     links: "{{ tools_links }}"
+#
+
+- name: Remove existing local_path if it exists
+  ansible.builtin.file:
+    path: "{{ local_path }}"
+    state: absent
+  become: true
+
+- name: Git checkout
+  ansible.builtin.git:
+    repo: "{{ repo_url }}"
+    dest: "{{ local_path }}"
+  become: true
+
+- name: create links
+  ansible.builtin.file:
+    src: "{{ local_path }}/{{ item.file }}"
+    dest: "{{ item.link }}"
+    state: link
+  loop: "{{ links }}"
+  become: true

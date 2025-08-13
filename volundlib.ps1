@@ -263,20 +263,20 @@ class ContainerDriver {
         }
 
         # Start Podman service if not running
-        try {
+        #try {
             # Linux
             # podman system service --time=0 --log-level=error --no-headers &
 
             # on Windows, podman is managed via WSL
             #Write-host "wsl image need to be restarted to take updated DNS config"
-            LogInfo( "Restarting Podman WSL images to ensure proper configuration")
-            [ExternalCommandHelper]::ExecCommand("wsl --terminate podman-machine-default")
-            [ExternalCommandHelper]::ExecCommand("wsl --terminate podman-net-usermode")
-            [ExternalCommandHelper]::ExecCommand("wsl --shutdown")
-        } catch {
-            LogWarn "Problème d'arrêt des images WSL."
+        #    LogInfo( "Restarting Podman WSL images to ensure proper configuration")
+        #    [ExternalCommandHelper]::ExecCommand("wsl --terminate podman-machine-default")
+        #    [ExternalCommandHelper]::ExecCommand("wsl --terminate podman-net-usermode")
+        #    [ExternalCommandHelper]::ExecCommand("wsl --shutdown")
+        #} catch {
+        #    LogWarn "Problème d'arrêt des images WSL."
             # exit 1
-        }
+        #}
 
         try {
             # initialise / create the VM
@@ -293,7 +293,7 @@ class ContainerDriver {
         }
 
         try {
-            LogInfo( "start podman (and its wsl image)")
+            LogInfo( "start podman")
             [ExternalCommandHelper]::ExecCommand("podman machine start")
         } catch {
             LogError "Impossible de démarrer le service Podman."

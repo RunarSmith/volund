@@ -1,0 +1,80 @@
+---
+
+- name: "Check if string variables ares defined and non-empty"
+  ansible.builtin.assert:
+    that:
+      - item is defined
+      - item | length > 0
+      - item is string
+      - item.startswith('/')
+    fail_msg: "The variable '{{ item_var }}' must be defined as a non-empty string."
+  vars:
+    item: "{{ item.var }}"
+    item_var: "{{ item.name }}"
+  loop:
+    - { var: apps_root_path, name: "apps_root_path" }
+    - { var: data_root_path, name: "data_root_path" }
+
+
+- name: "Check if lists variables are defined and are lists"
+  ansible.builtin.assert:
+    that:
+      - (item is defined) and (item is iterable) and (item is sequence)
+    fail_msg: "The variable '{{ item_var }}' must be defined as a list (can be empty)."
+  vars:
+    item: "{{ item.var }}"
+    item_var: "{{ item.name }}"
+  loop:
+    - { var: cleanup_temp, name: "cleanup_temp" }
+    - { var: install_packages_os, name: "install_packages_os" }
+    - { var: install_packages_os_common, name: "install_packages_os_common" }
+    - { var: install_pipx_tools, name: "install_pipx_tools" }
+  
+# ---------------------------------------------------------
+
+- name: "{{ ansible_role_name }} :: check requirements"
+  block:
+    - name: Include OS-specific variables.
+      ansible.builtin.include_vars: "{{ ansible_os_family | lower }}.yaml"
+
+- name: "{{ ansible_role_name }} :: check requirements"
+  block:
+    - name: Precheck
+      ansible.builtin.include_tasks: precheck.yaml
+  when:
+    - "'check' in active_actions"
+
+- name: "{{ ansible_role_name }} :: Installation"
+  block:
+    - name: "Install"
+      ansible.builtin.include_tasks: install.yaml
+  when:
+    - "'install' in active_actions"
+
+- name: "{{ ansible_role_name }} :: Data"
+  block:
+    - name: "Data"
+      ansible.builtin.include_tasks: data.yaml
+  when:
+    - "'data' in active_actions"
+
+- name: "{{ ansible_role_name }} :: Configuration"
+  block:
+    - name: "Configuration"
+      ansible.builtin.include_tasks: config.yaml
+  when:
+    - "'config' in active_actions"
+
+- name: "{{ ansible_role_name }} :: Hardening"
+  block:
+    - name: "Hardening"
+      ansible.builtin.include_tasks: hardening.yaml
+  when:
+    - "'hardening' in active_actions"
+
+- name: "{{ ansible_role_name }} :: Installation tests"
+  block:
+    - name: "Testing"
+      ansible.builtin.include_tasks: test_exec.yaml
+  when:
+    - "'check' in active_actions"

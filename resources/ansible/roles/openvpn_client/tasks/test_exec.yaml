@@ -1,13 +1,8 @@
 ---
 # tasks file for openvpn_client
 
-- name: Ensure OpenVPN is installed
-  ansible.builtin.command: openvpn --version
-  register: openvpn_version
-  changed_when: false
-  failed_when: openvpn_version.rc != 0
-
-- name: Display OpenVPN version
-  when: openvpn_version is defined and openvpn_version.stdout is defined
-  ansible.builtin.debug:
-    var: openvpn_version.stdout
+- name: execute test commands
+  include_tasks: "{{ role_path }}/../../custom_steps/test_applications_exec.yaml"
+  vars:
+    commands_list: "{{ test_commands }}"
+    username: "{{ default_username }}"

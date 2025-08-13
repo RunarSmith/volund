@@ -1,6 +1,6 @@
-# **Volhund** - The Forge for Modular and Containerized Workspace Tool
+# **Volund** - The Forge for Modular and Containerized Workspace Tool
 
-Volhund is an open-source utility designed to provide a **modular, containerized workspace** environment for pentesting, hacking, DevSecOps, and more. Built with **flexibility and reproducibility** in mind, it leverages Podman (should be docker compatible), WSL, and Ansible for seamless setup and configuration on Windows systems.
+Volund is an open-source utility designed to provide a **modular, containerized workspace** environment for pentesting, hacking, DevSecOps, and more. Built with **flexibility and reproducibility** in mind, it leverages Podman (should be docker compatible), WSL, and Ansible for seamless setup and configuration on Windows systems.
 
 Volund is inspired by the legendary Norse blacksmith Völundr—a master artisan whose forge was said to craft weapons and artifacts of divine power
 
@@ -39,7 +39,7 @@ Let Volund be your forge: produce, shape, and reuse your customized working envi
 
 2. Create a custom alias for convenience:
     ```powershell
-    Set-Alias -Value <absolute path to volhund.ps1> -Name vol
+    Set-Alias -Value <absolute path to volund.ps1> -Name vol
     ```
     *Add this line to your `profile.ps1` for persistent access.*
 
@@ -79,4 +79,4 @@ Contributions, issues, and feature requests are welcome! Please open an issue or
 
 MIT License. See [LICENSE](LICENSE) for more information.
 
-*Volhund brings reproducible, isolated, and versatile workspaces to your Windows environment with minimal setup and maximum scalability.*
+*Volund brings reproducible, isolated, and versatile workspaces to your Windows environment with minimal setup and maximum scalability.*

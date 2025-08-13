@@ -6,4 +6,47 @@ install_packages_os_common:
   - hashcat
   - hydra
   - john
-  - seclists
+
+test_commands: []
+
+dictionary_root_path: "{{ data_root_path }}/lists/"
+
+dictionaries_files:
+  - name: rockyou
+    url: https://github.com/brannondorsey/naive-hashcat/releases/download/data/rockyou.txt
+    path: rockyou.txt
+
+dictionaries_repos:
+  - name: PayloadsAllTheThings
+    url: https://github.com/swisskyrepo/PayloadsAllTheThings
+    path: PayloadsAllTheThings
+  - name: Fuzzing-Templates
+    url: https://github.com/projectdiscovery/fuzzing-templates
+    path: fuzzing-templates
+  - name: BruteX
+    url: https://github.com/1N3/BruteX
+    path: BruteX
+  - name: IntruderPayloads
+    url: https://github.com/1N3/IntruderPayloads
+    path: IntruderPayloads
+  - name: Probable-Wordlists
+    url: https://github.com/berzerk0/Probable-Wordlists
+    path: Probable-Wordlists
+  - name: Open-Redirect-Payloads
+    url: https://github.com/cujanovic/Open-Redirect-Payloads
+    path: Open-Redirect-Payloads
+  - name: SecLists
+    url: https://github.com/danielmiessler/SecLists
+    path: SecLists
+  - name: Pwdb-Public
+    url: https://github.com/ignis-sec/Pwdb-Public
+    path: Pwdb-Public
+  - name: Bug-Bounty-Wordlists
+    url: https://github.com/Karanxa/Bug-Bounty-Wordlists
+    path: Bug-Bounty-Wordlists
+  - name: richelieu
+    url: https://github.com/tarraschk/richelieu
+    path: richelieu
+  - name: webapp-wordlists
+    url: https://github.com/p0dalirius/webapp-wordlists
+    path: webapp-wordlists

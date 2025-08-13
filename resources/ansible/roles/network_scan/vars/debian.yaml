@@ -1,4 +1,4 @@
 ---
 # vars file for network_scan
 
-install_packages:
+install_packages: []
