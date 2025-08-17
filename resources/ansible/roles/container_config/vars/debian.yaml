@@ -14,5 +14,4 @@ install_packages_os:
   - wget
   - yq
 
-
 ca_trust_path: /usr/local/share/ca-certificates/

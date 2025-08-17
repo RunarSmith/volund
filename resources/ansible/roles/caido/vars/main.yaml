@@ -1,5 +1,5 @@
 ---
-# vars file for env_java
+# vars file for caido
 
 # list of packages to install on all OS
 install_packages_os_common: []

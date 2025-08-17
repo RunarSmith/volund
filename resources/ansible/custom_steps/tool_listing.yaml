@@ -1,0 +1,51 @@
+---
+
+#
+#   vars:
+#     tool_name: "nginx"    # Mandatory
+#     tool_description: "Serveur web performant et léger."  # Mandatory
+#
+#     tool_version_command: "nginx --version"
+#     tool_version: "1.2.3"
+#
+# Provide 'tool_version_command' or 'tool_version'. if none is provided, version is "unknown"
+#
+
+- name: Get application version from command line
+  command: "{{ tool_version_command }}"
+  register: tool_version_result
+  ignore_errors: yes
+
+- name: Définir la version récupérée
+  set_fact:
+    tool_version: >-
+      {% if tool_version_result.rc == 0 %}
+        {{ tool_version_result.stdout }}
+      {% elif tool_version is defined %}
+        {{ tool_version }}
+      {% else %}
+        unknown
+      {% endif %}
+
+- name: Locate the tool
+  command: "which {{ tool_name }}"
+  register: tool_location_result
+  ignore_errors: yes
+
+- name: Define tool location
+  set_fact:
+    tool_location: >-
+      {% if tool_location_result.rc == 0 %}
+        {{ tool_location_result.stdout }}
+      {% else %}
+        non trouvé
+      {% endif %}
+
+- name: Add line to CSV file
+  local_action:
+    module: lineinfile
+    path: "./tools_list.csv"
+    line: "{{ tool_name }};{{ tool_version }};{{ tool_location }};{{ ansible_role_name }};{{ tool_description }}"
+    create: yes
+    insertafter: EOF
+  run_once: true

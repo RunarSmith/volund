@@ -1,13 +1,12 @@
 ---
 # vars file for devsecops
 
-install_packages:
+# list of packages to install on all OS
+install_packages_os_common:
   - yamllint
   - trivy
 
-oc_client_url: https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest/openshift-client-linux.tar.gz
-
-
+# list of commands to execute after install step, to ensure that applications are running properly
 test_commands:
   - oc version
   - helm version
@@ -17,6 +16,7 @@ test_commands:
   - trivy --version
   - yamllint --version
 
+# list of files to cleanup before/after install step execution
 cleanup_temp:
   - helm.tar.gz
   - argocd
@@ -27,3 +27,8 @@ cleanup_temp:
   - "k9s_Linux_{{ binary_arch_name }}.tar.gz"
   - stern
   - openshift-client-linux.tar.gz
+
+# list of python packages to install with pipx, in user home directory
+install_pipx_tools: []
+
+oc_client_url: https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest/openshift-client-linux.tar.gz

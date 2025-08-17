@@ -1,0 +1,8 @@
+# windows files
+*.ps1   text eol=crlf
+
+# Linux files
+*.sh    text eol=lf
+*.yaml  text eol=lf
+*.yml   text eol=lf
+*.j2    text eol=lf

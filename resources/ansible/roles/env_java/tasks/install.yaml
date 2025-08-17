@@ -9,5 +9,5 @@
         (install_packages_os_common | default([]) )
       }}
     state: present
-  when : install_packages_os_common is defined and install_packages_os_common | length > 0
-
+  #when : install_packages_os_common is defined and install_packages_os_common | length > 0
+  become: true

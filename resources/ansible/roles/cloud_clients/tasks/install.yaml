@@ -1,11 +1,15 @@
 ---
 
-- name: Install required packages
+- name: Install required packages (common for all OS)
   package:
     name: >-
-      {{ (install_packages | default([])) }}
+      {{
+        (install_packages_os        | default([]) ) +
+        (install_packages_os_common | default([]) )
+      }}
     state: present
   become: true
+  when : install_packages_os_common is defined and install_packages_os_common | length > 0
 
 - name: cleanup temporary files
   include_tasks: "{{ role_path }}/../../custom_steps/cleanup.yaml"

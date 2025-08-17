@@ -35,13 +35,13 @@
 
 
   roles:
-    #- container_config  # base configuration for the container
+    - container_config  # base configuration for the container
 
-    #- common_it
-    #- common_services
-    #- openvpn_client
-    #- user_env
-    #- web_browsers
+    - common_it
+    - common_services
+    - openvpn_client
+    - user_env
+    - web_browsers
     
         # OSINT tools
         # theHarvester
@@ -61,8 +61,9 @@
         # nessus / openvas
     
     # web audit
-    #- web_audit
-    #- burpsuite
+    - web_audit
+    - burpsuite
+    #- caido
         # nikto
         # OWASP ZAP
         # SQLMap
@@ -76,20 +77,20 @@
         # crackmapexec
 
     # cloud audit
-    #- cloud_clients
+    - cloud_clients
 
     # cracking
     - name: cracking
       vars:
         data_root_path: /opt/data/
-    # hydra
-    # hashcat
-    # cewl
+        # hydra
+        # hashcat
+        # cewl
 
     # C2
     - metasploit
-    # empire
-    # sliver
+        # empire
+        # sliver
 
     - reverse_engineering
     

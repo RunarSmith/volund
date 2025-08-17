@@ -1,4 +1,4 @@
 ---
 # vars file for burpsuite
 
-install_packages: []
+install_packages_os: []

@@ -1,2 +1,58 @@
 ---
 # tasks file for burpsuite
+
+- name: "burp > Create directory for Burp Suite"
+  ansible.builtin.file:
+    path: "/opt/burpsuite"
+    state: directory
+    mode: '0755'
+  become: true
+
+- name: "burp > Check if BurpSuiteCA.der exists"
+  stat:
+    path: /opt/burpsuite/BurpSuiteCA.der
+  register: burp_cert
+  
+- name: "burp > Copying Burp Script"
+  copy:
+    src: files/getburpcert.sh
+    dest: /tmp/getburpcert.sh
+    mode: 0744
+  when: burp_cert.stat.exists == False
+  become_user: "{{ default_username }}"
+
+- name: "burp > Executing bash script to Download CA Certificate"
+  shell:
+    /tmp/getburpcert.sh
+  when: burp_cert.stat.exists == False
+  become_user: "{{ default_username }}"
+
+- name: "burp > Copying CA Certificate to /opt/burpsuite"
+  copy:
+    src: /tmp/cacert.der
+    dest: /opt/burpsuite/BurpSuiteCA.der
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+  when: burp_cert.stat.exists == False
+
+#- name: "burp > Create directory for Burp Suite extras"
+#  ansible.builtin.file:
+#    path: "{{ burpsuite_extras_dir }}"
+#    state: directory
+#    mode: '0755'
+#  become: true
+
+- name: "burp > Create directory for Burp Suite user config"
+  ansible.builtin.file:
+    path: "/home/{{ default_username }}/.BurpSuite/"
+    state: directory
+    mode: '0755'
+  become_user: "{{ default_username }}"
+
+- name: "burp > Copy BurpSuite Community Config"
+  template:
+    src: "templates/UserConfigCommunity.json.j2"
+    dest: "/home/{{ default_username }}/.BurpSuite/UserConfigCommunity.json"
+  become_user: "{{ default_username }}"

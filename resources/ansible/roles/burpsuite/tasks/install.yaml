@@ -48,3 +48,4 @@
       exec java -jar /opt/burpsuite-community-latest.jar "$@"
     mode: "0755"
   become: true
+  

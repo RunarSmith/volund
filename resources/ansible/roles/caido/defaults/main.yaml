@@ -1,7 +1,5 @@
 ---
-
-# keep empty for automatic configuration
-TZ:  # "Europe/Paris"
+# default vars for caido
 
 # default path to store data files
 data_root_path: /opt/data/

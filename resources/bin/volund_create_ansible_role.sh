@@ -33,10 +33,12 @@ fi
 
 # ---------------------------------------------------------
 
-/home/volund/.local/bin/ansible-galaxy init "$role"
+#/home/volund/.local/bin/ansible-galaxy init "$role"
+/home/volund/.local/share/pipx/venvs/ansible/bin/ansible-galaxy init "$role"
 
 # ---------------------------------------------------------
 
+unlink $role/defaults/main.yml
 cat <<EOF > $role/defaults/main.yaml
 ---
 # default vars for $role
@@ -50,6 +52,7 @@ EOF
 
 # ---------------------------------------------------------
 
+unlink $role/handlers/main.yml
 cat <<EOF > $role/handlers/main.yaml
 ---
 # handlers file for $role
@@ -111,6 +114,7 @@ cat <<EOF > $role/tasks/install.yaml
 
 EOF
 
+unlink $role/tasks/main.yml
 cat <<EOF > $role/tasks/main.yaml
 ---
 # tasks file for $role
@@ -159,6 +163,7 @@ cat <<EOF > $role/vars/debian.yaml
 install_packages_os: []
 EOF
 
+unlink $role/vars/main.yml
 cat <<EOF > $role/vars/main.yaml
 ---
 # vars file for $role

@@ -29,6 +29,8 @@ Let Volund be your forge: produce, shape, and reuse your customized working envi
 - Windows with WSL installed (installation requires administrative rights)
 - Podman installed in user mode (podman extracted from zip file is OK)
 
+**Note**: podman is actually the main driver, but docker should run with little modifications. Support for both drivers is planned
+
 ### Installation
 
 1. Clone the repository or download the ZIP:
@@ -49,7 +51,7 @@ Let Volund be your forge: produce, shape, and reuse your customized working envi
 |---|---|
 | `vol init` | Launch Podman. |
 | `vol info` | Show images, containers and volumes. |
-| `vol build -Image <custom image name> -Distribution <source distribution>` | Build a container image based on a chosen distribution. |
+| `vol build -Image <custom image name> -Distribution <source distribution> -Version <image version>` | Build a container image based on a chosen distribution. |
 | `vol start -Container <custom container name> -Image <custom image name>` | Create and start a new container from an image. |
 | `vol start -Container <custom container name> -Image <custom image name> -WithGui` | Create and configure a container to allow GUI applications. |
 | `vol start -Container <custom container name>` | Start an existing container or open a session on a running one. |

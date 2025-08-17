@@ -1,4 +1,4 @@
 ---
-# vars file for burpsuite
+# vars file for caido
 
 install_packages_os: []
