@@ -24,22 +24,11 @@ jobs:
           echo "${{ github.workspace }}\podman\podman-5.5.2\usr\bin" | Out-File -Append -Encoding ascii $env:GITHUB_PATH
         shell: powershell
       
-      - name: Setup a fake/test user config for testing
-        run: |
-
-          New-Item -ItemType Directory -Path $env:USERPROFILE\volund -Force | out-null
-          New-Item -ItemType Directory -Path $env:USERPROFILE\volund\my-resources -Force | out-null
-
-          #Write-Host "=== Write user config ==="
-          #.\volund.ps1 write_user_config
-
-          #$a = (get-content -path $env:USERPROFILE\volund\config.json | convertfrom-json)
-          #$a.buildOpts = "--log-level debug"
-          #$a | convertto-json | Set-content -Path $env:USERPROFILE\volund\config.json 
-
-          #get-content -Path $env:USERPROFILE\volund\config.json
-
-        shell: powershell
+      #- name: Setup a fake/test user config for testing
+      #  run: |
+      #    New-Item -ItemType Directory -Path $env:USERPROFILE\volund -Force | out-null
+      #    New-Item -ItemType Directory -Path $env:USERPROFILE\volund\my-resources -Force | out-null
+      #  shell: powershell
 
       - name: Build Image
         run: .\volund.ps1 build -Image test -Distribution arch -Version 0.0.1
