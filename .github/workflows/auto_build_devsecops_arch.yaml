@@ -1,4 +1,4 @@
-name: Build Base Arch Image
+name: Build DevSecOps Arch Image
 
 on:
   - push
@@ -26,7 +26,7 @@ jobs:
 
       - name: Build Image
         run: |
-          .\volund.ps1 build -Image test -Distribution arch -Version 0.0.1
+          .\volund.ps1 build -Image devsecops-arch -Distribution arch -Version 0.0.1
         shell: powershell
 
       - name: List Images
