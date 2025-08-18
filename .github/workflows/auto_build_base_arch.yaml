@@ -26,9 +26,15 @@ jobs:
       
       - name: Setup a fake/test user config for testing
         run: |
+
           New-Item -ItemType Directory -Path $env:USERPROFILE\volund -Force | out-null
           New-Item -ItemType Directory -Path $env:USERPROFILE\volund\my-resources -Force | out-null
 
+          Write-Host "=== Write user config ==="
+          .\volund.ps1 write_user_config
+
+          get-content -Path $env:USERPROFILE\volund\config.json
+          
         shell: powershell
 
       - name: Build Image
