@@ -17,11 +17,6 @@ jobs:
           mkdir podman
           Invoke-WebRequest -Uri "https://github.com/containers/podman/releases/download/v5.0.0/podman-remote-release-windows_amd64.zip" -OutFile "podman/podman.zip"
           Expand-Archive podman/podman.zip -DestinationPath podman
-
-          write-host "---------------"
-          get-childitem -Path podman/
-          write-host "---------------"
-
         shell: powershell
 
       - name: Add Podman to PATH
@@ -32,6 +27,13 @@ jobs:
       - name: Setup a fake/test user config for testing
         run: |
           New-Item -ItemType Directory -Path $env:USERPROFILE\volund
+
+          write-host "------------------------"
+          get-childitem -path D:\a\volund\volund\resources\
+
+          write-host "------------------------"
+          get-childitem -path C:\Users\runneradmin\volund\my-resources
+
         shell: powershell
 
       - name: Build Image
