@@ -26,6 +26,7 @@ jobs:
       
       - name: Setup a fake/test user config for testing
         run: |
+          New-Item -ItemType Directory -Path $env:USERPROFILE\volund -Force | out-null
           New-Item -ItemType Directory -Path $env:USERPROFILE\volund\my-resources -Force | out-null
 
         shell: powershell
