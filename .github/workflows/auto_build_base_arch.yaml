@@ -12,32 +12,32 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Download/Install podman
       - name: Download Podman (user mode)
         run: |
           mkdir podman
           Invoke-WebRequest -Uri "https://github.com/containers/podman/releases/download/v5.0.0/podman-remote-release-windows_amd64.zip" -OutFile "podman/podman.zip"
-
-          write-host "---------------"
-
-          get-childitem -Path podman
-
-          write-host "---------------"
-
           Expand-Archive podman/podman.zip -DestinationPath podman
+
+          write-host "---------------"
+          get-childitem -Path podman/
+          write-host "---------------"
+
         shell: powershell
 
-      # Add podman folder to PATH
       - name: Add Podman to PATH
         run: |
           echo "${{ github.workspace }}\podman\podman-5.0.0\usr\bin" | Out-File -Append -Encoding ascii $env:GITHUB_PATH
         shell: powershell
+      
+      - name: Setup a fake/test user config for testing
+        run: |
+          New-Item -ItemType Directory -Path $env:USERPROFILE\volund
+        shell: powershell
 
-      # (si WSL/Podman Machine déjà initialisé) Build via wrapper
-      - name: Build Image via Volund (wrapper PowerShell)
+      - name: Build Image
         run: .\volund.ps1 build -Image test -Distribution arch -Version 0.0.1
         shell: powershell
 
-      - name: List Images/Containers
+      - name: List Images
         run: .\volund.ps1 lsi
         shell: powershell
