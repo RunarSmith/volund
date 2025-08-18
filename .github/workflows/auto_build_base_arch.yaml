@@ -33,8 +33,12 @@ jobs:
           Write-Host "=== Write user config ==="
           .\volund.ps1 write_user_config
 
+          $a = (get-content -path C:\Users\Fabien\volund\config.json | convertfrom-json)
+          $a.buildOpts = "--log-level debug"
+          $a | convertto-json | Set-content -Path C:\Users\Fabien\volund\config.json 
+
           get-content -Path $env:USERPROFILE\volund\config.json
-          
+
         shell: powershell
 
       - name: Build Image
