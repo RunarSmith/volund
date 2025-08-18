@@ -30,14 +30,14 @@ jobs:
           New-Item -ItemType Directory -Path $env:USERPROFILE\volund -Force | out-null
           New-Item -ItemType Directory -Path $env:USERPROFILE\volund\my-resources -Force | out-null
 
-          Write-Host "=== Write user config ==="
-          .\volund.ps1 write_user_config
+          #Write-Host "=== Write user config ==="
+          #.\volund.ps1 write_user_config
 
-          $a = (get-content -path $env:USERPROFILE\volund\config.json | convertfrom-json)
-          $a.buildOpts = "--log-level debug"
-          $a | convertto-json | Set-content -Path $env:USERPROFILE\volund\config.json 
+          #$a = (get-content -path $env:USERPROFILE\volund\config.json | convertfrom-json)
+          #$a.buildOpts = "--log-level debug"
+          #$a | convertto-json | Set-content -Path $env:USERPROFILE\volund\config.json 
 
-          get-content -Path $env:USERPROFILE\volund\config.json
+          #get-content -Path $env:USERPROFILE\volund\config.json
 
         shell: powershell
 

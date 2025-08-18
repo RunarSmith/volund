@@ -46,6 +46,7 @@ install_packages:
     - openssl
     - wget
 
+# list of commands to execute after install step, to ensure that applications are running properly
 test_commands:
   - curl --version
   - git --version
@@ -64,3 +65,10 @@ test_commands:
   - wget --version
   - yq --version
   - zip -h2
+
+
+# list of files to cleanup before/after install step execution
+cleanup_temp: []
+
+# list of python packages to install with pipx, in user home directory
+install_pipx_tools: []
