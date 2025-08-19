@@ -11,7 +11,7 @@ jobs:
   base-arch:
     runs-on: windows-2025
     steps:
-
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/vol_build_image
         with:
           image_name: "base-arch"
@@ -23,6 +23,7 @@ jobs:
     needs: base-arch
     runs-on: windows-2025
     steps:
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/vol_build_image
         with:
           image_name: "devsecops-arch"
@@ -34,6 +35,7 @@ jobs:
     needs: devsecops-arch
     runs-on: windows-2025
     steps:
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/vol_build_image
         with:
           image_name: "offsec-arch"
@@ -46,6 +48,7 @@ jobs:
   base-debian:
     runs-on: windows-2025
     steps:
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/vol_build_image
         with:
           image_name: "base-debian"
@@ -57,6 +60,7 @@ jobs:
     needs: base-debian
     runs-on: windows-2025
     steps:
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/vol_build_image
         with:
           image_name: "devsecops-debian"
@@ -68,6 +72,7 @@ jobs:
     needs: devsecops-debian
     runs-on: windows-2025
     steps:
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/vol_build_image
         with:
           image_name: "offsec-debian"
@@ -80,6 +85,7 @@ jobs:
   base-fedora:
     runs-on: windows-2025
     steps:
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/vol_build_image
         with:
           image_name: "base-fedora"
@@ -91,6 +97,7 @@ jobs:
     needs: base-fedora
     runs-on: windows-2025
     steps:
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/vol_build_image
         with:
           image_name: "devsecops-fedora"
@@ -102,6 +109,7 @@ jobs:
     needs: devsecops-fedora
     runs-on: windows-2025
     steps:
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/vol_build_image
         with:
           image_name: "offsec-fedora"
