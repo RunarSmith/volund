@@ -11,10 +11,8 @@ jobs:
   base-arch:
     runs-on: windows-2025
     steps:
-      - run: pwd
-      - run: ls -la
 
-      - uses: ./.github/actions/vol_build_image
+      - uses: .\.github\actions\vol_build_image
         with:
           image_name: "base-arch"
           base_distrib: "arch"
