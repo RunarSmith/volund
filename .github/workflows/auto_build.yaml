@@ -43,6 +43,19 @@ jobs:
           image_role: "offsec"
           image_version: "0.1.0"
 
+  # --- ArchLinux -----------------------------------------
+
+  base-blackarch:
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/vol_build_image
+        with:
+          image_name: "base-blackarch"
+          base_distrib: "blackarch"
+          image_role: "base"
+          image_version: "0.1.0"
+
   # --- Debian --------------------------------------------
 
   base-debian:
@@ -115,4 +128,30 @@ jobs:
           image_name: "offsec-fedora"
           base_distrib: "fedora"
           image_role: "offsec"
+          image_version: "0.1.0"
+
+  # --- Kali -----------------------------------------
+
+  base-kali:
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/vol_build_image
+        with:
+          image_name: "base-kali"
+          base_distrib: "kali"
+          image_role: "base"
+          image_version: "0.1.0"
+
+  # --- Parrot -----------------------------------------
+
+  base-parrot:
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/vol_build_image
+        with:
+          image_name: "base-parrot"
+          base_distrib: "parrot"
+          image_role: "base"
           image_version: "0.1.0"

@@ -30,14 +30,14 @@ runs:
 
     - name: Download Podman (user mode)
       run: |
-        mkdir podman
-        Invoke-WebRequest -Uri "https://github.com/containers/podman/releases/download/v5.5.2/podman-remote-release-windows_amd64.zip" -OutFile "podman/podman.zip"
-        Expand-Archive podman/podman.zip -DestinationPath podman
-      shell: powershell
+        New-Item -Path "." -Name "podman" -ItemType "Directory" | Out-Null
 
-    - name: Add Podman to PATH
-      run: |
-        echo "${{ github.workspace }}\podman\podman-5.5.2\usr\bin" | Out-File -Append -Encoding ascii $env:GITHUB_PATH
+        Invoke-WebRequest -Uri "https://github.com/containers/podman/releases/download/v5.5.2/podman-remote-release-windows_amd64.zip" -OutFile "podman/podman.zip"
+
+        Expand-Archive podman/podman.zip -DestinationPath podman
+
+        "${{ github.workspace }}\podman\podman-5.5.2\usr\bin" | Out-File -Append -Encoding ascii $env:GITHUB_PATH
+      
       shell: powershell
 
     - name: Build Image

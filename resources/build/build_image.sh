@@ -75,20 +75,17 @@ esac
 
 echo "Detected OS: ${OS_FAMILLY_NAME} (${VERSION_ID})"
 
-
-
-if [ "x$IMAGE_NAME" != "x" ]; then
-    echo "Image : ${IMAGE_NAME}"
+if [ "x$VOLUND_IMAGE_NAME" != "x" ]; then
+    echo "Image : ${VOLUND_IMAGE_NAME}"
 else 
-    echo "Replaying from a container"
-    CONTAINER_NAME=$(cat /etc/hostname)
-    export IMAGE_ROLE=$(echo ${CONTAINER_NAME} | cut -d "-" -f 2)
-    export IMAGE_DISTRIBUTION=$(echo ${CONTAINER_NAME} | cut -d "-" -f 3)
-
-    echo "role:    $IMAGE_ROLE"
-    echo "distrib: $IMAGE_DISTRIBUTION"
+    die "VOLUND_IMAGE_NAME environment variable is not set."
 fi
 
+if [ "x$VOLUND_IMAGE_ROLE" != "x" ]; then
+    echo "Role : ${VOLUND_IMAGE_ROLE}"
+else 
+    die "VOLUND_IMAGE_ROLE environment variable is not set."
+fi
 
 # =========================================================
 
@@ -177,19 +174,19 @@ cd /opt/resources/ansible
 
 print_header "Ansible Playbook Execution : Container Configuration"
 
-echo "Image : ${IMAGE_NAME}"
+#echo "Image : ${VOLUND_IMAGE_NAME}"
 
-export IMAGE_ROLE=$(echo ${IMAGE_NAME} | cut -d "-" -f 1)
-export IMAGE_DISTRIBUTION=$(echo ${IMAGE_NAME} | cut -d "-" -f 2)
+#export IMAGE_ROLE=$(echo ${VOLUND_IMAGE_NAME} | cut -d "-" -f 1)
+#export IMAGE_DISTRIBUTION=$(echo ${VOLUND_IMAGE_NAME} | cut -d "-" -f 2)
 
-echo "role:    $IMAGE_ROLE"
-echo "distrib: $IMAGE_DISTRIBUTION"
+#echo "role:    $IMAGE_ROLE"
+#echo "distrib: $IMAGE_DISTRIBUTION"
 
 export ANSIBLE_FORCE_COLOR=True
 export ACTIVE_ACTIONS=install,config,check,hardening
-if [ -f ./playbook-${IMAGE_ROLE}.yaml ]; then
-    echo "===> Using playbook-${IMAGE_ROLE}.yaml <==="
-    ansible-playbook -i ./inventory.yaml ./playbook-${IMAGE_ROLE}.yaml || die "Failed to execute Ansible playbook"
+if [ -f ./playbook-${VOLUND_IMAGE_ROLE}.yaml ]; then
+    echo "===> Using playbook-${VOLUND_IMAGE_ROLE}.yaml <==="
+    ansible-playbook -i ./inventory.yaml ./playbook-${VOLUND_IMAGE_ROLE}.yaml || die "Failed to execute Ansible playbook"
 else
     echo "===> Using playbook.yaml <==="
     ansible-playbook -i ./inventory.yaml ./playbook.yaml || die "Failed to execute Ansible playbook"

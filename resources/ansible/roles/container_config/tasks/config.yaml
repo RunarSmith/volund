@@ -234,7 +234,7 @@
         path: "/tmp/paru-bin/"
         state: absent
       become: true
-  when: ansible_os_family == 'Archlinux'
+  when: ansible_os_family == 'Archlinux' and false # Experimental
 
 # --- python ----------------------------------------------
 
