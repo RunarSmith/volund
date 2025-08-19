@@ -11,7 +11,10 @@ jobs:
   base-arch:
     runs-on: windows-2025
     steps:
-      - uses: .github/actions/vol_build_image
+      - run: pwd
+      - run: ls -la
+
+      - uses: ./.github/actions/vol_build_image
         with:
           image_name: "base-arch"
           base_distrib: "arch"
@@ -22,7 +25,7 @@ jobs:
     needs: base-arch
     runs-on: windows-2025
     steps:
-      - uses: .github/actions/vol_build_image
+      - uses: ./.github/actions/vol_build_image
         with:
           image_name: "devsecops-arch"
           base_distrib: "arch"
@@ -33,7 +36,7 @@ jobs:
     needs: devsecops-arch
     runs-on: windows-2025
     steps:
-      - uses: .github/actions/vol_build_image
+      - uses: ./.github/actions/vol_build_image
         with:
           image_name: "offsec-arch"
           base_distrib: "arch"
@@ -45,7 +48,7 @@ jobs:
   base-debian:
     runs-on: windows-2025
     steps:
-      - uses: .github/actions/vol_build_image
+      - uses: ./.github/actions/vol_build_image
         with:
           image_name: "base-debian"
           base_distrib: "debian"
@@ -56,7 +59,7 @@ jobs:
     needs: base-debian
     runs-on: windows-2025
     steps:
-      - uses: .github/actions/vol_build_image
+      - uses: ./.github/actions/vol_build_image
         with:
           image_name: "devsecops-debian"
           base_distrib: "debian"
@@ -67,7 +70,7 @@ jobs:
     needs: devsecops-debian
     runs-on: windows-2025
     steps:
-      - uses: .github/actions/vol_build_image
+      - uses: ./.github/actions/vol_build_image
         with:
           image_name: "offsec-debian"
           base_distrib: "debian"
@@ -79,7 +82,7 @@ jobs:
   base-fedora:
     runs-on: windows-2025
     steps:
-      - uses: .github/actions/vol_build_image
+      - uses: ./.github/actions/vol_build_image
         with:
           image_name: "base-fedora"
           base_distrib: "fedora"
@@ -90,7 +93,7 @@ jobs:
     needs: base-fedora
     runs-on: windows-2025
     steps:
-      - uses: .github/actions/vol_build_image
+      - uses: ./.github/actions/vol_build_image
         with:
           image_name: "devsecops-fedora"
           base_distrib: "fedora"
@@ -101,7 +104,7 @@ jobs:
     needs: devsecops-fedora
     runs-on: windows-2025
     steps:
-      - uses: .github/actions/vol_build_image
+      - uses: ./.github/actions/vol_build_image
         with:
           image_name: "offsec-fedora"
           base_distrib: "fedora"
