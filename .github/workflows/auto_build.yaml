@@ -6,7 +6,7 @@ on:
 
 jobs:
 
-  # --- ArchLinux -----------------------------------------
+  # --- Base -----------------------------------------
 
   base-arch:
     runs-on: windows-2025
@@ -19,32 +19,6 @@ jobs:
           image_role: "base"
           image_version: "0.1.0"
 
-  devsecops-arch:
-    needs: base-arch
-    runs-on: windows-2025
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/vol_build_image
-        with:
-          image_name: "devsecops-arch"
-          base_distrib: "arch"
-          image_role: "devsecops"
-          image_version: "0.1.0"
-
-  offsec-arch:
-    needs: devsecops-arch
-    runs-on: windows-2025
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/vol_build_image
-        with:
-          image_name: "offsec-arch"
-          base_distrib: "arch"
-          image_role: "offsec"
-          image_version: "0.1.0"
-
-  # --- ArchLinux -----------------------------------------
-
   base-blackarch:
     runs-on: windows-2025
     steps:
@@ -55,8 +29,6 @@ jobs:
           base_distrib: "blackarch"
           image_role: "base"
           image_version: "0.1.0"
-
-  # --- Debian --------------------------------------------
 
   base-debian:
     runs-on: windows-2025
@@ -69,32 +41,6 @@ jobs:
           image_role: "base"
           image_version: "0.1.0"
 
-  devsecops-debian:
-    needs: base-debian
-    runs-on: windows-2025
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/vol_build_image
-        with:
-          image_name: "devsecops-debian"
-          base_distrib: "debian"
-          image_role: "devsecops"
-          image_version: "0.1.0"
-
-  offsec-debian:
-    needs: devsecops-debian
-    runs-on: windows-2025
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/vol_build_image
-        with:
-          image_name: "offsec-debian"
-          base_distrib: "debian"
-          image_role: "offsec"
-          image_version: "0.1.0"
-
-  # --- Fedora --------------------------------------------
-
   base-fedora:
     runs-on: windows-2025
     steps:
@@ -105,32 +51,6 @@ jobs:
           base_distrib: "fedora"
           image_role: "base"
           image_version: "0.1.0"
-
-  devsecops-fedora:
-    needs: base-fedora
-    runs-on: windows-2025
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/vol_build_image
-        with:
-          image_name: "devsecops-fedora"
-          base_distrib: "fedora"
-          image_role: "devsecops"
-          image_version: "0.1.0"
-
-  offsec-fedora:
-    needs: devsecops-fedora
-    runs-on: windows-2025
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/vol_build_image
-        with:
-          image_name: "offsec-fedora"
-          base_distrib: "fedora"
-          image_role: "offsec"
-          image_version: "0.1.0"
-
-  # --- Kali -----------------------------------------
 
   base-kali:
     runs-on: windows-2025
@@ -143,8 +63,6 @@ jobs:
           image_role: "base"
           image_version: "0.1.0"
 
-  # --- Parrot -----------------------------------------
-
   base-parrot:
     runs-on: windows-2025
     steps:
@@ -154,4 +72,107 @@ jobs:
           image_name: "base-parrot"
           base_distrib: "parrot"
           image_role: "base"
+          image_version: "0.1.0"
+
+  # --- RDV -----------------------------------------
+  
+  base_rdv:
+    runs-on: ubuntu-latest
+    needs:
+      - base-arch
+      - base-blackarch
+      - base-debian
+      - base-fedora
+      - base-kali
+      - base-parrot
+    steps:
+      - run: echo "RDV base image built successfully"
+        shell: bash
+
+  # --- DevSecOps -----------------------------------------
+
+  devsecops-arch:
+    needs: base_rdv
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/vol_build_image
+        with:
+          image_name: "devsecops-arch"
+          base_distrib: "arch"
+          image_role: "devsecops"
+          image_version: "0.1.0"
+
+  devsecops-debian:
+    needs: base_rdv
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/vol_build_image
+        with:
+          image_name: "devsecops-debian"
+          base_distrib: "debian"
+          image_role: "devsecops"
+          image_version: "0.1.0"
+
+  devsecops-fedora:
+    needs: base_rdv
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/vol_build_image
+        with:
+          image_name: "devsecops-fedora"
+          base_distrib: "fedora"
+          image_role: "devsecops"
+          image_version: "0.1.0"
+
+  # --- RDV -----------------------------------------
+  
+  devsecops_rdv:
+    runs-on: ubuntu-latest
+    needs:
+      - devsecops-arch
+      - devsecops-debian
+      - devsecops-fedora
+    steps:
+      - run: echo "RDV base image built successfully"
+        shell: bash
+
+  # --- OffSec -----------------------------------------
+
+  offsec-arch:
+    needs: devsecops_rdv
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/vol_build_image
+        with:
+          image_name: "offsec-arch"
+          base_distrib: "arch"
+          image_role: "offsec"
+          image_version: "0.1.0"
+
+  offsec-debian:
+    needs: devsecops_rdv
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/vol_build_image
+        with:
+          image_name: "offsec-debian"
+          base_distrib: "debian"
+          image_role: "offsec"
+          image_version: "0.1.0"
+
+  offsec-fedora:
+    needs: devsecops_rdv
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/vol_build_image
+        with:
+          image_name: "offsec-fedora"
+          base_distrib: "fedora"
+          image_role: "offsec"
           image_version: "0.1.0"
