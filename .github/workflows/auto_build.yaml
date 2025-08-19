@@ -12,7 +12,7 @@ jobs:
     runs-on: windows-2025
     steps:
 
-      - uses: .\.github\actions\vol_build_image
+      - uses: ./.github/actions/vol_build_image
         with:
           image_name: "base-arch"
           base_distrib: "arch"
