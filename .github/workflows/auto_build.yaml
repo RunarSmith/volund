@@ -1,0 +1,109 @@
+name: Parallel and Sequential Jobs Example
+
+on:
+  push:
+    branches: [ main ] # Ou tout autre déclencheur voulu
+
+jobs:
+
+  # --- ArchLinux -----------------------------------------
+
+  base-arch:
+    runs-on: windows-2025
+    steps:
+      - uses: ./.github/actions/vol_build_image
+        with:
+          image_name: "base-arch"
+          base_distrib: "arch"
+          image_role: "base"
+          image_version: "0.1.0"
+
+  devsecops-arch:
+    needs: base-arch
+    runs-on: windows-2025
+    steps:
+      - uses: ./.github/actions/vol_build_image
+        with:
+          image_name: "devsecops-arch"
+          base_distrib: "arch"
+          image_role: "devsecops"
+          image_version: "0.1.0"
+
+  offsec-arch:
+    needs: devsecops-arch
+    runs-on: windows-2025
+    steps:
+      - uses: ./.github/actions/vol_build_image
+        with:
+          image_name: "offsec-arch"
+          base_distrib: "arch"
+          image_role: "offsec"
+          image_version: "0.1.0"
+
+  # --- Debian --------------------------------------------
+
+  base-debian:
+    runs-on: windows-2025
+    steps:
+      - uses: ./.github/actions/vol_build_image
+        with:
+          image_name: "base-debian"
+          base_distrib: "debian"
+          image_role: "base"
+          image_version: "0.1.0"
+
+  devsecops-debian:
+    needs: base-debian
+    runs-on: windows-2025
+    steps:
+      - uses: ./.github/actions/vol_build_image
+        with:
+          image_name: "devsecops-debian"
+          base_distrib: "debian"
+          image_role: "devsecops"
+          image_version: "0.1.0"
+
+  offsec-debian:
+    needs: devsecops-debian
+    runs-on: windows-2025
+    steps:
+      - uses: ./.github/actions/vol_build_image
+        with:
+          image_name: "offsec-debian"
+          base_distrib: "debian"
+          image_role: "offsec"
+          image_version: "0.1.0"
+
+  # --- Fedora --------------------------------------------
+
+  base-fedora:
+    runs-on: windows-2025
+    steps:
+      - uses: ./.github/actions/vol_build_image
+        with:
+          image_name: "base-fedora"
+          base_distrib: "fedora"
+          image_role: "base"
+          image_version: "0.1.0"
+
+  devsecops-fedora:
+    needs: base-fedora
+    runs-on: windows-2025
+    steps:
+      - uses: ./.github/actions/vol_build_image
+        with:
+          image_name: "devsecops-fedora"
+          base_distrib: "fedora"
+          image_role: "devsecops"
+          image_version: "0.1.0"
+
+  offsec-fedora:
+    needs: devsecops-fedora
+    runs-on: windows-2025
+    steps:
+      - uses: ./.github/actions/vol_build_image
+        with:
+          image_name: "offsec-fedora"
+          base_distrib: "fedora"
+          image_role: "offsec"
+          image_version: "0.1.0"
