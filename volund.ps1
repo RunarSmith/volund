@@ -1426,10 +1426,10 @@ if ( $driver.isRunning() -ne "running" ) {
     LogInfo "Container driver is not running, starting it now..."
     $driver.Start()
 
-    if ( $driver.isRunning() -ne "running" ) {
-        LogError "Could not start Container Driver !"
-        exit 1
-    }
+    #if ( $driver.isRunning() -ne "running" ) {
+    #    LogError "Could not start Container Driver !"
+    #    exit 1
+    #}
 
 }
 
