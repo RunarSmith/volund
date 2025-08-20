@@ -29,7 +29,7 @@ $ScriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Definition
 
 # === Trace / Log =========================================
 
-$global:TraceDebug = $true
+$global:TraceDebug = $false
 $global:TraceExec = $false
 
 function LogError {
@@ -1426,11 +1426,12 @@ if ( $driver.isRunning() -ne "running" ) {
     LogInfo "Container driver is not running, starting it now..."
     $driver.Start()
 
-    #if ( $driver.isRunning() -ne "running" ) {
-    #    LogError "Could not start Container Driver !"
-    #    exit 1
-    #}
+    wsl --list
 
+    if ( $driver.isRunning() -ne "running" ) {
+        LogError "Could not start Container Driver !"
+        exit 1
+    }
 }
 
 $imageMngr = [ImageManager]::new( $driver, $config )
