@@ -42,7 +42,7 @@ runs:
     
     - name: mock environment
       run: |
-        New-Item -Path "." -Name "${env:USERPROFILE}\volund" -ItemType "Directory" | Out-Null
+        New-Item -Path ${env:USERPROFILE} -Name volund -ItemType "Directory" | Out-Null
 
       shell: powershell
 
