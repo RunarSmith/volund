@@ -29,7 +29,7 @@ $ScriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Definition
 
 # === Trace / Log =========================================
 
-$global:TraceDebug = $false
+$global:TraceDebug = $true
 $global:TraceExec = $false
 
 function LogError {
