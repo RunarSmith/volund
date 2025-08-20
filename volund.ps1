@@ -332,10 +332,10 @@ class ContainerDriver {
     [void] Start() {
         LogDbg "> ContainerDriver::Start()"
 
-        if ( $this.isRunning() -eq "running") { 
-            LogSuccess "podman is already running"
-            return
-        }
+        #if ( $this.isRunning() -eq "running") { 
+        #    LogSuccess "podman is already running"
+        #    return
+        #}
 
         # Start Podman service if not running
         #try {
@@ -355,13 +355,14 @@ class ContainerDriver {
 
         try {
             # initialise / create the VM
-            if ($this.config.get("podman").init.command) {
-                LogInfo( "Initializing Podman WSL image")
-                [ExternalCommandHelper]::ExecCommand($this.config.get("podman").init.command + " ; echo OK")
-            } else {
-                LogInfo( "Initializing Podman WSL image with default command")
-                [ExternalCommandHelper]::ExecCommand("podman machine init  ; echo OK")
-            }
+            #if ($this.config.get("podman").init.command) {
+            #    LogInfo( "Initializing Podman WSL image")
+            #    [ExternalCommandHelper]::ExecCommand($this.config.get("podman").init.command + " ; echo OK")
+            #} else {
+            #    LogInfo( "Initializing Podman WSL image with default command")
+            #    [ExternalCommandHelper]::ExecCommand("podman machine init  ; echo OK")
+            #}
+            podman machine init --rootful=false --user-mode-networking=true
         } catch {
             LogWarn "Problème d'init de Podman."
             #exit 1
@@ -711,60 +712,6 @@ class ContainerDriver {
         }
     }
 }
-
-# =========================================================
-# = Container, Volume, Image Classes
-# =========================================================
-
-#class Container {
-#    [string]$Id
-#    [string]$Name
-#
-#    Container([string]$id, [string]$name) {
-#        $this.Id = $id
-#        $this.Name = $name
-#    }
-#
-#    [void] Start([ContainerDriver]$driver) {
-#        # Appeler le driver pour démarrer le conteneur
-#    }
-#
-#    [void] Stop([ContainerDriver]$driver) {
-#        # Appeler le driver pour stopper le conteneur
-#    }
-#
-#    [void] RunShell([ContainerDriver]$driver) {
-#        $driver.RunShell($this.Id)
-#    }
-#}
-
-#class Volume {
-#    [string]$Name
-#
-#    Volume([string]$name) {
-#        $this.Name = $name
-#    }
-#
-#    #[void] Create([ContainerDriver]$driver, [hashtable]$params) {
-#    #    $driver.CreateVolume($params)
-#    #}
-#
-#    [void] Remove([ContainerDriver]$driver) {
-#        # Implémentation pour supprimer le volume
-#    }
-#}
-
-
-#class Image {
-#    [string]$Name
-#    [string]$Tag
-#
-#    Image([string]$name, [string]$tag) {
-#        $this.Name = $name
-#        $this.Tag = $tag
-#    }
-#}
-
 
 # =========================================================
 # = Image Manager
