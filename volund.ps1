@@ -1431,6 +1431,8 @@ if ( $driver.isRunning() -ne "running" ) {
     #podman system connection list
 
     #podman machine inspect
+    
+    $Env:DOCKER_HOST = 'npipe:////./pipe/podman-machine-default'
 
     podman machine start
 
