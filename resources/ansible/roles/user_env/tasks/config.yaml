@@ -9,6 +9,7 @@
     dest: "/home/{{ default_username }}/.tmux.conf"
     owner: "{{ default_username }}"
     group: "{{ default_username }}"
+  become: true
   become_user: "{{ default_username }}"
 
 # --- (neo)vim ------------------------------------------------
@@ -20,6 +21,7 @@
     dest: "/home/{{ default_username }}/.config/nvim"
     depth: 1
     update: no
+  become: true
   become_user: "{{ default_username }}"
 
 - name: remove default init.lua
@@ -27,6 +29,7 @@
     path: "/home/{{ default_username }}/.config/nvim/init.lua"
     state: absent
     force: yes
+  become: true
   become_user: "{{ default_username }}"
 
 - name: replace default init.lua with custom one
@@ -35,11 +38,13 @@
     dest: "/home/{{ default_username }}/.config/nvim/init.lua"
     owner: "{{ default_username }}"
     group: "{{ default_username }}"
+  become: true
   become_user: "{{ default_username }}"
 
 - name: Sync LazyVim plugins
   ansible.builtin.command:
     cmd: nvim --headless +"Lazy! sync" +qa
+  become: true
   become_user: "{{ default_username }}"
   environment:
     HOME: "/home/{{ default_username }}"

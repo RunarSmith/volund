@@ -85,6 +85,79 @@ function LogDbg {
     }
 }
 
+# === Console =============================================
+
+function Show-RichTable {
+    param(
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
+        [Object[]] $InputObject,
+
+        [ConsoleColor] $HeaderColor = 'Cyan',
+        [ConsoleColor] $BorderColor = 'DarkGray',
+        [ConsoleColor] $RowColor = 'White'
+    )
+
+    begin {
+        $rows = @()
+    }
+    process {
+        $rows += $_
+    }
+    end {
+        if (-not $rows) { return }
+
+        # Récupère les propriétés à afficher
+        $props = $rows[0].PSObject.Properties.Name
+
+        # Calcule la largeur max pour chaque colonne
+        $colWidths = @{}
+        $props | foreach-object {
+            $p = $_
+            $maxLen = ($rows | ForEach-Object { "$($_.$p)" }).ForEach({ $_.Length }) | Measure-Object -Maximum | Select-Object -ExpandProperty Maximum
+            $colWidths[$p] = [Math]::Max($maxLen, $p.Length)
+        }
+
+        # Construit les lignes horizontales
+        $hLineTop    = "+" + (($props | ForEach-Object { "-" * ($colWidths[$_] + 2) }) -join "+") + "+"
+        $hLineHeader = "+" + (($props | ForEach-Object { "=" * ($colWidths[$_] + 2) }) -join "+") + "+"
+        $hLineBottom = $hLineTop
+
+        # Affiche top border
+        Write-Host $hLineTop -ForegroundColor $BorderColor
+
+        # Affiche l’en-tête
+        Write-Host -NoNewLine -ForegroundColor $BorderColor "|"
+        $props | foreach-object {
+            $p = $_
+            Write-Host -NoNewLine " "
+            Write-Host -NoNewLine -ForegroundColor $HeaderColor $p.PadRight($colWidths[$p])
+            Write-Host -NoNewLine -ForegroundColor $BorderColor " |"
+        }
+        Write-Host ""
+
+        # Ligne de séparation en dessous de l’en-tête
+        Write-Host $hLineHeader -ForegroundColor $BorderColor
+
+        # Affiche les données
+        $rows | foreach-object {
+            $row = $_
+            Write-Host -NoNewLine -ForegroundColor $BorderColor "|"
+            $props | foreach-object {
+                $p = $_
+                $value = if ($null -eq $row.$p) { "" } else { "$($row.$p)" }
+                Write-Host -NoNewLine " " 
+                Write-Host -NoNewLine -ForegroundColor $RowColor $value.PadRight($colWidths[$p])
+                
+                Write-Host -NoNewLine -ForegroundColor $BorderColor " |"
+            }
+             Write-Host "" 
+        }
+
+        # Ligne de bas
+        Write-Host $hLineBottom -ForegroundColor $BorderColor
+    }
+}
+
 # === Configuration =======================================
 
 class Configuration {
@@ -643,56 +716,54 @@ class ContainerDriver {
 # = Container, Volume, Image Classes
 # =========================================================
 
-class Container {
-    [string]$Id
-    [string]$Name
+#class Container {
+#    [string]$Id
+#    [string]$Name
+#
+#    Container([string]$id, [string]$name) {
+#        $this.Id = $id
+#        $this.Name = $name
+#    }
+#
+#    [void] Start([ContainerDriver]$driver) {
+#        # Appeler le driver pour démarrer le conteneur
+#    }
+#
+#    [void] Stop([ContainerDriver]$driver) {
+#        # Appeler le driver pour stopper le conteneur
+#    }
+#
+#    [void] RunShell([ContainerDriver]$driver) {
+#        $driver.RunShell($this.Id)
+#    }
+#}
 
-    Container([string]$id, [string]$name) {
-        $this.Id = $id
-        $this.Name = $name
-    }
-
-    [void] Start([ContainerDriver]$driver) {
-        # Appeler le driver pour démarrer le conteneur
-    }
-
-    [void] Stop([ContainerDriver]$driver) {
-        # Appeler le driver pour stopper le conteneur
-    }
-
-    [void] RunShell([ContainerDriver]$driver) {
-        $driver.RunShell($this.Id)
-    }
-}
-
-class Volume {
-    [string]$Name
-
-    Volume([string]$name) {
-        $this.Name = $name
-    }
-
-    #[void] Create([ContainerDriver]$driver, [hashtable]$params) {
-    #    $driver.CreateVolume($params)
-    #}
-
-    [void] Remove([ContainerDriver]$driver) {
-        # Implémentation pour supprimer le volume
-    }
-}
-
-
-class Image {
-    [string]$Name
-    [string]$Tag
-
-    Image([string]$name, [string]$tag) {
-        $this.Name = $name
-        $this.Tag = $tag
-    }
+#class Volume {
+#    [string]$Name
+#
+#    Volume([string]$name) {
+#        $this.Name = $name
+#    }
+#
+#    #[void] Create([ContainerDriver]$driver, [hashtable]$params) {
+#    #    $driver.CreateVolume($params)
+#    #}
+#
+#    [void] Remove([ContainerDriver]$driver) {
+#        # Implémentation pour supprimer le volume
+#    }
+#}
 
 
-}
+#class Image {
+#    [string]$Name
+#    [string]$Tag
+#
+#    Image([string]$name, [string]$tag) {
+#        $this.Name = $name
+#        $this.Tag = $tag
+#    }
+#}
 
 
 # =========================================================
@@ -718,7 +789,7 @@ class ImageManager {
         $this.Config = $config
     }
 
-    [Image[]] ListImages() {
+    [Object[]] ListImages() {
         LogDbg "> Imagemanager::ListImages"
         $labelImages = $this.Config.get("labelImages")
 
@@ -733,13 +804,18 @@ class ImageManager {
             LogDbg ( ">>>> image: {0}" -f ($_ | out-string ) )
 
             $image = $this.Driver.GetImage( $_.id )
+            #$image | Select-Object -Property RepoTags[0],Labels.distribution
 
-            $imagesout += [Image]::new( $image.RepoTags, $image.RepoTags)
+            $imagesout += [PSCustomObject]@{
+                Name = ($image.RepoTags -replace "localhost/","")
+                Distribution = $image.Labels.distribution
+                Role = ($image.Config.Env | Where-Object { $_ -like "VOLUND_IMAGE_ROLE=*"} | Select-Object -First 1) -replace "VOLUND_IMAGE_ROLE=",""
+            }
         }
         return $imagesout
     }
 
-    [Image] BuildImage( [string]$ImageName, [string]$Role, [string]$Distribution, [string]$Version = "latest" ) {
+    [void] BuildImage( [string]$ImageName, [string]$Role, [string]$Distribution, [string]$Version = "latest" ) {
         LogDbg "> Imagemanager::Buildimage"
 
         LogInfo "Ensure bash scripts are in UNIX line ending format for proper image build"
@@ -770,7 +846,7 @@ class ImageManager {
         [ExternalCommandHelper]::ExecCommand(("podman pull $distribImageRef {0}" -f $this.config.get("pullOpts")))
         if ($LastExitCode -ne 0) { 
             LogError "Failed to pull base distribution image: $distribImageRef"
-            return $null
+            return #$null
         }
 
         $params = @{
@@ -804,53 +880,25 @@ class ImageManager {
         
         if (-not $imgName) {
             LogError "Failed to build image."
-            return $null
+            return #$null
         }
-        
-#        if ($false) {
-#            Write-Host -ForegroundColor Cyan "ℹ️ re-tagging image as latest"
-#
-#            # untag previous "latest" image
-#            $this.Driver.ListImages( $this.config.get("labelImages")+"=true"  ) | Where-Object { ( "localhost/{0}:latest" -f $imageName) -in $_.Names  } | ForEach-Object {
-#                Write-host ("Removing previous 'latest' tag from image {0} @ {1}" -f $_.Name,$_.Id)
-#                #podman untag $_.Id ( "localhost/{0}:latest" -f $imageName)
-#                $this.Driver.UntagImage( $_.Id , ( "localhost/{0}:latest" -f $imageName) )
-#            }
-#            
-#            $this.Driver.TagImage( $imgName, ("{0}:latest" -f $imageName) )
-#
-#            Write-Host -ForegroundColor Cyan "ℹ️ Cleaning old images ..."
-#            $this.CleanOldImages()
-#        }
-
 
         $image = $this.Driver.Getimage( ("{0}:{1}" -f $imageName,$Version) )
 
-#        if ($false) {
-#            $image.RepoTags | Where-Object { $_ -notlike "*:latest" } | ForEach-Object {
-#                write-host ("Removing label {0} from image {1}" -f $_, $image.Id)
-#                $this.Driver.UntagImage( $image.Id, $_ )
-#            }
-#        }
-
         if (-not $image) {
             LogError "Failed to retrieve image after build."
-            return $null
+            return #$null
         }
 
-        Write-Host $image
+        # Write-Host $image
 
-        return [Image]::new( $image.RepoTags[0], "" )
+        # return [Image]::new( $image.RepoTags[0], "" )
     }
 
     [void] CleanOldImages() {
         $labelImages = $this.Config.get("labelImages")
 
         $images = $this.Driver.ListImages( "$labelImages=true" )
-        # remove image not with 'latest' tag
-        #$images | ForEach-Object { 
-        #    Write-Host ("Image {0}:{1} - Labels: {2}" -f $_.Names, $_.Tag, $_.Labels)
-        #}
 
         $images | 
             ForEach-Object { 
@@ -904,10 +952,6 @@ class WorkspaceManager {
         LogDbg ( "> WorkspaceManager::GetWorkspacePath() - {0}" -f $name)
         # Return the workspace path for the given container name
         $workspacePath = Join-Path $this.WorkspaceRootPath $name
-        #if (-not (Test-Path $workspacePath)) {
-        #    Write-Host -ForegroundColor Red ("Workspace path '{0}' does not exist." -f $workspacePath)
-        #    return $null
-        #}
         return $workspacePath
     }
 
@@ -1026,7 +1070,7 @@ class ContainerManager {
         $this.ContainerListener = $null
     }
 
-    [Container] StartContainer([string]$Name, [string]$ImageName, [string]$Volume, [boolean]$WithGui, [Boolean]$OpenWorkspace, [string]$VpnConfig = $null) {
+    [void] StartContainer([string]$Name, [string]$ImageName, [string]$Volume, [boolean]$WithGui, [Boolean]$OpenWorkspace, [string]$VpnConfig = $null) {
         LogDbg ( "> ContainerManager::StartContainer() - c:{0} iamge:{1} Gui:{2} openWorkspece:{3}" -f $Name,$ImageName,$WithGui, $OpenWorkspace)
         
         $workspaceFilePath = $this.WorkspaceManager.GetWorkspacePath( $Name )
@@ -1034,10 +1078,32 @@ class ContainerManager {
 
         $this.ContainerListener.Start()
 
-        if ( $VpnConfig -and -not (Test-Path -Path $VpnConfig) ) {
-            LogError ("VPN configuration file '{0}' does not exist." -f $VpnConfig)
-            return $null
+        $myresourcesPaths = $this.config.Get("myResourcesVolume")
+
+        $realVpnConfigFile = $null
+        if ( $VpnConfig ) {
+            # determine the VpnConfig file path
+            if (Test-Path -Path $VpnConfig) {
+                # OK
+                $realVpnConfigFile = $VpnConfig
+            } else {
+                $altPath = ("{0}/setup/openvpn/{1}" -f $myresourcesPaths.hostPath,$VpnConfig ) 
+
+                if (Test-Path -Path $altPath) {
+                    # OK
+                    $realVpnConfigFile = $altPath
+                } else {
+                    # vpn file not found
+                    LogError ("VPN configuration file '{0}' does not exist." -f $VpnConfig)
+                    return #$null
+                }
+            }
         }
+
+        #if ( $VpnConfig -and -not (Test-Path -Path $VpnConfig) -and -not (Test-Path -Path ( Join-Path -Path $myresourcesPaths -ChildPath setup/openvpn/$VpnConfig)) ) {
+        #    LogError ("VPN configuration file '{0}' does not exist." -f $VpnConfig)
+        #    return $null
+        #}
 
         $rslt = $this.Driver.GetContainer( $Name )
         if ( $null -eq $rslt ) {
@@ -1057,7 +1123,6 @@ class ContainerManager {
             $resourcesPaths = $this.config.Get("sharedResourcesVolume")
             $BackendMountResources =  ( "{0}:{1}:ro" -f $resourcesPaths.hostPath ,$resourcesPaths.mountPath)
 
-            $myresourcesPaths = $this.config.Get("myResourcesVolume")
             $BackendMountMyresources =  ( "{0}:{1}" -f $myresourcesPaths.hostPath ,$myresourcesPaths.mountPath)
 
             $workspacePathObj = $this.config.Get("workspaceVolume")
@@ -1070,8 +1135,18 @@ class ContainerManager {
                         $BackendMountMyresources,
                         $BackendMountWorkspace
                     )
+
             if ($VpnConfig) {
-                $BackendMountVpn = ( "{0}:/opt/openvpn-config.ovpn" -f $VpnConfig )
+                $BackendMountVpn = $null
+                #if (Test-Path -Path $VpnConfig) { 
+                #    $BackendMountVpn = ( "{0}:/opt/openvpn-config.ovpn" -f $VpnConfig )
+                #} elseif (Test-Path -Path ( Join-Path -Path $myresourcesPaths -ChildPath setup/openvpn/$VpnConfig)) {
+                #    $BackendMountVpn = ( "{0}:/opt/openvpn-config.ovpn" -f ( Join-Path -Path $myresourcesPaths -ChildPath setup/openvpn/$VpnConfig) )
+                #} else {
+                #    LogError ("VPN configuration file '{0}' dose not exists !" -f $VpnConfig)
+                #    return $null
+                #}
+                $BackendMountVpn = ( "{0}:/opt/openvpn-config.ovpn" -f $realVpnConfigFile )
                 $volumesList += @($BackendMountVpn)
                 $labelsList += @( "VPNConfig=true" )
             }
@@ -1128,7 +1203,7 @@ class ContainerManager {
             }
         }
 
-        return [Container]::new( "","") #  $name, $name )
+        #return [Container]::new( "","") #  $name, $name )
     }
 
 
@@ -1149,7 +1224,7 @@ class ContainerManager {
     }
 
     
-    [Container[]] ListContainers() {
+    [Object[]] ListContainers() {
 
         LogDbg "> ContainerManager::ListContainer"
         $labelContainers = $this.Config.get("labelContainers")
@@ -1166,7 +1241,14 @@ class ContainerManager {
 
             $container = $this.Driver.GetContainer( $_.id )
 
-            $containersout += [Container]::new( $container.Name, $container.ImageName)
+            $containersout += [PSCustomObject]@{
+                Name = $container.Name
+                State = $container.State.Status
+                Image = ($container.ImageName -replace "localhost/","")
+                Role = ($container.Config.Env | Where-Object { $_ -like "VOLUND_IMAGE_ROLE=*"} | Select-Object -First 1) -replace "VOLUND_IMAGE_ROLE=",""
+                Gui = $container.Config.Labels.X11Gui
+                Vpn = $container.Config.Labels.VPNConfig
+            }
         }
         return $containersout
     }
@@ -1323,7 +1405,7 @@ class VolumeManager {
     }
     
 
-    [Volume[]] ListVolumes() {
+    [Object[]] ListVolumes() {
         $labelVolumes = $this.Config.get("labelVolumes")
         $volumes = $this.Driver.ListVolumes( "{0}=true" -f $labelVolumes )
 
@@ -1337,7 +1419,7 @@ class VolumeManager {
 
             $volume = $this.Driver.GetVolume( $_.Name )
 
-            $volumesout += [Volume]::new( $volume.Name)
+            $volumesout += $volume # [Volume]::new( $volume.Name)
         }
         return $volumesout
     }
@@ -1413,15 +1495,15 @@ switch ($Command) {
     "info"                { 
         $images = $imageMngr.ListImages()
         Write-Host "Images :"
-        $images | Format-Table -AutoSize
+        $images | Show-RichTable
         
         $containers = $containerMngr.ListContainers()
         Write-Host "Containers :"
-        $containers | Format-Table -AutoSize
+        $containers | Show-RichTable
         
         $volumes = $volumeMngr.ListVolumes()
         Write-Host "Volumes :"
-        $volumes | Format-Table -AutoSize
+        $volumes | Show-RichTable
 
         Write-Host "`n`nDisk space usage :`n"
         podman system df
@@ -1439,7 +1521,7 @@ switch ($Command) {
     } 
     "lsi"                 { 
         Write-Host "`nImages :"
-        $imageMngr.ListImages() | Format-Table -AutoSize
+        $imageMngr.ListImages() | Show-RichTable
     }
     "rmi"                 {
         if ($Image -eq "") {
@@ -1467,7 +1549,7 @@ switch ($Command) {
     } 
     "ls"                  {
         Write-Host "`nContainers :"
-        $containerMngr.ListContainers() | Format-Table -AutoSize
+        $containerMngr.ListContainers() | Show-RichTable
     }
     "rm"                  {
         if ($Container -eq "") {
@@ -1494,7 +1576,7 @@ switch ($Command) {
 # === Volumes =============================================
     "lsv"                  {
         Write-Host "`nContainers disponibles :"
-        $volumeMngr.ListVolumes() | Format-Table -AutoSize
+        $volumeMngr.ListVolumes() | Show-RichTable
     }
     "newv"                 { 
         if ($Volume -eq "") {

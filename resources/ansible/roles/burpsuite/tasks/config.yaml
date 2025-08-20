@@ -18,15 +18,17 @@
     src: files/getburpcert.sh
     dest: /tmp/getburpcert.sh
     mode: 0744
-  when: burp_cert.stat.exists == False
+  become: true
   become_user: "{{ default_username }}"
+  when: burp_cert.stat.exists == False
 
 - name: "burp > Executing bash script to Download CA Certificate"
   shell:
     /tmp/getburpcert.sh
-  when: burp_cert.stat.exists == False
+  become: true
   become_user: "{{ default_username }}"
-
+  when: burp_cert.stat.exists == False
+  
 - name: "burp > Copying CA Certificate to /opt/burpsuite"
   copy:
     src: /tmp/cacert.der
@@ -49,10 +51,12 @@
     path: "/home/{{ default_username }}/.BurpSuite/"
     state: directory
     mode: '0755'
+  become: true
   become_user: "{{ default_username }}"
 
 - name: "burp > Copy BurpSuite Community Config"
   template:
     src: "templates/UserConfigCommunity.json.j2"
     dest: "/home/{{ default_username }}/.BurpSuite/UserConfigCommunity.json"
+  become: true
   become_user: "{{ default_username }}"

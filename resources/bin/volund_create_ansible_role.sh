@@ -103,6 +103,7 @@ cat <<EOF > $role/tasks/install.yaml
     state: present
   with_items: "{{ install_pipx_tools | default([]) }}"
   when: install_pipx_tools is defined and install_pipx_tools | length > 0
+  become: true
   become_user: "{{ default_username }}"
 
 - name: cleanup temporary files

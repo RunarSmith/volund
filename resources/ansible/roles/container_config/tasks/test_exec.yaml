@@ -17,6 +17,7 @@
   ansible.builtin.command: sudo -l -U {{ default_username }}
   register: sudo_check
   changed_when: false
+  become: true
   become_user: "{{ default_username }}"
 
 - name: "Ensure user {{ default_username }} can execute sudo commands without password"

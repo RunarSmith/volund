@@ -88,11 +88,11 @@
         # cewl
 
     # C2
-    - metasploit
+    #- metasploit
         # empire
         # sliver
 
-    - reverse_engineering
+    #- reverse_engineering
     
   post_tasks:
     - name: Display completion message

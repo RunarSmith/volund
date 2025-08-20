@@ -16,4 +16,5 @@
     name: autorecon
     state: present
   when: "'autorecon' in install_packages_os_common"
-  become_user: "{{ ansible_user }}"
+  become: true
+  become_user: "{{ default_username }}"

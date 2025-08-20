@@ -78,11 +78,13 @@
   ansible.builtin.command:
     cmd: helm plugin list
   register: helm_plugin_list
+  become: true
   become_user: "{{ default_username }}"
 
 - name: install helm plugin unittest
   ansible.builtin.command:
     cmd: helm plugin install https://github.com/helm-unittest/helm-unittest.git
+  become: true
   become_user: "{{ default_username }}"
   when: helm_plugin_list.stdout is search('^unittest')
 
