@@ -1428,6 +1428,8 @@ if ( $driver.isRunning() -ne "running" ) {
 
     wsl --list
 
+    podman system connection list
+
     if ( $driver.isRunning() -ne "running" ) {
         LogError "Could not start Container Driver !"
         exit 1
