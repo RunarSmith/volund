@@ -1426,11 +1426,13 @@ if ( $driver.isRunning() -ne "running" ) {
     LogInfo "Container driver is not running, starting it now..."
     $driver.Start()
 
-    wsl --list
+    #wsl --list
 
-    podman system connection list
+    #podman system connection list
 
-    podman machine inspect
+    #podman machine inspect
+
+    podman machine start
 
     if ( $driver.isRunning() -ne "running" ) {
         LogError "Could not start Container Driver !"
