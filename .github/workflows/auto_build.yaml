@@ -21,6 +21,7 @@ jobs:
 
   base-blackarch:
     runs-on: windows-2025
+    needs: base-arch
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/vol_build_image
@@ -32,6 +33,7 @@ jobs:
 
   base-debian:
     runs-on: windows-2025
+    needs: base-arch
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/vol_build_image
@@ -43,6 +45,7 @@ jobs:
 
   base-fedora:
     runs-on: windows-2025
+    needs: base-arch
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/vol_build_image
@@ -54,6 +57,7 @@ jobs:
 
   base-kali:
     runs-on: windows-2025
+    needs: base-arch
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/vol_build_image
@@ -65,6 +69,7 @@ jobs:
 
   base-parrot:
     runs-on: windows-2025
+    needs: base-arch
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/vol_build_image
@@ -104,7 +109,9 @@ jobs:
           image_version: "0.1.0"
 
   devsecops-debian:
-    needs: base_rdv
+    needs: 
+      - base_rdv
+      - devsecops-arch
     runs-on: windows-2025
     steps:
       - uses: actions/checkout@v4
@@ -116,7 +123,9 @@ jobs:
           image_version: "0.1.0"
 
   devsecops-fedora:
-    needs: base_rdv
+    needs: 
+      - base_rdv
+      - devsecops-arch
     runs-on: windows-2025
     steps:
       - uses: actions/checkout@v4
@@ -154,7 +163,9 @@ jobs:
           image_version: "0.1.0"
 
   offsec-debian:
-    needs: devsecops_rdv
+    needs: 
+      - devsecops_rdv
+      - offsec-arch
     runs-on: windows-2025
     steps:
       - uses: actions/checkout@v4
@@ -166,7 +177,9 @@ jobs:
           image_version: "0.1.0"
 
   offsec-fedora:
-    needs: devsecops_rdv
+    needs: 
+      - devsecops_rdv
+      - offsec-arch
     runs-on: windows-2025
     steps:
       - uses: actions/checkout@v4

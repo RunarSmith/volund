@@ -39,6 +39,12 @@ runs:
         "${{ github.workspace }}\podman\podman-5.5.2\usr\bin" | Out-File -Append -Encoding ascii $env:GITHUB_PATH
       
       shell: powershell
+    
+    - name: mock environment
+      run: |
+        New-Item -Path "." -Name "${env:USERPROFILE}\volund" -ItemType "Directory" | Out-Null
+
+      shell: powershell
 
     - name: Build Image
       run: |
