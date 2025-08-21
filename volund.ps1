@@ -286,7 +286,7 @@ class ExternalCommandHelper {
         LogDbg ("> ExternalCommandHelper::ExecCommand")        
         try {
             LogExec( $command )
-            $rslt = Invoke-Expression -Command "$command 2>&1"
+            $rslt = Invoke-Expression -Command "$command" #  2>&1"
             if ($rslt -and ($rslt.Count -gt 0)) {
                 LogDbg("$rslt")
             }
