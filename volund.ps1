@@ -282,11 +282,10 @@ class ExternalCommandHelper {
     }
 
     static [string] ExecCommand([string]$command) {
-
         LogDbg ("> ExternalCommandHelper::ExecCommand")        
         try {
             LogExec( $command )
-            $rslt = Invoke-Expression -Command "$command" #  2>&1"
+            $rslt = Invoke-Expression -Command "$command"
             if ($rslt -and ($rslt.Count -gt 0)) {
                 LogDbg("$rslt")
             }
@@ -300,7 +299,6 @@ class ExternalCommandHelper {
             LogError( $_.Exception.Message )
         }
         return $null
-
     }
 }
 
@@ -790,7 +788,8 @@ class ImageManager {
         $distribImageRef = $this.config.Get( "base_image" ).$Distribution
         LogDbg( ( "Distribution ref: {0} -> {1}" -f $Distribution, $distribImageRef) )
 
-        [ExternalCommandHelper]::ExecCommand(("podman pull $distribImageRef {0}" -f $this.config.get("pullOpts")))
+        #[ExternalCommandHelper]::ExecCommand(("podman pull $distribImageRef {0}" -f $this.config.get("pullOpts")))
+        podman image pull $distribImageRef
         if ($LastExitCode -ne 0) { 
             LogError "Failed to pull base distribution image: $distribImageRef"
             return #$null
