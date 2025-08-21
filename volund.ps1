@@ -296,7 +296,7 @@ class ExternalCommandHelper {
             return $rslt
         } catch {
             LogError( "command: " + $command )
-            LogError( $_.Exception.Message )
+            LogError( $_.Exception.Message -join " ### " )
         }
         return $null
 
