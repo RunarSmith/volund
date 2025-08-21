@@ -173,6 +173,15 @@ class Configuration {
                 }
             }
 
+            "base_image" = @{
+                "arch"      = "archlinux/archlinux:latest"
+                "blackarch" = "blackarchlinux/blackarch:latest"
+                "debian"    = "debian:latest"
+                "fedora"    = "fedora:latest"
+                "kali"      = "kalilinux/kali-rolling"
+                "parrot"    = "parrotsec/security:latest"
+            }
+
             "templateDir" = "${ScriptRoot}\buildfiles"
             "containerfile" = "Containerfile"
 
@@ -721,16 +730,6 @@ class ImageManager {
     [ContainerDriver]$Driver
     [Configuration]$Config
 
-    # wonvert parameter name to dockerhub ref name
-    [PSCustomObject]$Distributions = @{
-        "arch"      = "archlinux:latest"
-        "blackarch" = "blackarchlinux/blackarch:latest"
-        "debian"    = "debian:latest"
-        "fedora"    = "fedora:latest"
-        "kali"      = "kalilinux/kali-rolling"
-        "parrot"    = "parrotsec/security:latest"
-    }
-
     ImageManager([ContainerDriver]$driver, [Configuration]$config) {
         $this.Driver = $driver
         $this.Config = $config
@@ -787,7 +786,7 @@ class ImageManager {
         }
 
         # change between parameter / real distribution name on dockerhub
-        $distribImageRef = $this.Distributions[$Distribution]
+        $distribImageRef = $this.config.Get( "base_image.$Distribution" )
         LogDbg( ( "Distribution ref: {0} -> {1}" -f $Distribution, $distribImageRef) )
 
         [ExternalCommandHelper]::ExecCommand(("podman pull $distribImageRef {0}" -f $this.config.get("pullOpts")))
