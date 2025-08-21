@@ -64,6 +64,7 @@ function LogSuccess {
     Write-Host -ForegroundColor Green ("✅ {0}" -f $text)
 }
 
+# Log execution of command
 function LogExec {
     param (
         [Parameter(Mandatory=$true)]
@@ -169,7 +170,7 @@ class Configuration {
 
             "podman" = @{
                 "init" = @{
-                    "command" = "podman machine init --rootful=false --user-mode-networking=true"
+                    "command" = "--rootful=false --user-mode-networking=true"
                 }
             }
 
@@ -193,7 +194,7 @@ class Configuration {
             "labelVolumes" = "volund"
 
             "buildOpts" = "" # "--tls-verify=false"
-            "pullOpts" = "--log-level debug"  # "--tls-verify=false"
+            "pullOpts" = ""  # "--tls-verify=false"
 
             "sharedResourcesVolume" = @{
                 "name"      = "sharedResources"
@@ -289,7 +290,6 @@ class ExternalCommandHelper {
             if ($rslt -and ($rslt.Count -gt 0)) {
                 LogDbg("$rslt")
             }
-            Write-Host $rslt -ForegroundColor DarkGray
             if ($rslt -like "Error:*") {
                 throw "$rslt"
             }
@@ -340,11 +340,6 @@ class ContainerDriver {
     [void] Start() {
         LogDbg "> ContainerDriver::Start()"
 
-        #if ( $this.isRunning() -eq "running") { 
-        #    LogSuccess "podman is already running"
-        #    return
-        #}
-
         # Start Podman service if not running
         #try {
             # Linux
@@ -360,24 +355,33 @@ class ContainerDriver {
         #    LogWarn "Problème d'arrêt des images WSL."
             # exit 1
         #}
+        # Check if WSL machine "podman-machine-default" exists
+        $wslMachines = wsl --list --quiet
+        if ($wslMachines -notcontains "podman-machine-default") {
+            LogInfo("WSL machine 'podman-machine-default' does not exist. Creating it now...")
+            try {
+                # initialise / create the VM
+                #if ($this.config.get("podman").init.command) {
+                #    LogInfo( "Initializing Podman WSL image")
+                #    [ExternalCommandHelper]::ExecCommand($this.config.get("podman").init.command + " ; echo OK")
+                #} else {
+                #    LogInfo( "Initializing Podman WSL image with default command")
+                #    [ExternalCommandHelper]::ExecCommand("podman machine init  ; echo OK")
+                #}
+                #podman machine init --rootful=false --user-mode-networking=true
 
-        try {
-            # initialise / create the VM
-            #if ($this.config.get("podman").init.command) {
-            #    LogInfo( "Initializing Podman WSL image")
-            #    [ExternalCommandHelper]::ExecCommand($this.config.get("podman").init.command + " ; echo OK")
-            #} else {
-            #    LogInfo( "Initializing Podman WSL image with default command")
-            #    [ExternalCommandHelper]::ExecCommand("podman machine init  ; echo OK")
-            #}
-            podman machine init --rootful=false --user-mode-networking=true
-        } catch {
-            LogWarn "Problème d'init de Podman."
-            #exit 1
+                #Invoke-execute ("{0}" -f $this.config.get("podman").init.command)
+                podman machine init $($this.config.get("podman").init.command -split " ")
+            } catch {
+                LogWarn "Problème d'init de Podman."
+                #exit 1
+            }
+        } else {
+            LogInfo("WSL machine 'podman-machine-default' already exists.")
         }
 
         try {
-            LogInfo( "start podman")
+            #LogInfo( "start podman")
             [ExternalCommandHelper]::ExecCommand("podman machine start")
         } catch {
             LogError "Impossible de démarrer le service Podman."
@@ -436,8 +440,8 @@ class ContainerDriver {
         $command += " " + "--file " + $buildFile
         $command += " " + $buildDir
 
-        Write-Host ("Building image {0} {1} with distribution {2} ..." -f $imageName, $imageVersion, $baseDistrib)
-        Write-Host ("Using command: {0}" -f $command)
+        LogInfo ("Building image {0} {1} with distribution {2} ..." -f $imageName, $imageVersion, $baseDistrib)
+        LogInfo ("Using command: {0}" -f $command)
 
         # Execute the command
         LogDbg ("Set Current Dir : {0}" -f $buildPath)
@@ -618,7 +622,8 @@ class ContainerDriver {
         LogDbg "> ContainerDriver::StartContainer()"
         try {
             
-            Write-Host -ForegroundColor Cyan "ℹ️ Starting container $Name"
+            #Write-Host -ForegroundColor Cyan "ℹ️ Starting container $Name"
+            LogInfo ("Starting container {0}" -f $Name)
             #   -a, --attach               Attach container's STDOUT and STDERR
             #   -i, --interactive          Make STDIN available to the contained process
             #   -t, --tty                  Allocate a pseudo-TTY
@@ -849,7 +854,7 @@ class ImageManager {
         $images | 
             ForEach-Object { 
                 if ( ($_.Names | Where-Object { $_ -notlike "*:latest" } ).Count -lt 0 ) { 
-                    Write-Host ("Removing old image {0}" -f $_.Id)
+                    LogInfo ("Removing old image {0}" -f $_.Id)
                     $this.Driver.RemoveImage( $_.Id )
                 }
             }
@@ -862,17 +867,17 @@ class ImageManager {
         $imageObj = $this.Driver.GetImage( $Image )
         
         if (-not $imageObj) {
-            Write-Host -ForegroundColor Yellow ("Image '{0}' does not exist, nothing to delete." -f $Image)
+            LogWarn ("Image '{0}' does not exist, nothing to delete." -f $Image)
             return
         }
 
         $hasContainers = $this.Driver.ListContainers( $this.config.get("labelContainers")+"=true" ) | Where-Object { $_.Image -eq $Image }
         if ($hasContainers) {
-            Write-Host -ForegroundColor Red ("Image '{0}' cannot be deleted because it has associated containers." -f $Image)
+            LogError ("Image '{0}' cannot be deleted because it has associated containers." -f $Image)
             exit 1
         }
 
-        Write-Host ("Deleting image {0} ..." -f $Image)
+        LogInfo ("Deleting image {0} ..." -f $Image)
         $this.Driver.RemoveImage( $ImageObj.Id )
     }
 
@@ -909,9 +914,9 @@ class WorkspaceManager {
         # create workspace folder if not exists
         if (-not (Test-Path $workspacePath)) {
             New-Item -ItemType Directory -Path $workspacePath -Force | Out-Null
-            Write-Host ("Workspace directory created at {0}" -f $workspacePath)
+            LogInfo ("Workspace directory created at {0}" -f $workspacePath)
         } else {
-            Write-Host ("Workspace directory already exists at {0}" -f $workspacePath)
+            LogInfo ("Workspace directory already exists at {0}" -f $workspacePath)
         }
 
         # Create a VSCode workspace file for the container
@@ -931,7 +936,7 @@ class WorkspaceManager {
 
         $workspaceContent | ConvertTo-Json -Depth 10 | Out-File -FilePath $workspaceFilePath -Encoding utf8
 
-        Write-Host ("VSCode workspace created at {0}" -f $workspaceFilePath)
+        LogSuccess ("VSCode workspace created at {0}" -f $workspaceFilePath)
 
         # Add VSCode Project Manager configuration
         #$projectManagerDir = Join-Path $containerDescriptor.workspacePath ".vscode"
@@ -969,7 +974,7 @@ class WorkspaceManager {
         # Write file with UTF-8 without BOM
         [System.IO.File]::WriteAllText($projectManagerFile, $json, [System.Text.UTF8Encoding]::new($false))
 
-        Write-Host ("VSCode Project Manager config created at {0}" -f $projectManagerFile)
+        LogSuccess ("VSCode Project Manager config created at {0}" -f $projectManagerFile)
     }
 
 
@@ -979,9 +984,9 @@ class WorkspaceManager {
         $workspacePath = Join-Path $this.Config.Get("workspaceRoot") $name
         if (Test-Path $workspacePath) {
             Remove-Item -Path $workspacePath -Recurse -Force -ErrorAction SilentlyContinue
-            Write-Host ("Workspace '{0}' removed." -f $name)
+            LogInfo ("Workspace '{0}' removed." -f $name)
         } else {
-            Write-Host -ForegroundColor Red ("Workspace '{0}' does not exist." -f $name)
+            LogInfo -ForegroundColor Red ("Workspace '{0}' does not exist." -f $name)
         }
 
         # Remove project from VSCode Project Manager if it exists
@@ -994,7 +999,7 @@ class WorkspaceManager {
                 }
                 $json = $updatedContent | ConvertTo-Json -Depth 5
                 [System.IO.File]::WriteAllText($projectManagerFile, $json, [System.Text.UTF8Encoding]::new($false))
-                Write-Host ("Removed project '{0}' from VSCode Project Manager." -f $name)
+                LogInfo ("Removed project '{0}' from VSCode Project Manager." -f $name)
             }
         }
 
@@ -1060,11 +1065,11 @@ class ContainerManager {
             
             # Optionally, open the workspace in VSCode
             if ($OpenWorkspace ) {
-                Write-Host ("Opening VSCode workspace at {0} ..." -f $workspaceFilePath)
+                LogInfo ("Opening VSCode workspace at {0} ..." -f $workspaceFilePath)
                 Start-Process "code" -ArgumentList $workspaceFilePath
             }
 
-            Write-Host "Creating container ..."
+            LogInfo( "Creating container ...")
 
             $resourcesPaths = $this.config.Get("sharedResourcesVolume")
             $BackendMountResources =  ( "{0}:{1}:ro" -f $resourcesPaths.hostPath ,$resourcesPaths.mountPath)
@@ -1134,17 +1139,17 @@ class ContainerManager {
 
             # Optionally, open the workspace in VSCode
             if ($OpenWorkspace) {
-                Write-Host ("Opening VSCode workspace at {0} ..." -f $workspaceFilePath)
+                LogInfo("Opening VSCode workspace at {0} ..." -f $workspaceFilePath)
                 Start-Process "code" -ArgumentList $workspaceFilePath
             }
 
             $rslt = $this.Driver.GetContainer($Name)
             if ( $rslt.State.Running -eq $false ) {
-                Write-Host "Starting container ..."
+                LogInfo("Starting container ...")
                 $shell = $this.Config.Get("shell") # default shell
                 $this.Driver.StartContainer($Name, $shell)
             } else {
-                Write-Host "opening shell to the container ..."
+                LogInfo("opening shell to the container ...")
                 $this.Driver.RunShell($Name)
             }
         }
@@ -1158,11 +1163,11 @@ class ContainerManager {
         # test if container exists
         $containerDescriptor = $this.Driver.GetContainer($containerId)
         if (-not $containerDescriptor) {
-            Write-Host -ForegroundColor Red ("Container with ID '{0}' does not exist." -f $containerId)
+            LogError ("Container with ID '{0}' does not exist." -f $containerId)
             return
         }
     
-        Write-Host ("Stopping container {0} ..." -f $containerId)
+        LogInfo ("Stopping container {0} ..." -f $containerId)
         $this.Driver.StopContainer( @{ Id = $containerId } )
 
         #$this.ContainerListener.Remove()
@@ -1202,14 +1207,14 @@ class ContainerManager {
     [void] DisplayContainers() {
         $containers = $this.ListContainers()
         if ($containers.Count -eq 0) {
-            Write-Host "No containers found."
+            LogWarn( "No containers found.")
             return
         }
 
         $containers | ForEach-Object {
 
 
-            Write-Host ("Container: {0}, Image: {1}, Created: {2}" -f $_.Name, $_.Image, $_.Created)
+            LogInfo ("Container: {0}, Image: {1}, Created: {2}" -f $_.Name, $_.Image, $_.Created)
         }
     }
 
@@ -1304,7 +1309,7 @@ class ContainerListener {
                                 Remove-Item $_.FullName -Force
                             }
                         } catch {
-                            Write-Host "Erreur lors de l'ouverture de l'URL : $_"
+                            LogError( "Erreur lors de l'ouverture de l'URL : $_")
                         }
                     }
                     Start-Sleep -Seconds 2
@@ -1315,7 +1320,7 @@ class ContainerListener {
             }
         } -ArgumentList $this.listenerWatchPath, $this.listenerPath
 
-        Write-host -ForegroundColor Cyan ("ℹ️ Background Job {0} started" -f $listenerJob)
+        LogInfo("Background Job {0} started" -f $listenerJob)
     }
 
 
@@ -1433,7 +1438,10 @@ if ( $driver.isRunning() -ne "running" ) {
     
     $Env:DOCKER_HOST = 'npipe:////./pipe/podman-machine-default'
 
-    podman machine start
+    #podman machine start --quiet
+    #$wslMachines = wsl --list --quiet
+    #if ($wslMachines -notcontains "podman-machine-default") {
+    #}
 
     if ( $driver.isRunning() -ne "running" ) {
         LogError "Could not start Container Driver !"
@@ -1449,18 +1457,18 @@ $volumeMngr = [VolumeManager]::new( $driver, $config )
 switch ($Command) {
     "info"                { 
         $images = $imageMngr.ListImages()
-        Write-Host "Images :"
+        LogInfo( "Images :")
         $images | Show-RichTable
         
         $containers = $containerMngr.ListContainers()
-        Write-Host "Containers :"
+        LogInfo( "Containers :")
         $containers | Show-RichTable
         
         $volumes = $volumeMngr.ListVolumes()
-        Write-Host "Volumes :"
+        LogInfo( "Volumes :")
         $volumes | Show-RichTable
 
-        Write-Host "`n`nDisk space usage :`n"
+        LogInfo( "Disk space usage :")
         podman system df
     }
     "write_user_config" {
@@ -1475,7 +1483,7 @@ switch ($Command) {
         $imageMngr.BuildImage( $Image, $Role, $Distribution, $Version )
     } 
     "lsi"                 { 
-        Write-Host "`nImages :"
+        LogInfo( "`nImages :")
         $imageMngr.ListImages() | Show-RichTable
     }
     "rmi"                 {
@@ -1503,7 +1511,7 @@ switch ($Command) {
         $containerMngr.StopContainer( $Container )
     } 
     "ls"                  {
-        Write-Host "`nContainers :"
+        LogInfo( "Containers :")
         $containerMngr.ListContainers() | Show-RichTable
     }
     "rm"                  {
@@ -1530,7 +1538,7 @@ switch ($Command) {
     }
 # === Volumes =============================================
     "lsv"                  {
-        Write-Host "`nContainers disponibles :"
+        LogInfo("Containers disponibles :")
         $volumeMngr.ListVolumes() | Show-RichTable
     }
     "newv"                 { 
@@ -1548,7 +1556,7 @@ switch ($Command) {
         $volumeMngr.RemoveVolume( $Volume )
     }
 # === Others ==============================================
-    default         { Write-Host ("Commande '{0}' inconnue." -f $Command )}
+    default         { LogError("Commande '{0}' inconnue." -f $Command ) }
 }
 
 # =========================================================
