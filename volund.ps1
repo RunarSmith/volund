@@ -290,13 +290,14 @@ class ExternalCommandHelper {
             if ($rslt -and ($rslt.Count -gt 0)) {
                 LogDbg("$rslt")
             }
+            Write-Host $rslt -ForegroundColor DarkGray
             if ($rslt -like "Error:*") {
                 throw "$rslt"
             }
             return $rslt
         } catch {
             LogError( "command: " + $command )
-            LogError( $_.Exception.Message -join " ### " )
+            LogError( $_.Exception.Message )
         }
         return $null
 
