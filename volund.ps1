@@ -174,12 +174,12 @@ class Configuration {
             }
 
             "base_image" = @{
-                "arch"      = "archlinux/archlinux:latest"
-                "blackarch" = "blackarchlinux/blackarch:latest"
-                "debian"    = "debian:latest"
-                "fedora"    = "fedora:latest"
-                "kali"      = "kalilinux/kali-rolling"
-                "parrot"    = "parrotsec/security:latest"
+                "arch"      = "docker.io/archlinux/archlinux:latest"
+                "blackarch" = "docker.io/blackarchlinux/blackarch:latest"
+                "debian"    = "docker.io/debian:latest"
+                "fedora"    = "docker.io/fedora:latest"
+                "kali"      = "docker.io/kalilinux/kali-rolling"
+                "parrot"    = "docker.io/parrotsec/security:latest"
             }
 
             "templateDir" = "${ScriptRoot}\buildfiles"
