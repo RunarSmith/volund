@@ -79,25 +79,10 @@ jobs:
           image_role: "base"
           image_version: "0.1.0"
 
-  # --- RDV -----------------------------------------
-  
-  base_rdv:
-    runs-on: ubuntu-latest
-    needs:
-      - base-arch
-      - base-blackarch
-      - base-debian
-      - base-fedora
-      - base-kali
-      - base-parrot
-    steps:
-      - run: echo "RDV base image built successfully"
-        shell: bash
-
   # --- DevSecOps -----------------------------------------
 
   devsecops-arch:
-    needs: base_rdv
+    needs: base-arch
     runs-on: windows-2025
     steps:
       - uses: actions/checkout@v4
@@ -110,7 +95,6 @@ jobs:
 
   devsecops-debian:
     needs: 
-      - base_rdv
       - devsecops-arch
     runs-on: windows-2025
     steps:
@@ -124,7 +108,6 @@ jobs:
 
   devsecops-fedora:
     needs: 
-      - base_rdv
       - devsecops-arch
     runs-on: windows-2025
     steps:
@@ -136,22 +119,10 @@ jobs:
           image_role: "devsecops"
           image_version: "0.1.0"
 
-  # --- RDV -----------------------------------------
-  
-  devsecops_rdv:
-    runs-on: ubuntu-latest
-    needs:
-      - devsecops-arch
-      - devsecops-debian
-      - devsecops-fedora
-    steps:
-      - run: echo "RDV base image built successfully"
-        shell: bash
-
   # --- OffSec -----------------------------------------
 
   offsec-arch:
-    needs: devsecops_rdv
+    needs: devsecops-arch
     runs-on: windows-2025
     steps:
       - uses: actions/checkout@v4
@@ -164,7 +135,6 @@ jobs:
 
   offsec-debian:
     needs: 
-      - devsecops_rdv
       - offsec-arch
     runs-on: windows-2025
     steps:
@@ -178,7 +148,6 @@ jobs:
 
   offsec-fedora:
     needs: 
-      - devsecops_rdv
       - offsec-arch
     runs-on: windows-2025
     steps:
