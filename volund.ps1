@@ -786,7 +786,7 @@ class ImageManager {
         }
 
         # change between parameter / real distribution name on dockerhub
-        $distribImageRef = $this.config.Get( "base_image.$Distribution" )
+        $distribImageRef = $this.config.Get( "base_image" ).$Distribution
         LogDbg( ( "Distribution ref: {0} -> {1}" -f $Distribution, $distribImageRef) )
 
         [ExternalCommandHelper]::ExecCommand(("podman pull $distribImageRef {0}" -f $this.config.get("pullOpts")))
