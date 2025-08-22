@@ -382,7 +382,11 @@ class ContainerDriver {
 
         try {
             #LogInfo( "start podman")
-            [ExternalCommandHelper]::ExecCommand("podman machine start")
+            # [ExternalCommandHelper]::ExecCommand("podman machine start")
+            podman machine start
+            if ($LastExitCode -ne 0) {
+                throw "Failed to start podman machine"
+            }
         } catch {
             LogError "Impossible de démarrer le service Podman."
             exit 1
