@@ -170,7 +170,7 @@ class Configuration {
 
             "podman" = @{
                 "init" = @{
-                    "command" = "--rootful=false --user-mode-networking=true"
+                    "command" = "--rootful=true --user-mode-networking=true"
                 }
             }
 
@@ -187,7 +187,7 @@ class Configuration {
             "containerfile" = "Containerfile"
 
             # default container shell
-            "shell" = "bash"
+            "shell" = "bash -i -l"
 
             "labelImages" = "volund"
             "labelContainers" = "volund"
@@ -662,9 +662,9 @@ class ContainerDriver {
         }
     }
 
-    [void] RunShell([string]$containerId) {
+    [void] RunShell([string]$containerId, [string]$shell) {
         LogDbg "> ContainerDriver::RunShell()"
-        [ExternalCommandHelper]::RunCommandInteractive('podman', @('exec', '-it', $containerId, 'bash'))
+        [ExternalCommandHelper]::RunCommandInteractive('podman', @('exec', '-it', $containerId) + $shell -split " ")
     }
 
     [object[]] ListVolumes() {
@@ -1144,13 +1144,14 @@ class ContainerManager {
             }
 
             $rslt = $this.Driver.GetContainer($Name)
+            $shell = $this.Config.Get("shell") # default shell
             if ( $rslt.State.Running -eq $false ) {
                 LogInfo("Starting container ...")
-                $shell = $this.Config.Get("shell") # default shell
                 $this.Driver.StartContainer($Name, $shell)
             } else {
                 LogInfo("opening shell to the container ...")
-                $this.Driver.RunShell($Name)
+
+                $this.Driver.RunShell($Name,$shell)
             }
         }
 
