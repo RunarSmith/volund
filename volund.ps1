@@ -407,7 +407,7 @@ class ContainerDriver {
                 #podman machine init --rootful=false --user-mode-networking=true
 
                 #Invoke-execute ("{0}" -f $this.config.get("podman").init.command)
-                podman machine init $this.config.get("podman").init.command
+                podman machine init $($this.config.get("podman").init.command -split " ")
             } catch {
                 LogWarn "Problème d'init de Podman."
                 #exit 1
