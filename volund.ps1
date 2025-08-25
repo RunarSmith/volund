@@ -164,14 +164,15 @@ function Show-RichTable {
 class Configuration {
     [hashtable]$UserConfig = @{}
     [hashtable]$Defaults = @{
-            "debug" = $true
-            "debugexecs" = $true
+            "debug" = $false
+            "debugexecs" = $false
             "Driver" = "podman"
 
             "podman" = @{
                 "init" = @{
                     "command" = "--rootful=true --user-mode-networking=true"
                 }
+                "wsl_image" = "podman-machine-default"
             }
 
             "base_image" = @{
@@ -337,6 +338,41 @@ class ContainerDriver {
         return $null
     }
 
+
+    [void] CheckWslConfig() {
+
+        $status = [ExternalCommandHelper]::ExecCommand("podman machine inspect --format '{{.Rootful}}'")
+        if ($status -ne "true") {
+            podman machine stop
+            podman machine --rootful
+            podman machine start
+        }
+   
+        # Chemin complet vers le fichier wsl.conf de la distribution
+        $wslConfPath = "\\wsl$\" + $this.config.get("podman").wsl_image + "\etc\wsl.conf"
+        #$requiredSection = '[automount]'
+        #$requiredOption = 'options = "metadata"'
+
+        # Vérifier si le fichier existe, sinon le créer
+        if (-Not (Test-Path $wslConfPath)) {
+            New-Item -ItemType File -Path $wslConfPath -Force | Out-Null
+        }
+        
+        $fileContent = Get-Content $wslConfPath -Raw
+
+        # Vérifier si la section et l'option existent déjà
+        if ($fileContent -notmatch "options = metadata") {
+            # Ajouter la section et l'option à la fin du fichier via WSL
+            $cmd = "echo -e '\n[automount]\noptions = `"metadata`"' | sudo tee -a /etc/wsl.conf"
+            wsl -d $this.config.get("podman").wsl_image -- bash -c "$cmd"
+
+            wsl --terminate $this.config.get("podman").wsl_image
+
+            wsl -d $this.config.get("podman").wsl_image grep -w ID /etc/*ease
+        }
+    }
+
+
     [void] Start() {
         LogDbg "> ContainerDriver::Start()"
 
@@ -371,7 +407,7 @@ class ContainerDriver {
                 #podman machine init --rootful=false --user-mode-networking=true
 
                 #Invoke-execute ("{0}" -f $this.config.get("podman").init.command)
-                podman machine init $($this.config.get("podman").init.command -split " ")
+                podman machine init $this.config.get("podman").init.command
             } catch {
                 LogWarn "Problème d'init de Podman."
                 #exit 1
@@ -798,7 +834,7 @@ class ImageManager {
         LogDbg( ( "Distribution ref: {0} -> {1}" -f $Distribution, $distribImageRef) )
 
         #[ExternalCommandHelper]::ExecCommand(("podman pull $distribImageRef {0}" -f $this.config.get("pullOpts")))
-        podman image pull $distribImageRef
+        podman image pull $distribImageRef $this.config.get("pullOpts")
         if ($LastExitCode -ne 0) { 
             LogError "Failed to pull base distribution image: $distribImageRef"
             return #$null
@@ -884,10 +920,6 @@ class ImageManager {
         LogInfo ("Deleting image {0} ..." -f $Image)
         $this.Driver.RemoveImage( $ImageObj.Id )
     }
-
-
-  
-
 }
 
 # =========================================================
@@ -1453,6 +1485,8 @@ if ( $driver.isRunning() -ne "running" ) {
         exit 1
     }
 }
+
+$driver.CheckWslConfig()
 
 $imageMngr = [ImageManager]::new( $driver, $config )
 $workspaceManager = [WorkspaceManager]::new( $config )

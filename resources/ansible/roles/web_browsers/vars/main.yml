@@ -13,3 +13,9 @@ install_gui_packages_drivers_common:
 test_commands:
   - chromium --version
   - firefox --version
+
+FirefoxPlugins:
+  # - "darkreader"
+  - "foxyproxy-standard"
+  - "hacktools"
+  - "wappalyzer"

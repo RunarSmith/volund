@@ -29,23 +29,22 @@
     burp_latest_item: "{{ (burp_json.content | from_json).ResultSet.Results[0].version }}"
 
 
-- name: (Optionnel) Afficher la version installée
+- name: Show burpsuite version
   debug:
-    msg: "Burp Suite Community Edition version {{ burp_latest_item }} installée dans /opt/burpsuite-community-latest.jar"
+    msg: "Burp Suite Community Edition version {{ burp_latest_item }}"
 
 - name: Télécharger le dernier Burp Suite Community JAR
   get_url:
     url: "https://portswigger.net/burp/releases/download?product=community&version={{ burp_latest_item }}&type=Jar"
-    dest: "/opt/burpsuite-community-latest.jar"
+    dest: "/usr/local/lib/burpsuite-community-latest.jar"
     mode: '0755'
   become: true
 
 - name: Ajouter un script launcher dans /usr/local/bin
   copy:
-    dest: /usr/local/bin/burpsuite-community
+    dest: /usr/local/bin/burpsuite
     content: |
       #!/bin/sh
-      exec java -jar /opt/burpsuite-community-latest.jar "$@"
+      exec java -jar /usr/local/lib/burpsuite-community-latest.jar "$@"
     mode: "0755"
   become: true
-  

@@ -3,14 +3,14 @@
 
 - name: "burp > Create directory for Burp Suite"
   ansible.builtin.file:
-    path: "/opt/burpsuite"
+    path: "/usr/share/burpsuite"
     state: directory
     mode: '0755'
   become: true
 
 - name: "burp > Check if BurpSuiteCA.der exists"
   stat:
-    path: /opt/burpsuite/BurpSuiteCA.der
+    path: /usr/share/burpsuite/BurpSuiteCA.der
   register: burp_cert
   
 - name: "burp > Copying Burp Script"
@@ -32,7 +32,7 @@
 - name: "burp > Copying CA Certificate to /opt/burpsuite"
   copy:
     src: /tmp/cacert.der
-    dest: /opt/burpsuite/BurpSuiteCA.der
+    dest: /usr/share/burpsuite/BurpSuiteCA.der
     owner: root
     group: root
     mode: 0644
@@ -60,3 +60,9 @@
     dest: "/home/{{ default_username }}/.BurpSuite/UserConfigCommunity.json"
   become: true
   become_user: "{{ default_username }}"
+
+- name: clean up getburpcert script
+  ansible.builtin.file:
+    path: /tmp/getburpcert.sh
+    state: absent
+  become: true

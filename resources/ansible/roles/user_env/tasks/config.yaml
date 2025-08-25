@@ -1,6 +1,17 @@
 ---
 # tasks file for user_env
 
+# --- git ------------------------------------------------
+
+- name: set git configuration
+  ansible.builtin.copy:
+    src: git/gitconfig
+    dest: "/home/{{ default_username }}/.gitconfig"
+    owner: "{{ default_username }}"
+    group: "{{ default_username }}"
+  become: true
+  become_user: "{{ default_username }}"
+
 # --- tmux ------------------------------------------------
 
 - name: set tmux configuration

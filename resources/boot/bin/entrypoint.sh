@@ -19,7 +19,7 @@ if [ -d /opt/my-resources/setup/user/ ]; then
   fi
 
   if [ -f /opt/my-resources/setup/user/.gitconfig ]; then
-    cp /opt/my-resources/setup/user/.gitconfig ~/.gitconfig
+    cat /opt/my-resources/setup/user/.gitconfig | tee -a ~/.gitconfig
   fi
 fi
 
