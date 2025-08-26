@@ -170,7 +170,8 @@ class Configuration {
 
             "podman" = @{
                 "init" = @{
-                    "command" = "--rootful=false --user-mode-networking=true"
+                    #"command" = "--rootful=true --user-mode-networking=true"
+                    "command" = "--user-mode-networking=true"
                 }
                 "wsl_image" = "podman-machine-default"
             }
