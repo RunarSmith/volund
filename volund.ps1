@@ -1358,6 +1358,8 @@ class ContainerListener {
         } -ArgumentList $this.listenerWatchPath, $this.listenerPath
 
         LogInfo("Background Job {0} started" -f $listenerJob)
+
+        podman system connection list
     }
 
 
