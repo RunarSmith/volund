@@ -363,6 +363,7 @@ class ContainerDriver {
 
         # Vérifier si la section et l'option existent déjà
         if ($fileContent -notmatch "options = metadata") {
+            LogInfo ("Updating wsl.conf in {0} to enable metadata option for automount" -f $this.config.get("podman").wsl_image)
             # Ajouter la section et l'option à la fin du fichier via WSL
             $cmd = "echo -e '\n[automount]\noptions = `"metadata`"' | sudo tee -a /etc/wsl.conf"
             wsl -d $this.config.get("podman").wsl_image -- bash -c "$cmd"
