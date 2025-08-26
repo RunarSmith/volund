@@ -1358,8 +1358,6 @@ class ContainerListener {
         } -ArgumentList $this.listenerWatchPath, $this.listenerPath
 
         LogInfo("Background Job {0} started" -f $listenerJob)
-
-        podman system connection list
     }
 
 
@@ -1481,6 +1479,8 @@ if ( $driver.isRunning() -ne "running" ) {
     #$wslMachines = wsl --list --quiet
     #if ($wslMachines -notcontains "podman-machine-default") {
     #}
+
+    podman system connection list
 
     if ( $driver.isRunning() -ne "running" ) {
         LogError "Could not start Container Driver !"
