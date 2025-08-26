@@ -170,7 +170,7 @@ class Configuration {
 
             "podman" = @{
                 "init" = @{
-                    "command" = "--rootful=true --user-mode-networking=true"
+                    "command" = "--rootful=false --user-mode-networking=true"
                 }
                 "wsl_image" = "podman-machine-default"
             }
@@ -1473,7 +1473,7 @@ if ( $driver.isRunning() -ne "running" ) {
 
     #podman machine inspect
     
-    $Env:DOCKER_HOST = 'npipe:////./pipe/podman-machine-default'
+    #$Env:DOCKER_HOST = 'npipe:////./pipe/podman-machine-default'
 
     #podman machine start --quiet
     #$wslMachines = wsl --list --quiet
