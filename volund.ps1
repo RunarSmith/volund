@@ -1486,6 +1486,8 @@ if ( $driver.isRunning() -ne "running" ) {
 
     podman system connection list
 
+    podman system info
+
     podman version
 
     if ( $driver.isRunning() -ne "running" ) {
