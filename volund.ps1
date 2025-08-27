@@ -164,8 +164,8 @@ function Show-RichTable {
 class Configuration {
     [hashtable]$UserConfig = @{}
     [hashtable]$Defaults = @{
-            "debug" = $true
-            "debugexecs" = $true
+            "debug" = $false
+            "debugexecs" = $false
             "Driver" = "podman"
 
             "podman" = @{
@@ -808,7 +808,7 @@ class ImageManager {
         return $imagesout
     }
 
-    [void] BuildImage( [string]$ImageName, [string]$Role, [string]$Distribution, [string]$Version = "latest" ) {
+    [Object] BuildImage( [string]$ImageName, [string]$Role, [string]$Distribution, [string]$Version = "latest" ) {
         LogDbg "> Imagemanager::Buildimage"
 
         LogInfo "Ensure bash scripts are in UNIX line ending format for proper image build"
@@ -876,19 +876,20 @@ class ImageManager {
         
         if (-not $imgName) {
             LogError "Failed to build image."
-            return #$null
+            return $null
         }
 
         $image = $this.Driver.Getimage( ("{0}:{1}" -f $imageName,$Version) )
 
         if (-not $image) {
             LogError "Failed to retrieve image after build."
-            return #$null
+            return $null
         }
 
         # Write-Host $image
 
         # return [Image]::new( $image.RepoTags[0], "" )
+        return $image
     }
 
     [void] CleanOldImages() {
@@ -1502,17 +1503,17 @@ $volumeMngr = [VolumeManager]::new( $driver, $config )
 switch ($Command) {
     "setup" {
 
-$driver.CheckWslConfig()
+        $driver.CheckWslConfig()
 
-    podman system connection list
+        podman system connection list
 
-    
-    podman machine inspect
+        
+        podman machine inspect
 
-    podman system info
+        podman system info
 
-    podman version
-    
+        podman version
+            
     }
     "info"                { 
         $images = $imageMngr.ListImages()
@@ -1539,7 +1540,11 @@ $driver.CheckWslConfig()
             LogError("Missing parameter: -Distribution <Distribution name> -Version <image version>")
             return
         }
-        $imageMngr.BuildImage( $Image, $Role, $Distribution, $Version )
+        $res = $imageMngr.BuildImage( $Image, $Role, $Distribution, $Version )
+        if ($res -eq $null) {
+            $host.SetShouldExit(1)
+            exit 1
+        }
     } 
     "lsi"                 { 
         LogInfo( "`nImages :")
