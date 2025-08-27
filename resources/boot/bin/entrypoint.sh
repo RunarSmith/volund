@@ -13,13 +13,14 @@ if [ -d /opt/my-resources/setup/user/ ]; then
     [ ! -d ~/.ssh ] && mkdir ~/.ssh
     chmod -R 700 ~/.ssh
     cp --force /opt/my-resources/setup/user/.ssh/* ~/.ssh/
+    # fix access rights
     chmod 700 ~/.ssh
     chmod 400 ~/.ssh/*
     chmod 600 ~/.ssh/known_hosts
   fi
 
   if [ -f /opt/my-resources/setup/user/.gitconfig ]; then
-    cat /opt/my-resources/setup/user/.gitconfig | tee -a ~/.gitconfig
+    cat /opt/my-resources/setup/user/.gitconfig >> ~/.gitconfig
   fi
 fi
 

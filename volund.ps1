@@ -12,7 +12,7 @@ param(
     [string]$VpnConfig = $null,
 
     # source distribution
-[ValidateSet( "arch", "blackarch", "debian", "fedora", "kali", "parrot" )]
+    [ValidateSet( "arch", "blackarch", "debian", "fedora", "kali", "parrot" )]
     [string]$Distribution = "debian",
 
     # Create a container with Gui feature
@@ -22,7 +22,10 @@ param(
     [switch]$WithWorkspace,
 
     # when starting a container, open the workspace in VSCode
-    [switch]$OpenWorkspace
+    [switch]$OpenWorkspace,
+
+    # Generic parameter
+    [string]$Path
 )
 
 $ScriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Definition
@@ -948,23 +951,21 @@ class WorkspaceManager {
         return $workspacePath
     }
 
+    [void] CreateVSCodeProject( [string]$name, [string]$Path  ) {
+        LogDbg ( "> WorkspaceManager::CreateVSCodeProject() - name:{0} - path:{1}" -f $name,$Path)
 
-    [void] CreateWorkspace([string]$name) {
+        #$workspacePath = join-path -path $this.GetWorkspacePath($name) -childpath $Path
 
-        $workspacePath = Join-Path $this.WorkspaceRootPath $name
-
-        # create workspace folder if not exists
-        if (-not (Test-Path $workspacePath)) {
-            New-Item -ItemType Directory -Path $workspacePath -Force | Out-Null
-            LogInfo ("Workspace directory created at {0}" -f $workspacePath)
-        } else {
-            LogInfo ("Workspace directory already exists at {0}" -f $workspacePath)
+        # create sub-workspace folder if not exists
+        if (-not (Test-Path $Path)) {
+            New-Item -ItemType Directory -Path $Path -Force | Out-Null
+            LogInfo ("Project directory created at {0}" -f $Path)
         }
 
         # Create a VSCode workspace file for the container
-        $workspaceFilePath = Join-Path $workspacePath ("{0}.code-workspace" -f $name)
+        $projectFilePath = Join-Path $Path ("{0}.code-workspace" -f $name)
 
-        $workspaceContent = @{
+        $projectContent = @{
             "folders" = @(
                 @{
                     "path" = "."
@@ -972,31 +973,26 @@ class WorkspaceManager {
             )
             "settings" = @{
                 "remote.containers.dockerPath" = "podman"
-                "remote.containers.workspaceFolder" = $workspacePath
+                "remote.containers.workspaceFolder" = $Path
             }
         }
 
-        $workspaceContent | ConvertTo-Json -Depth 10 | Out-File -FilePath $workspaceFilePath -Encoding utf8
+        $projectContent | ConvertTo-Json -Depth 10 | Out-File -FilePath $projectFilePath -Encoding utf8
 
-        LogSuccess ("VSCode workspace created at {0}" -f $workspaceFilePath)
+        LogSuccess ("VSCode project created at {0}" -f $projectFilePath)
+    }
 
-        # Add VSCode Project Manager configuration
-        #$projectManagerDir = Join-Path $containerDescriptor.workspacePath ".vscode"
+    [void] AddVSCodeProjectManager( [string]$name, [string]$Path ) {
         $projectManagerFile = "$env:APPDATA\Code\User\globalStorage\alefragnani.project-manager\projects.json"
-
-        #if (-not (Test-Path $projectManagerDir)) {
-        #    New-Item -ItemType Directory -Path $projectManagerDir -Force | Out-Null
-        #}
 
         $projectEntry = @{
             "name" = $name
-            "rootPath" = $workspacePath
+            "rootPath" = $Path
             "paths" = @()
             "tags" = @()
             "enabled" = $true
         }
 
-        # If the Project Manager file exists, append to its projects array, else create new
         $existingContent = ""
         if (Test-Path $projectManagerFile) {
 
@@ -1018,7 +1014,92 @@ class WorkspaceManager {
 
         LogSuccess ("VSCode Project Manager config created at {0}" -f $projectManagerFile)
     }
+    
+    [void] CreateWorkspace([string]$name) {
 
+        $workspacePath = Join-Path $this.WorkspaceRootPath $name
+
+        # create workspace folder if not exists
+        if (-not (Test-Path $workspacePath)) {
+            New-Item -ItemType Directory -Path $workspacePath -Force | Out-Null
+            LogInfo ("Workspace directory created at {0}" -f $workspacePath)
+        } else {
+            LogInfo ("Workspace directory already exists at {0}" -f $workspacePath)
+        }
+
+        ## Create a VSCode workspace file for the container
+        #$workspaceFilePath = Join-Path $workspacePath ("{0}.code-workspace" -f $name)
+
+        #$workspaceContent = @{
+        #    "folders" = @(
+        #        @{
+        #            "path" = "."
+        #        }
+        #    )
+        #    "settings" = @{
+        #        "remote.containers.dockerPath" = "podman"
+        #        "remote.containers.workspaceFolder" = $workspacePath
+        #    }
+        #}
+
+        #$workspaceContent | ConvertTo-Json -Depth 10 | Out-File -FilePath $workspaceFilePath -Encoding utf8
+
+        #LogSuccess ("VSCode workspace created at {0}" -f $workspaceFilePath)
+
+        $this.CreateVSCodeProject( $name, $workspacePath )
+
+        # Add VSCode Project Manager configuration
+        #$projectManagerDir = Join-Path $containerDescriptor.workspacePath ".vscode"
+        #$projectManagerFile = "$env:APPDATA\Code\User\globalStorage\alefragnani.project-manager\projects.json"
+
+        #if (-not (Test-Path $projectManagerDir)) {
+        #    New-Item -ItemType Directory -Path $projectManagerDir -Force | Out-Null
+        #}
+
+        #$projectEntry = @{
+        #    "name" = $name
+        #    "rootPath" = $workspacePath
+        #    "paths" = @()
+        #    "tags" = @()
+        #    "enabled" = $true
+        #}
+
+        # If the Project Manager file exists, append to its projects array, else create new
+        #$existingContent = ""
+        #if (Test-Path $projectManagerFile) {
+
+        #    $existingContent = Get-Content $projectManagerFile -Raw | ConvertFrom-Json
+        #    if ($existingContent ) {
+        #        # Avoid duplicates by name or rootPath
+        #        $alreadyExists = $existingContent | Where-Object {
+        #            $_.name -eq $projectEntry.name -or $_.rootPath -eq $projectEntry.rootPath
+        #        }
+        #        if (-not $alreadyExists) {
+        #            $existingContent += $projectEntry
+        #        }
+        #    }
+        #}
+
+        #$json = $existingContent | ConvertTo-Json -Depth 5
+        ## Write file with UTF-8 without BOM
+        #[System.IO.File]::WriteAllText($projectManagerFile, $json, [System.Text.UTF8Encoding]::new($false))
+
+        #LogSuccess ("VSCode Project Manager config created at {0}" -f $projectManagerFile)
+
+        $this.AddVSCodeProjectManager( $name, $workspacePath )
+    }
+
+    [void] CreateSubProject( [string]$Container, [string]$name ) {
+        LogDbg ( "> WorkspaceManager::CreateSubProject() - container:{0} - name:{1}" -f $Container,$name)
+
+        $workspacePath = Join-Path $this.WorkspaceRootPath $Container
+        $projectPath = Join-Path $workspacePath $name
+
+        $this.CreateVSCodeProject(  ("{0}-{1}" -f $Container,$name), $projectPath )
+
+        # Add VSCode Project Manager configuration
+        $this.AddVSCodeProjectManager( ("{0}:{1}" -f $Container,$name), $projectPath )
+    }
 
 
     [void] RemoveWorkspace([string]$name) {
@@ -1486,9 +1567,6 @@ if ( $driver.isRunning() -ne "running" ) {
     #if ($wslMachines -notcontains "podman-machine-default") {
     #}
 
-
-
-
     if ( $driver.isRunning() -ne "running" ) {
         LogError "Could not start Container Driver !"
         exit 1
@@ -1620,6 +1698,17 @@ switch ($Command) {
         $volumeMngr.RemoveVolume( $Volume )
     }
 # === Others ==============================================
+    "create_vscode_project" {
+        if ($Container -eq "") {
+            LogError("Missing parameter: -Container <container name>")
+            return
+        }
+        if ($Path -eq "") {
+            LogError("Missing parameter: -Path <path in container's workspace>")
+            return
+        }
+        $workspaceManager.CreateSubProject( $Container, $Path )
+    }
     default         { LogError("Commande '{0}' inconnue." -f $Command ) }
 }
 
