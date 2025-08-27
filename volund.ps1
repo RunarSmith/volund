@@ -164,8 +164,8 @@ function Show-RichTable {
 class Configuration {
     [hashtable]$UserConfig = @{}
     [hashtable]$Defaults = @{
-            "debug" = $false
-            "debugexecs" = $false
+            "debug" = $true
+            "debugexecs" = $true
             "Driver" = "podman"
 
             "podman" = @{
