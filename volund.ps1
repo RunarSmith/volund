@@ -1485,14 +1485,7 @@ if ( $driver.isRunning() -ne "running" ) {
     #if ($wslMachines -notcontains "podman-machine-default") {
     #}
 
-    podman system connection list
 
-    
-    podman machine inspect
-    
-    podman system info
-
-    podman version
 
 
     if ( $driver.isRunning() -ne "running" ) {
@@ -1501,14 +1494,26 @@ if ( $driver.isRunning() -ne "running" ) {
     }
 }
 
-$driver.CheckWslConfig()
-
 $imageMngr = [ImageManager]::new( $driver, $config )
 $workspaceManager = [WorkspaceManager]::new( $config )
 $containerMngr = [ContainerManager]::new( $driver, $config, $workspaceManager )
 $volumeMngr = [VolumeManager]::new( $driver, $config )
 
 switch ($Command) {
+    "setup" {
+
+$driver.CheckWslConfig()
+
+    podman system connection list
+
+    
+    podman machine inspect
+
+    podman system info
+
+    podman version
+    
+    }
     "info"                { 
         $images = $imageMngr.ListImages()
         LogInfo( "Images :")
