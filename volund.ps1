@@ -170,8 +170,8 @@ class Configuration {
 
             "podman" = @{
                 "init" = @{
-                    #"command" = "--rootful=true --user-mode-networking=true"
-                    "command" = "--user-mode-networking=true"
+                    "command" = "--rootful=true --user-mode-networking=true"
+                    #"command" = "--user-mode-networking=true"
                 }
                 "wsl_image" = "podman-machine-default"
             }
@@ -342,12 +342,13 @@ class ContainerDriver {
 
     [void] CheckWslConfig() {
 
-        #$status = [ExternalCommandHelper]::ExecCommand("podman machine inspect --format '{{.Rootful}}'")
-        #if ($status -ne "true") {
-        #    podman machine stop
-        #    podman machine set --rootful
-        #    podman machine start
-        #}
+        $status = [ExternalCommandHelper]::ExecCommand("podman machine inspect --format '{{.Rootful}}'")
+        if ($status -ne "true") {
+            podman machine stop
+            podman machine set --rootful
+            podman machine start
+            LogInfo ("Podman machine set to rootful mode" )
+        }
    
         # Chemin complet vers le fichier wsl.conf de la distribution
         $wslConfPath = "\\wsl$\" + $this.config.get("podman").wsl_image + "\etc\wsl.conf"
