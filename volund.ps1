@@ -842,7 +842,7 @@ class ImageManager {
         podman image pull $distribImageRef $this.config.get("pullOpts")
         if ($LastExitCode -ne 0) { 
             LogError "Failed to pull base distribution image: $distribImageRef"
-            return #$null
+            return $null
         }
 
         $params = @{
