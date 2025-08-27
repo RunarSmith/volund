@@ -836,6 +836,7 @@ class ImageManager {
         LogDbg( ( "Distribution ref: {0} -> {1}" -f $Distribution, $distribImageRef) )
 
         #[ExternalCommandHelper]::ExecCommand(("podman pull $distribImageRef {0}" -f $this.config.get("pullOpts")))
+        podman image ls
         LogExec( "podman image pull $distribImageRef " + $this.config.get("pullOpts") )
         podman image pull $distribImageRef $this.config.get("pullOpts")
         if ($LastExitCode -ne 0) { 
