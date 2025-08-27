@@ -1487,9 +1487,13 @@ if ( $driver.isRunning() -ne "running" ) {
 
     podman system connection list
 
+    
+    podman machine inspect
+    
     podman system info
 
     podman version
+
 
     if ( $driver.isRunning() -ne "running" ) {
         LogError "Could not start Container Driver !"
