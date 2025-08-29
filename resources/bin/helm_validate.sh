@@ -10,10 +10,15 @@
 # source folder containing "Chart.yaml" file
 ChartPath="$1"
 # 
-yamlResult="$2"
+subPath="$2"
 
 tmpPath=$(mktemp --directory "/tmp/lint-XXXXXX")
 srcPath="$tmpPath/sources/"
+
+#if [ -z "$yamlResult" ]; then
+yamlResult="$(pwd)/helm-output.yaml"
+#fi
+trivyReport="$(pwd)/trivy-report.md"
 
 mkdir -p $srcPath/
 cp -r $ChartPath/* $srcPath/
@@ -34,10 +39,6 @@ if [ ! -d "$ChartPath" ]; then
   exit 1
 fi
 
-if [ -z "$yamlResult" ]; then
-  yamlResult="$(pwd)/helm-output.yaml"
-fi
-trivyReport="$(pwd)/trivy-report.md"
 
 echo "Result file will be: $yamlResult"
 
@@ -58,9 +59,16 @@ echo "Helm chart dependencies updated successfully."
 echo "=== Validating Helm chart in $ChartPath ===================="
 if [ -f ./values.yaml ]; then
   echo "=>> Using 'values.yaml' for validation."
-  set -x
-    helm lint --strict . --values values.yaml
-  set -x
+
+  if [ ! -z $subPath ]; then
+    set -x
+      helm lint --strict . --values values.yaml --values $subPath/values-static.yaml
+    set -x
+  else
+    set -x
+      helm lint --strict . --values values.yaml
+    set -x
+  fi
 else
   set -x
     helm lint --strict .
@@ -77,9 +85,16 @@ echo "=== Resolve Helm chart templating =========================="
 echo "Resolving Helm chart tempalting..."
 if [ -f values.yaml ]; then
   echo "=>> Using 'values.yaml' for templating."
-  set -x
-    helm template . --values values.yaml > $yamlResult
-  set +x
+
+  if [ ! -z $subPath ]; then
+    set -x
+      helm template . --values values.yaml --values $subPath/values-static.yaml > $yamlResult
+    set -x
+  else
+    set -x
+      helm template . --values values.yaml > $yamlResult
+    set +x
+  fi
 else
   helm template . > $yamlResult
 fi
@@ -92,16 +107,26 @@ echo "Helm chart templating successful."
 
 echo "=== Validate the rendered YAML ============================="
 echo "Validating rendered YAML..."
+# https://yamllint.readthedocs.io/en/stable/rules.html
 cat <<EOF > .yamllint
 extends: default
 rules:
 rules:
   braces:
     level: warning
+  colons:
+    level: warning
+    max-spaces-before: 0
+    max-spaces-after: 1
+  comments:
+    level: warning
+    require-starting-space: true
   indentation:
     level: warning
     spaces: 2
     indent-sequences: whatever
+  trailing-spaces:
+    level: warning
 
   # 120 chars should be enough, but don't fail if a line is longer
   line-length:

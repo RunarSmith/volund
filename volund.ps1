@@ -951,7 +951,7 @@ class WorkspaceManager {
         return $workspacePath
     }
 
-    [void] CreateVSCodeProject( [string]$name, [string]$Path  ) {
+    [string] CreateVSCodeProject( [string]$name, [string]$Path  ) {
         LogDbg ( "> WorkspaceManager::CreateVSCodeProject() - name:{0} - path:{1}" -f $name,$Path)
 
         #$workspacePath = join-path -path $this.GetWorkspacePath($name) -childpath $Path
@@ -971,15 +971,14 @@ class WorkspaceManager {
                     "path" = "."
                 }
             )
-            "settings" = @{
-                "remote.containers.dockerPath" = "podman"
-                "remote.containers.workspaceFolder" = $Path
-            }
+            "settings" = @{ }
         }
 
         $projectContent | ConvertTo-Json -Depth 10 | Out-File -FilePath $projectFilePath -Encoding utf8
 
         LogSuccess ("VSCode project created at {0}" -f $projectFilePath)
+
+        return $projectFilePath
     }
 
     [void] AddVSCodeProjectManager( [string]$name, [string]$Path ) {
@@ -1046,7 +1045,7 @@ class WorkspaceManager {
 
         #LogSuccess ("VSCode workspace created at {0}" -f $workspaceFilePath)
 
-        $this.CreateVSCodeProject( $name, $workspacePath )
+        $projectFilePath = $this.CreateVSCodeProject( $name, $workspacePath )
 
         # Add VSCode Project Manager configuration
         #$projectManagerDir = Join-Path $containerDescriptor.workspacePath ".vscode"
@@ -1086,7 +1085,7 @@ class WorkspaceManager {
 
         #LogSuccess ("VSCode Project Manager config created at {0}" -f $projectManagerFile)
 
-        $this.AddVSCodeProjectManager( $name, $workspacePath )
+        $this.AddVSCodeProjectManager( $name, $projectFilePath )
     }
 
     [void] CreateSubProject( [string]$Container, [string]$name ) {
@@ -1095,12 +1094,11 @@ class WorkspaceManager {
         $workspacePath = Join-Path $this.WorkspaceRootPath $Container
         $projectPath = Join-Path $workspacePath $name
 
-        $this.CreateVSCodeProject(  ("{0}-{1}" -f $Container,$name), $projectPath )
+        $projectFilePath = $this.CreateVSCodeProject(  ("{0}-{1}" -f $Container,$name), $projectPath )
 
         # Add VSCode Project Manager configuration
-        $this.AddVSCodeProjectManager( ("{0}:{1}" -f $Container,$name), $projectPath )
+        $this.AddVSCodeProjectManager( ("{0}:{1}" -f $Container,$name), $projectFilePath )
     }
-
 
     [void] RemoveWorkspace([string]$name) {
         # Remove the workspace directory and its contents
