@@ -199,7 +199,7 @@ class Configuration {
             "labelVolumes" = "volund"
 
             "buildOpts" = "" # "--tls-verify=false"
-            "pullOpts" = ""  # "--tls-verify=false"
+            "pullOpts" = "--log-level debug"  # "--tls-verify=false"
 
             "sharedResourcesVolume" = @{
                 "name"      = "sharedResources"
