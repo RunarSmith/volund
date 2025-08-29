@@ -5,5 +5,7 @@ append_path '{{ my_resource_path }}/bin'
 
 export PATH
 
-# source he custom resource file if any
+export TERM=xterm-256color
+
+# source the custom resource file if any
 [ -f {{ my_resource_path }}/setup/bashrc ] && . {{ my_resource_path }}/setup/bashrc
