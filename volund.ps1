@@ -199,7 +199,7 @@ class Configuration {
             "labelVolumes" = "volund"
 
             "buildOpts" = "" # "--tls-verify=false"
-            "pullOpts" = @("--log-level", "debug")  # "--tls-verify=false"
+            # "pullOpts" = @("--log-level", "debug")  # "--tls-verify=false"
 
             "sharedResourcesVolume" = @{
                 "name"      = "sharedResources"
@@ -471,7 +471,7 @@ class ContainerDriver {
         if ($buildOpts -and $buildOpts -ne "" ) {
             $command += " " + $buildOpts
         }
-        $command += " --build-arg BASE_IMAGE=" + $baseDistrib
+        $command += "--pull=newer --build-arg BASE_IMAGE=" + $baseDistrib
         $labels.Keys | ForEach-Object {
             $command += ( " --label {0}={1}" -f $_, $labels[$_] )
         }
@@ -840,13 +840,13 @@ class ImageManager {
         LogDbg( ( "Distribution ref: {0} -> {1}" -f $Distribution, $distribImageRef) )
 
         #[ExternalCommandHelper]::ExecCommand(("podman pull $distribImageRef {0}" -f $this.config.get("pullOpts")))
-        podman image ls
-        LogExec( "podman image pull $distribImageRef " + $this.config.get("pullOpts") )
-        podman image pull $distribImageRef $this.config.get("pullOpts")
-        if ($LastExitCode -ne 0) { 
-            LogError "Failed to pull base distribution image: $distribImageRef"
-            return $null
-        }
+        #podman image ls
+        #LogExec( "podman image pull $distribImageRef " + $this.config.get("pullOpts") )
+        #podman image pull $distribImageRef $this.config.get("pullOpts")
+        #if ($LastExitCode -ne 0) { 
+        #    LogError "Failed to pull base distribution image: $distribImageRef"
+        #    return $null
+        #}
 
         $params = @{
             Name        = $ImageName

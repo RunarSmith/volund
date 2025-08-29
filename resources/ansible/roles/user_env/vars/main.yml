@@ -8,6 +8,7 @@ install_packages_os_common:
   - neovim
   - screen
   - tmux
+  - vi
   - vim
   - zsh
 
