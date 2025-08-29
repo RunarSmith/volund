@@ -471,7 +471,7 @@ class ContainerDriver {
         if ($buildOpts -and $buildOpts -ne "" ) {
             $command += " " + $buildOpts
         }
-        $command += "--pull=newer --build-arg BASE_IMAGE=" + $baseDistrib
+        $command += " --pull=newer --build-arg BASE_IMAGE=" + $baseDistrib
         $labels.Keys | ForEach-Object {
             $command += ( " --label {0}={1}" -f $_, $labels[$_] )
         }
