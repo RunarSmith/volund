@@ -192,7 +192,7 @@ class Configuration {
             "containerfile" = "Containerfile"
 
             # default container shell
-            "shell" = "bash -i -l"
+            "shell" = "zsh"
 
             "labelImages" = "volund"
             "labelContainers" = "volund"

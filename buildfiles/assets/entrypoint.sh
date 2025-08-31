@@ -1,10 +1,10 @@
-#!/bin/bash
+#!/bin/zsh
 
 BootScript=/opt/resources/boot/bin/entrypoint.sh
 
 if [ -f $BootScript ]; then
-    bash $BootScript
+    zsh $BootScript
 else
     echo "!!! Boot script $BootScript not found !!!"
-    bash -i -l
+    zsh -i -l
 fi

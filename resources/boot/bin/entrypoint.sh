@@ -24,4 +24,4 @@ if [ -d /opt/my-resources/setup/user/ ]; then
   fi
 fi
 
-bash -i -l
+zsh -i -l

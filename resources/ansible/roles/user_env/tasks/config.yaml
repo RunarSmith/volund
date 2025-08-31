@@ -1,6 +1,35 @@
 ---
 # tasks file for user_env
 
+# --- zs ------------------------------------------------
+
+# set zsh configuration
+- name: set zsh configuration
+  ansible.builtin.copy:
+    src: zsh/zshrc
+    dest: "/home/{{ default_username }}/.zshrc"
+    owner: "{{ default_username }}"
+    group: "{{ default_username }}"
+  become: true
+  become_user: "{{ default_username }}"
+
+# set power10k configuration
+- name: set power10k configuration
+  ansible.builtin.copy:
+    src: zsh/p10k.zsh
+    dest: "/home/{{ default_username }}/.p10k.zsh"
+    owner: "{{ default_username }}"
+    group: "{{ default_username }}"
+  become: true
+  become_user: "{{ default_username }}"
+
+# set user default shell as zsh
+- name: set user default shell as zsh
+  ansible.builtin.user:
+    name: "{{ default_username }}"
+    shell: /bin/zsh
+  become: true
+
 # --- git ------------------------------------------------
 
 - name: set git configuration

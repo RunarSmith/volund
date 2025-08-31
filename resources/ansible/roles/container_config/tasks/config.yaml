@@ -38,13 +38,17 @@
 
 - name: copy profile file
   ansible.builtin.template:
-    src: profile.volund.sh.j2
-    dest: /etc/profile.d/90-volund.sh
+    src: "{{ item }}.j2"
+    dest: "/etc/profile.d/{{ item }}"
     owner: root
     group: root
     mode: '0644'
+  loop_control:
+    loop_var: item
+  with_items:
+    - 90-volund.sh
   become: true
-
+  
 - name: Create default user
   ansible.builtin.user:
     name: "{{ default_username }}"

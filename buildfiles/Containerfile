@@ -11,4 +11,4 @@ USER volund
 
 WORKDIR /workspace
 
-ENTRYPOINT [ "bash", "/.entrypoint.sh" ]
+ENTRYPOINT [ "zsh", "/.entrypoint.sh" ]

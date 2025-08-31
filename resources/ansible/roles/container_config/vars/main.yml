@@ -25,6 +25,7 @@ install_packages:
     - mise
     - plocate
     - sudo
+    - zsh
   utils:
     - binutils
     - bison

@@ -34,3 +34,34 @@
     path: /tmp
     cleanup_files: "{{ cleanup_temp }}"
   when: cleanup_temp is defined and cleanup_temp | length > 0
+
+# --- oh-my-zsh ------------------------------------------------
+
+- name: Download ohmyzsh
+  ansible.builtin.get_url:
+    url: https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh
+    dest: "/home/{{ default_username }}/install.sh"
+    mode: '0755'
+  become: true
+  become_user: "{{ default_username }}"
+
+- name: Install ohmyzsh
+  ansible.builtin.script:
+    cmd: "/home/{{ default_username }}/install.sh"
+  become: true
+  become_user: "{{ default_username }}"
+
+- name: Install PowerLevel10K
+  ansible.builtin.git:
+    repo: https://github.com/romkatv/powerlevel10k.git
+    dest: "/home/{{ default_username }}/.oh-my-zsh/custom/themes/powerlevel10k"
+    depth: 1
+  become: true
+  become_user: "{{ default_username }}"
+
+- name: Download NerdFonts
+  ansible.builtin.get_url:
+    url: https://github.com/ryanoasis/nerd-fonts/releases/download/v2.3.3/Meslo.zip
+    dest: "/home/{{ default_username }}/Meslo.zip"
+  become: true
+  become_user: "{{ default_username }}"
