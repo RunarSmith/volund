@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# this wrapper provide better options for chromium, and avoid craches
+
+chromium \
+    --disable-seccomp-filter-sandbox \
+    --ozone-platform=x11 \
+    --disable-gpu

@@ -7,7 +7,7 @@ rm -f /tmp/cacert.der
 
 #/bin/bash -c "timeout 35 /usr/share/burpsuite/jre/bin/java -Djava.awt.headless=true -jar /usr/share/burpsuite/burpsuite_community.jar < <(echo y) &" 
 # /usr/local/bin/burpsuite-community
-exec java -Djava.awt.headless=true -jar /opt/burpsuite-community-latest.jar  < <(echo y) &
+exec java -Djava.awt.headless=true -jar /usr/local/lib/burpsuite-community-latest.jar  < <(echo y) &
 sleep 30
 
 curl -s http://localhost:8080/cert -o /tmp/cacert.der

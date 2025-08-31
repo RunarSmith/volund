@@ -1230,13 +1230,14 @@ class ContainerManager {
                 $labelsList += @( "X11Gui=true" )
                 $volumesList += @(
                     "/mnt/wslg/.X11-unix:/tmp/.X11-unix",
-                    "/mnt/wslg/runtime-dir:/mnt/wslg/runtime-dir"
+                    #"/mnt/wslg/runtime-dir:/mnt/wslg/runtime-dir"
+                    "/mnt/wslg/runtime-dir/pulse/native:/mnt/pulse/native"
                 )
                 $envsList += @(
-                    "XDG_RUNTIME_DIR=/mnt/wslg/runtime-dir",
-                    "WAYLAND_DISPLAY=wayland-0",
-                    "DISPLAY=:0",
-                    "PULSE_SERVER=unix:/mnt/wslg/runtime-dir/pulse/native"
+                    #"XDG_RUNTIME_DIR=/mnt/wslg/runtime-dir",
+#                    "WAYLAND_DISPLAY=wayland-0",
+                    "DISPLAY=:0" #,
+                    "PULSE_SERVER=unix:/mnt/pulse/native"
                     )
             }
 
@@ -1623,7 +1624,7 @@ switch ($Command) {
         }
     } 
     "lsi"                 { 
-        LogInfo( "`nImages :")
+        LogInfo( "Images :")
         $imageMngr.ListImages() | Show-RichTable
     }
     "rmi"                 {

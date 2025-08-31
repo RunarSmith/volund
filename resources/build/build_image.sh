@@ -183,7 +183,7 @@ print_header "Ansible Playbook Execution : Container Configuration"
 #echo "distrib: $IMAGE_DISTRIBUTION"
 
 export ANSIBLE_FORCE_COLOR=True
-export ACTIVE_ACTIONS=install,config,check,hardening
+export ACTIVE_ACTIONS=install,config,check,data,hardening
 if [ -f ./playbook-${VOLUND_IMAGE_ROLE}.yaml ]; then
     echo "===> Using playbook-${VOLUND_IMAGE_ROLE}.yaml <==="
     ansible-playbook -i ./inventory.yaml ./playbook-${VOLUND_IMAGE_ROLE}.yaml || die "Failed to execute Ansible playbook"

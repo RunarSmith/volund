@@ -37,19 +37,26 @@
 
 # --- oh-my-zsh ------------------------------------------------
 
-- name: Download ohmyzsh
-  ansible.builtin.get_url:
-    url: https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh
-    dest: "/home/{{ default_username }}/install.sh"
-    mode: '0755'
-  become: true
-  become_user: "{{ default_username }}"
+#- name: Download ohmyzsh
+#  ansible.builtin.get_url:
+#    url: https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh
+#    dest: "/home/{{ default_username }}/install.sh"
+#    mode: '0755'
+#  become: true
+#  become_user: "{{ default_username }}"
 
-- name: Install ohmyzsh
-  ansible.builtin.script:
-    cmd: "/home/{{ default_username }}/install.sh"
-  become: true
-  become_user: "{{ default_username }}"
+#- name: Install ohmyzsh
+#  ansible.builtin.script:
+#    cmd: "/home/{{ default_username }}/install.sh"
+#  become: true
+#  become_user: "{{ default_username }}"
+
+# remove install file after install
+#- name: remove ohmyzsh install file
+#  ansible.builtin.file:
+#    path: "/home/{{ default_username }}/install.sh"
+#    state: absent
+#  become: true
 
 - name: Install PowerLevel10K
   ansible.builtin.git:

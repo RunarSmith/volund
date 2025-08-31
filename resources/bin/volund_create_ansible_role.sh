@@ -33,6 +33,7 @@ fi
 
 # ---------------------------------------------------------
 
+pipx install ansible
 #/home/volund/.local/bin/ansible-galaxy init "$role"
 /home/volund/.local/share/pipx/venvs/ansible/bin/ansible-galaxy init "$role"
 
