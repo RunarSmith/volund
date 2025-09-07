@@ -1,0 +1,32 @@
+# taskwarrior config file
+data.location=/workspace/.task
+
+# https://github.com/GothenburgBitFactory/taskwarrior/tree/develop/doc/rc
+include /usr/share/taskwarrior/dark-green-256.theme
+
+# taskwarrior config file
+data.location=/workspace/.task
+
+# https://github.com/GothenburgBitFactory/taskwarrior/tree/develop/doc/rc
+include /opt/my-resources/setup/user/dark-green-256.theme
+
+weekstart=monday
+
+# track effort spent on a task
+uda.timespent.type=duration
+uda.timespent.label=Time Spent
+
+# task should start at a date
+default.scheduled=
+# task is due at a date
+default.due=
+
+uda.priority.values=H,M,,L
+default.priority=M
+
+# billing report to effort spent on tasks
+report.billing.description=Report for billing
+report.billing.labels= UUID,ID,St,Age,Deps,Prio,Project,Tags,Effort,Description,Urg
+report.billing.columns=uuid.short,id,status.short,start.age,depends,priority,project,tags,timespent,description,urgency
+report.billing.filter=(status:pending or status:completed) timespent.not:''
+report.billing.sort=tags

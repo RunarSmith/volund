@@ -1,0 +1,29 @@
+---
+
+# --- arsenal ------------------------------------------------
+
+- name: Enable legacy TIOCSTI for dev.tty
+  ansible.builtin.lineinfile:
+    path: /etc/sysctl.conf
+    line: "dev.tty.legacy_tiocsti=1"
+    state: present
+    create: yes
+  become: true
+
+- name: Update CHEATS_PATHS in /opt/arsenal/arsenal/modules/config.py (reduced version)
+  ansible.builtin.replace:
+    path: /opt/arsenal/arsenal/modules/config.py
+    regexp: 'CHEATS_PATHS\s*=\s*\[[^\]]*\]'
+    replace: |
+      CHEATS_PATHS = [
+        {% if arsenal_config_mode == "full" -%}
+          join(DATAPATH, "cheats"),  # DEFAULT
+        {% endif %}
+          # Additional paths below, add comma to line above
+          join(BASEPATH, "my_cheats"),
+          join(HOMEPATH, ".cheats"),
+          # Volund folders
+          "/usr/share/arsenal-cheats",
+          "/opt/resources/arsenal-cheats",
+          "/opt/my-resources/arsenal-cheats"     ]
+  become: true

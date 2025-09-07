@@ -192,7 +192,7 @@ class Configuration {
             "containerfile" = "Containerfile"
 
             # default container shell
-            "shell" = "zsh"
+            "shell" = "zsh -i -l"
 
             "labelImages" = "volund"
             "labelContainers" = "volund"
@@ -872,7 +872,7 @@ class ImageManager {
         }
 
         if ( -not (test-path $this.config.get("myResourcesVolume")) ) {
-            New-Item -Path $this.config.get("myResourcesVolume").hostPath  -ItemType "Directory"
+            New-Item -Path $this.config.get("myResourcesVolume").hostPath -ItemType "Directory"
         }
 
         $imgName = $this.Driver.BuildImage( $this.Config.Get("buildBasePath"), $params)
@@ -1159,7 +1159,7 @@ class ContainerManager {
                 # OK
                 $realVpnConfigFile = $VpnConfig
             } else {
-                $altPath = ("{0}/setup/openvpn/{1}" -f $myresourcesPaths.hostPath,$VpnConfig ) 
+                $altPath = ("{0}/res/openvpn/{1}" -f $myresourcesPaths.hostPath,$VpnConfig ) 
 
                 if (Test-Path -Path $altPath) {
                     # OK
@@ -1618,8 +1618,8 @@ switch ($Command) {
             return
         }
         $res = $imageMngr.BuildImage( $Image, $Role, $Distribution, $Version )
-        if ($res -eq $null) {
-            $host.SetShouldExit(1)
+        if ($null -eq $res) {
+            # $host.SetShouldExit(1)
             exit 1
         }
     } 

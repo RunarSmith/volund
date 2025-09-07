@@ -1,1 +1,5 @@
 ---
+
+# --- arsenal ------------------------------------------------
+
+- include_tasks: data-arsenal.yaml

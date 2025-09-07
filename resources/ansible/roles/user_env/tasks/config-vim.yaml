@@ -1,0 +1,13 @@
+---
+
+# --- (neo)vim ------------------------------------------------
+
+- name: Sync LazyVim plugins
+  ansible.builtin.command:
+    cmd: nvim --headless +"Lazy! sync" +qa
+  become: true
+  become_user: "{{ default_username }}"
+  environment:
+    HOME: "/home/{{ default_username }}"
+  register: lazyvim_sync
+  changed_when: false

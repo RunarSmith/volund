@@ -1,0 +1,7 @@
+#!/bin/bash
+
+# Display markdown files with glow :
+# - `-w 0` in full terminal width
+# - `-p` to use the pager (less)
+
+glow -w 0 -p $*

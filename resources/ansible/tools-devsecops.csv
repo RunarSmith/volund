@@ -1,0 +1,13 @@
+name,category,version,description
+bash;linux;GNU bash, version 5.3.3(1)-release (x86_64-pc-linux-gnu)
+Copyright (C) 2025 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+
+This is free software; you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.;Bash is a Unix shell and command language.
+btop;linux;;btop is a resource monitor that shows usage and stats for processor, memory, disks, network and processes.
+curl;linux;curl 8.15.0 (x86_64-pc-linux-gnu) libcurl/8.15.0 OpenSSL/3.5.2 zlib/1.3.1 brotli/1.1.0 zstd/1.5.7 libidn2/2.3.7 libpsl/0.21.5 libssh2/1.11.1 nghttp2/1.67.0 nghttp3/1.11.0
+Release-Date: 2025-07-16
+Protocols: dict file ftp ftps gopher gophers http https imap imaps ipfs ipns mqtt pop3 pop3s rtsp scp sftp smb smbs smtp smtps telnet tftp ws wss
+Features: alt-svc AsynchDNS brotli GSS-API HSTS HTTP2 HTTP3 HTTPS-proxy IDN IPv6 Kerberos Largefile libz NTLM PSL SPNEGO SSL threadsafe TLS-SRP UnixSockets zstd;curl is a command-line tool for transferring data with URLs.
+git;development;git version 2.51.0;Git is a distributed version control system.

@@ -1,0 +1,50 @@
+---
+
+# --- arsenal ------------------------------------------------
+
+- name: Create arsenal-cheats directory
+  ansible.builtin.file:
+    path: /usr/share/arsenal-cheats
+    state: directory
+    mode: '0755'
+  become: true
+
+- name: Get Arsenal cheats from Stephane Robert
+  ansible.builtin.git:
+    repo: https://github.com/stephrobert/arsenal-devops-cheats.git
+    dest: /usr/share/arsenal-cheats/stephane-robert-devops
+  become: true
+
+
+- name: allow some piece of arsenal-cheats to be used by arsenal
+  block:
+
+    # By default, provide only a sub-set of cheats to avoid overloading the user
+    - name: Create symlink to selected cheats
+      ansible.builtin.file:
+        src: "/opt/arsenal/arsenal/data/cheats/{{ item }}"
+        dest: "/usr/share/arsenal-cheats/arsenal-default-{{ item }}"
+        state: link
+      loop_control:
+        loop_var: item
+      with_items:
+        - Archive
+        - Cloud
+        - Crypto
+        - Databases
+        - Files
+        - Install
+        - Linux
+        - Services
+        - Tools
+        - Windows
+        - arsenal.md
+
+    - name: Create symlink to selected sub-cheats
+      ansible.builtin.file:
+        src: "/opt/arsenal/arsenal/data/cheats/Web/openssl.md"
+        dest: "/usr/share/arsenal-cheats/arsenal-default-Web-openssl.md"
+        state: link
+      
+  become: true
+  when: arsenal_config_mode != "full"

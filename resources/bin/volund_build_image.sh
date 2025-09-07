@@ -93,32 +93,32 @@ print_header "Environment Setup"
 
 print_step "Install HTTPS certificates"
 
-if compgen -G "/opt/my-resources/setup/certs/*.pem" > /dev/null; then
+if compgen -G "/opt/my-resources/res/certs/*.pem" > /dev/null; then
     echo "Found custom certificates to install."
 
     case "${OS_FAMILLY_NAME}" in
         "fedora")
-            cp /opt/my-resources/setup/certs/*.pem /etc/pki/ca-trust/source/anchors/ || die "Failed to copy certificates to /etc/pki/ca-trust/source/anchors/"
+            cp /opt/my-resources/res/certs/*.pem /etc/pki/ca-trust/source/anchors/ || die "Failed to copy certificates to /etc/pki/ca-trust/source/anchors/"
             update-ca-trust || die "Failed to update CA trust"
             ;;
         "debian")
             apt update -qqy
             apt install -qqy --no-install-recommends ca-certificates || die "Failed to install ca-certificates package"
 
-            pushd /opt/my-resources/setup/certs
+            pushd /opt/my-resources/res/certs
             for cert in *.pem; do
                 if [ -f "$cert" ]; then
                     echo "Installing certificate: $cert"
                     cp "$cert" /usr/local/share/ca-certificates/$(basename $cert).crt || die "Failed to copy certificate $cert to /usr/local/share/ca-certificates/"
                 else
-                    echo "No certificates found in /opt/my-resources/setup/certs/"
+                    echo "No certificates found in /opt/my-resources/res/certs/"
                 fi
             done
             popd
             update-ca-certificates || die "Failed to update CA certificates"
             ;;
         "arch")
-            cp /opt/my-resources/setup/certs/*.pem /etc/ca-certificates/trust-source/anchors/ || die "Failed to copy certificates to /etc/ca-certificates/trust-source/anchors/"
+            cp /opt/my-resources/res/certs/*.pem /etc/ca-certificates/trust-source/anchors/ || die "Failed to copy certificates to /etc/ca-certificates/trust-source/anchors/"
             trust extract-compat || die "Failed to extract CA certificates"
             ;;
         *)
@@ -196,10 +196,10 @@ fi
 
 print_header "Execute Custom Build Script (my-resources)"
 
-if [ -f /opt/my-resources/setup/bin/build_image.sh ]; then
+if [ -f /opt/my-resources/bin/volund_build_my_image.sh ]; then
     echo "--- Custom build script found, executing it ----------------"
     # chmod +x /opt/my-resources/setup/bin/build_image.sh
-    bash /opt/my-resources/setup/bin/build_image.sh || die "Failed to execute custom build script"
+    bash /opt/my-resources/bin/volund_build_my_image.sh || die "Failed to execute custom build script"
 else
     echo "--- No custom build script found, skipping execution -------"
 fi

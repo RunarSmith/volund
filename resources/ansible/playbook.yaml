@@ -14,6 +14,8 @@
     # RedHat: Fedora
     allowed_os_familly: ["Archlinux", "Debian", "hardening", "check"]
 
+    volund_role: 
+
   pre_tasks:
     - name: "Ensure active actions are valids"
       ansible.builtin.assert:
@@ -36,8 +38,6 @@
   roles:
     - container_config  # base configuration for the container
 
-    - common_it
-    - common_services
     - openvpn_client
     - user_env
     - web_browsers

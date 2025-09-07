@@ -2,13 +2,16 @@
 
 install_packages_os:
   - ca-certificates
+  - ftp
   - man
   - man-db
+  - netcat-traditional
   - openssh-client
   - pipx
   - procps
   - python3
   - python3-pip
+  - python3-pyftpdlib
   - python3-venv
   - sudo
   - wget

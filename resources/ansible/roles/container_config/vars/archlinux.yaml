@@ -1,13 +1,19 @@
 ---
 
 install_packages_os:
+  - base-devel
+  - bind  # dnsutils, nslookup, dig
   - ca-certificates
   - ca-certificates-utils
+  - gnu-netcat
+  - inetutils
+  - iputils
   - man-db
-  - base-devel
+  - nfs-utils
   - openssh
   - procps
   - python-pip
+  - python-pyftpdlib
   - python-virtualenv
   - python-pipx
   - which

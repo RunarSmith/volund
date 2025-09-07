@@ -249,28 +249,16 @@
   become: true
   become_user: "{{ default_username }}"
 
-# --- chromium -------------------------------------------------
-
-# copy chromium wrapper
-- name: copy chromium wrapper
-  ansible.builtin.copy:
-    src: chromuin-wrapper
-    dest: "/usr/local/bin/chromium"
-    owner: root
-    group: root
-    mode: '0755'
-  become: true
-
 # --- entrypoint -----------------------------------------------
 
-- name: ensure /.entrypoint.sh is in Unix format
+- name: ensure entrypoint.sh is in Unix format
   ansible.builtin.command:
-    cmd: "dos2unix /.entrypoint.sh"
+    cmd: "dos2unix /opt/resources/bin/volund_entrypoint.sh"
   become: true
 
-- name: Make /.entrypoint.sh executable
+- name: Make entrypoint.sh executable
   ansible.builtin.file:
-    path: /.entrypoint.sh
+    path: /opt/resources/bin/volund_entrypoint.sh
     mode: '0755'
     owner: "{{ default_username }}"
     #group: root

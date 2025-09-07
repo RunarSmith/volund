@@ -1,27 +1,16 @@
 ---
 # tasks file for user_env
 
-# --- zs ------------------------------------------------
-
-# set zsh configuration
-- name: set zsh configuration
+- name: copy user environment files
   ansible.builtin.copy:
-    src: zsh/zshrc
-    dest: "/home/{{ default_username }}/.zshrc"
+    src: "{{ role_path }}/files/home/"
+    dest: "/home/{{ default_username }}/"
     owner: "{{ default_username }}"
     group: "{{ default_username }}"
   become: true
   become_user: "{{ default_username }}"
 
-# set power10k configuration
-- name: set power10k configuration
-  ansible.builtin.copy:
-    src: zsh/p10k.zsh
-    dest: "/home/{{ default_username }}/.p10k.zsh"
-    owner: "{{ default_username }}"
-    group: "{{ default_username }}"
-  become: true
-  become_user: "{{ default_username }}"
+# --- zsh ------------------------------------------------
 
 # set user default shell as zsh
 - name: set user default shell as zsh
@@ -29,67 +18,6 @@
     name: "{{ default_username }}"
     shell: /bin/zsh
   become: true
-
-# --- git ------------------------------------------------
-
-- name: set git configuration
-  ansible.builtin.copy:
-    src: git/gitconfig
-    dest: "/home/{{ default_username }}/.gitconfig"
-    owner: "{{ default_username }}"
-    group: "{{ default_username }}"
-  become: true
-  become_user: "{{ default_username }}"
-
-# --- tmux ------------------------------------------------
-
-- name: set tmux configuration
-  ansible.builtin.copy:
-    src: tmux/tmux.conf
-    dest: "/home/{{ default_username }}/.tmux.conf"
-    owner: "{{ default_username }}"
-    group: "{{ default_username }}"
-  become: true
-  become_user: "{{ default_username }}"
-
-# --- (neo)vim ------------------------------------------------
-
-# nvim config
-- name: Clone LazyVim starter config
-  ansible.builtin.git:
-    repo: https://github.com/LazyVim/starter
-    dest: "/home/{{ default_username }}/.config/nvim"
-    depth: 1
-    update: no
-  become: true
-  become_user: "{{ default_username }}"
-
-- name: remove default init.lua
-  ansible.builtin.file:
-    path: "/home/{{ default_username }}/.config/nvim/init.lua"
-    state: absent
-    force: yes
-  become: true
-  become_user: "{{ default_username }}"
-
-- name: replace default init.lua with custom one
-  ansible.builtin.copy:
-    src: vim/init.lua
-    dest: "/home/{{ default_username }}/.config/nvim/init.lua"
-    owner: "{{ default_username }}"
-    group: "{{ default_username }}"
-  become: true
-  become_user: "{{ default_username }}"
-
-- name: Sync LazyVim plugins
-  ansible.builtin.command:
-    cmd: nvim --headless +"Lazy! sync" +qa
-  become: true
-  become_user: "{{ default_username }}"
-  environment:
-    HOME: "/home/{{ default_username }}"
-  register: lazyvim_sync
-  changed_when: false
 
 # --- ruby ------------------------------------------------
 
@@ -99,3 +27,8 @@
 # https://wiki.archlinux.org/title/RVM#Using_RVM
 # - name: get install script for rvm
 #  shell: "curl -L https://get.rvm.io | bash"
+
+
+- include_tasks: config-arsenal.yaml
+- include_tasks: config-taskwarrior.yaml
+- include_tasks: config-vim.yaml

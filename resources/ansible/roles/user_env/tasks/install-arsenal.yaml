@@ -1,0 +1,19 @@
+---
+
+# --- arsenal ------------------------------------------------
+
+- name: Install Arsenal
+  ansible.builtin.git:
+    repo: https://github.com/Orange-Cyberdefense/arsenal.git
+    dest: /opt/arsenal
+    update: yes
+    force: yes
+  become: true
+
+- name: Create symlink 'a' to arsenal
+  ansible.builtin.file:
+    src: /opt/arsenal/run
+    dest: /usr/local/bin/a
+    state: link
+  become: true
+

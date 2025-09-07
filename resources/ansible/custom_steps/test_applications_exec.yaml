@@ -1,5 +1,4 @@
 ---
-# tasks file for web_browser
 
 # parameters:
 #   default_username: the user to run the commands as, default is 'volund'

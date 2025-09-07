@@ -8,20 +8,15 @@ if [ -f $ovpn_file ]; then
 fi
 
 if [ -d /opt/my-resources/setup/user/ ]; then
-  if [ -d /opt/my-resources/setup/user/.ssh/ ]; then
-    # Copy SSH keys to the container
-    [ ! -d ~/.ssh ] && mkdir ~/.ssh
-    chmod -R 700 ~/.ssh
-    cp --force /opt/my-resources/setup/user/.ssh/* ~/.ssh/
+  cp -av  /opt/my-resources/res/home_volund/. ~/
+
+  if [ -d /home/volund/.ssh/ ]; then
     # fix access rights
     chmod 700 ~/.ssh
     chmod 400 ~/.ssh/*
     chmod 600 ~/.ssh/known_hosts
   fi
 
-  if [ -f /opt/my-resources/setup/user/.gitconfig ]; then
-    cat /opt/my-resources/setup/user/.gitconfig >> ~/.gitconfig
-  fi
 fi
 
 zsh -i -l

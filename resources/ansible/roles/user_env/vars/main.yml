@@ -3,6 +3,8 @@
 
 install_packages_os_common:
   - asciinema
+  - fzf
+  - glow
   - kitty
   - nano
   - neovim
@@ -12,6 +14,10 @@ install_packages_os_common:
   - vi
   - vim
   - zsh
+  # arsenal dependencies
+  - python-pyperclip
+  - python-docutils
+  - python-libtmux
 
 install_pipx_tools: []
 
@@ -41,3 +47,5 @@ install_packages_rust:
   - rustup
 
 test_commands: []
+
+arsenal_config_mode: "{{ 'full' if volund_role == 'offsec' else 'normal' }}"

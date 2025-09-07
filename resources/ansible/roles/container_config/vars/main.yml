@@ -21,26 +21,36 @@ install_packages:
   system:
     - bash
     - btop
+    - dnsutils
     - logrotate
-    - mise
+    - lsof
+    #- mise
+    - net-tools
+    - openresolv
     - plocate
     - sudo
     - zsh
+    - iproute2
   utils:
     - binutils
     - bison
     - diffutils
     - dos2unix
     - expect
-    - fzf
-    - glow
+    - filezilla
+    - gnu-netcat
     - gnupg
     - jq
     - less
+    - rlwrap
+    - samba
+    - smbclient
+    - socat
     - tidy
     - time
     - tk
     - tree
+    - websocat
     - yq
   web:
     - curl
@@ -67,9 +77,26 @@ test_commands:
   - yq --version
   - zip -h2
 
-
 # list of files to cleanup before/after install step execution
 cleanup_temp: []
 
 # list of python packages to install with pipx, in user home directory
 install_pipx_tools: []
+
+tools_descriptions:
+  - name: "bash"
+    category: "linux"
+    command_version: "bash --version | head -n 1"
+    description: "Bash is a Unix shell and command language."
+  - name: "btop"
+    category: "linux"
+    command_version: "btop --version"
+    description: "btop is a resource monitor that shows usage and stats for processor, memory, disks, network and processes."
+  - name: "curl"
+    category: "linux"
+    command_version: "curl --version | head -n 2"
+    description: "curl is a command-line tool for transferring data with URLs."
+  - name: "git"
+    category: "development"
+    command_version: "git --version"
+    description: "Git is a distributed version control system."

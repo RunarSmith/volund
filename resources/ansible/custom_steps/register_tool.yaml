@@ -1,0 +1,35 @@
+---
+# register a tool or an application in the global tools.csv file
+
+# parameters:
+#   init : true/false, if true, will initialize the csv file with headers
+#   name: the name of the tool or application
+#   command_version: command to get its version
+#   description: tool description
+#   category: tool category
+
+- name: Get tool version
+  command: 
+    cmd: |
+        {{ command_version }}
+  register: tool_version
+  changed_when: false
+  failed_when: false
+  when: command_version is defined
+
+- name: Initialize CSV file with headers if requested
+  delegate_to: localhost
+  when: init | default(false) | bool
+  copy:
+    dest: "{{ csv_path }}"
+    content: "name,category,version,description\n"
+    force: true
+
+- name: Add tool entry to CSV
+  delegate_to: localhost
+  lineinfile:
+    path: "{{ csv_path }}"
+    line: "{{ name }};{{ category }};{{ tool_version.stdout | trim }};{{ description }}"
+    insertafter: EOF
+    create: yes
+  when: name is defined and category is defined and description is defined

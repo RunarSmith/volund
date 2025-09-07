@@ -121,18 +121,26 @@ rules:
   comments:
     level: warning
     require-starting-space: true
-  indentation:
+  empty-lines:
     level: warning
+    max: 0
+    max-start: 0
+    max-end: 0
+  indentation:
+    level: error
     spaces: 2
     indent-sequences: whatever
+  new-lines:
+    level: warning
+    type: platform
   trailing-spaces:
     level: warning
-
   # 120 chars should be enough, but don't fail if a line is longer
   line-length:
     max: 120
     level: warning
 EOF
+
 set -x
   yamllint $yamlResult
 set +x

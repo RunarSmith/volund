@@ -3,12 +3,12 @@ ARG BASE_IMAGE=debian:latest
 FROM ${BASE_IMAGE}
 
 # Ensure the path to entrypoint.sh is correct; update as needed
-COPY ./assets/entrypoint.sh /.entrypoint.sh
+#COPY ./assets/entrypoint.sh /.entrypoint.sh
 
-RUN bash /opt/resources/build/build_image.sh
+RUN bash /opt/resources/bin/volund_build_image.sh
 
 USER volund
 
 WORKDIR /workspace
 
-ENTRYPOINT [ "zsh", "/.entrypoint.sh" ]
+ENTRYPOINT [ "zsh", "/opt/resources/bin/volund_entrypoint.sh" ]

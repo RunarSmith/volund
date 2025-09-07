@@ -1,0 +1,35 @@
+---
+
+# --- taskwarrior ------------------------------------------------
+
+- name: create taskwarrior data directory
+  ansible.builtin.file:
+    path: /usr/share/taskwarrior/
+    state: directory
+    mode: '0755'
+  become: true
+
+- name: get taskwarrior theme files from github
+  ansible.builtin.get_url:
+    url: "https://raw.githubusercontent.com/GothenburgBitFactory/taskwarrior/refs/heads/develop/doc/rc/{{ item }}"
+    dest: "/usr/share/taskwarrior/dark-green-256.theme"
+    mode: '0644'
+  become: true
+  loop_control:
+    loop_var: item
+  with_items: 
+    - bubblegum-256.theme
+    - dark-16.theme
+    - dark-256.theme
+    - dark-blue-256.theme
+    - dark-gray-256.theme
+    - dark-gray-blue-256.theme
+    - dark-green-256.theme
+    - dark-red-256.theme
+    - dark-violets-256.theme
+    - dark-yellow-green.theme
+    - light-16.theme
+    - light-256.theme
+    - no-color.theme
+    - solarized-dark-256.theme
+    - solarized-light-256.theme

@@ -1,6 +1,19 @@
 ---
 # tasks file for web_browser
 
+# --- chromium -------------------------------------------------
+
+# copy chromium wrapper
+#- name: copy chromium wrapper
+#  ansible.builtin.copy:
+#    src: chromuin-wrapper
+#    dest: "/usr/local/bin/chromium"
+#    owner: root
+#    group: root
+#    mode: '0755'
+#  become: true
+
+# --- firefox -------------------------------------------------
 
 - name: "firefox > Updating Firefox Policies"
   ansible.builtin.template: 
@@ -8,4 +21,3 @@
     #dest: "/usr/share/firefox-esr/distribution/policies.json"
     dest: "/usr/lib/firefox/distribution/policies.json"
   become: true
-
