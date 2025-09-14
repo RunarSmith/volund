@@ -2,6 +2,7 @@
 # vars file for web_browser
 
 install_packages:
+  - chromium
   - firefox-esr
 
 install_gui_packages_drivers:

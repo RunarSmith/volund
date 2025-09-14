@@ -8,22 +8,6 @@
     return_content: yes
   register: burp_json
 
-#- name: Extraire URL et version du dernier JAR Community Edition stable
-#  set_fact:
-#    burp_latest_version: "{{ item.builds[0].Version }}"
-#    burp_latest_jar_url: "https://portswigger.net/burp/releases/download?product=community&version={{ item.builds[0].Version }}&type=Jar"
-#  loop: "{{ (burp_json.content | from_json).ResultSet.Results }}"
-#  when: >
-#    ("Community" in item.categories) and
-#    (item.builds | selectattr('ProductPlatform', 'equalto', 'Jar') | list | length > 0) and
-#    (item.builds | selectattr('ProductId', 'equalto', 'community') | list | length > 0)
-#  loop_control:
-#    label: "{{ item.builds[0].Version }}"
-#  register: burp_latest_info
-#  until: burp_latest_version is defined
-#  retries: 5
-#  delay: 2
-
 - name: Extraire la version et le lien du dernier JAR Community Edition
   set_fact:
     burp_latest_item: "{{ (burp_json.content | from_json).ResultSet.Results[0].version }}"

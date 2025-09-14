@@ -29,7 +29,7 @@
   delegate_to: localhost
   lineinfile:
     path: "{{ csv_path }}"
-    line: "{{ name }};{{ category }};{{ tool_version.stdout | trim }};{{ description }}"
+    line: "{{ tool_name }};{{ category }};{{ tool_version.stdout | trim }};{{ description }}"
     insertafter: EOF
     create: yes
   when: name is defined and category is defined and description is defined

@@ -1,10 +1,6 @@
 ---
 # vars file for burpsuite
 
-install_packages_os_common:
-  - burpsuite
-  - burpsuite-extensions
-
 test_commands: []
 
 burp_releases_url: "https://portswigger.net/burp/releases/data?previousLastId=-1&lastId=-1&pageSize=10"

@@ -18,23 +18,30 @@
     volund_role: devsecops
 
   pre_tasks:
-    - name: "Ensure active actions are valids"
-      ansible.builtin.assert:
-        that: >
-          active_actions | difference(allowed_actions) | length == 0
-        fail_msg: "active_actions contain unknown values : {{ active_actions | difference(allowed_actions) }}"
+    - name: include generic pre_task
+      ansible.builtin.include_tasks: custom_steps/playbook_pre_tasks.yaml
+  
+  post_tasks:
+    - name: include generic pre_task
+      ansible.builtin.include_tasks: custom_steps/playbook_post_tasks.yaml
 
-    - name: Display active actions
-      ansible.builtin.debug:
-        msg: "Actions : {{ active_actions | join(', ') }}"
+    # - name: "Ensure active actions are valids"
+    #   ansible.builtin.assert:
+    #     that: >
+    #       active_actions | difference(allowed_actions) | length == 0
+    #     fail_msg: "active_actions contain unknown values : {{ active_actions | difference(allowed_actions) }}"
+
+    # - name: Display active actions
+    #   ansible.builtin.debug:
+    #     msg: "Actions : {{ active_actions | join(', ') }}"
     
-    - name: Include OS-specific variables
-      ansible.builtin.debug:
-        msg:
-          - "OS Familly:   {{ ansible_os_family }}"
-          - "Distribution: {{ ansible_distribution }}"
-          - "Version:      {{ ansible_distribution_version }}"
-          - "Architecture: {{ ansible_architecture}}"
+    # - name: Include OS-specific variables
+    #   ansible.builtin.debug:
+    #     msg:
+    #       - "OS Familly:   {{ ansible_os_family }}"
+    #       - "Distribution: {{ ansible_distribution }}"
+    #       - "Version:      {{ ansible_distribution_version }}"
+    #       - "Architecture: {{ ansible_architecture}}"
 
   roles:
     - container_config  # base configuration for the container
@@ -55,12 +62,12 @@
 
     # ansible
     # nuclei ?
+    
+  # post_tasks:
+  #   - name: Display completion message
+  #     ansible.builtin.debug:
+  #       msg: ✅ Playbook completed successfully!
 
-  post_tasks:
-    - name: Display completion message
-      ansible.builtin.debug:
-        msg: ✅ Playbook completed successfully!
-
-    - name: Display active actions
-      ansible.builtin.debug:
-        msg: "Actions : {{ active_actions | join(', ') }}"
+  #   - name: Display active actions
+  #     ansible.builtin.debug:
+  #       msg: "Actions : {{ active_actions | join(', ') }}"

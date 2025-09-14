@@ -1,14 +1,6 @@
 ---
 # vars file for caido
 
-# list of packages to install on all OS
-install_packages_os_common: []
-
 # list of commands to execute after install step, to ensure that applications are running properly
 test_commands: []
 
-# list of files to cleanup before/after install step execution
-cleanup_temp: []
-
-# list of python packages to install with pipx, in user home directory
-install_pipx_tools: []

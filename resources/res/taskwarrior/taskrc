@@ -7,9 +7,6 @@ include /usr/share/taskwarrior/dark-green-256.theme
 # taskwarrior config file
 data.location=/workspace/.task
 
-# https://github.com/GothenburgBitFactory/taskwarrior/tree/develop/doc/rc
-include /opt/my-resources/setup/user/dark-green-256.theme
-
 weekstart=monday
 
 # track effort spent on a task

@@ -1,0 +1,41 @@
+---
+
+# download code from a github repository as a zip file, and extract its content to a local path
+
+#
+# - name: execute test commands
+#   include_tasks: "{{ role_path }}/../../custom_steps/gitlab_download_code_zip.yaml"
+#   vars:
+#     owner: "RunarSmith"
+#     repo: "volund"
+#     local_path: "/opt/volund/"
+#     branch: "main"  # optional: default to master
+#     as_user: "volund"  # optional: default to root
+#
+
+- name: "{{repo}}: Remove existing local_path if it exists"
+  ansible.builtin.file:
+    path: "{{ local_path }}"
+    state: absent
+  become: true
+
+- name: "{{repo}}: Git checkout"
+  ansible.builtin.unarchive:
+    src: "https://gitlab.com/{{owner}}/{{repo}}/-/archive/{{ branch | default('main') }}/{{repo}}-{{ branch | default('main') }}.zip?ref_type=heads"
+    dest: "{{ volund_temp_folder }}/{{ repo }}"
+    remote_src: yes
+  become: true
+  become_user: "{{ as_user | default('root') }}"
+
+- name: "{{repo}}: Move extracted content to target location"
+  ansible.builtin.command:
+    cmd: >
+      sh -c "mv {{ volund_temp_folder }}/{{ repo }}/{{ repo }}-{{ branch | default('master') }}/* {{ local_path }}/"
+  become: true
+  become_user: "{{ as_user | default('root') }}"
+
+- name: "{{repo}}: Remove temps folder"
+  ansible.builtin.file:
+    path: "{{ volund_temp_folder }}/{{ repo }}"
+    state: absent
+  become: true

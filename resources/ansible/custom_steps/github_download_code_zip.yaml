@@ -1,0 +1,47 @@
+---
+
+# download code from a github repository as a zip file, and extract its content to a local path
+
+#
+# - name: execute test commands
+#   include_tasks: "{{ role_path }}/../../custom_steps/github_download_code_zip.yaml"
+#   vars:
+#     owner: RunarSmith
+#     repo: volund
+#     local_path: /opt/volund/
+#     branch: main  # optional: default to master
+#     as_user: volund  # optional: default to root
+#
+
+- name: "{{repo}}: Remove existing local_path if it exists"
+  ansible.builtin.file:
+    path: "{{ local_path }}"
+    state: absent
+  become: true
+
+- name: "{{repo}}: Pre-create directories"
+  ansible.builtin.file:
+    path: "{{ local_path_item }}"
+    state: directory
+  become: true
+  become_user: "{{ as_user | default('root') }}"
+  loop: 
+    - "{{ local_path }}"
+    - "{{ volund_temp_folder }}/{{ repo }}"
+  loop_control:
+    loop_var: local_path_item
+
+- name: "{{repo}}: Download and extract archive to a temp folder"
+  ansible.builtin.unarchive:
+    src: "https://github.com/{{owner}}/{{repo}}/archive/refs/heads/{{ branch | default('master') }}.zip"
+    dest: "{{ volund_temp_folder }}/{{ repo }}"
+    remote_src: true
+  become: true
+  become_user: "{{ as_user | default('root') }}"
+
+- name: "{{repo}}: Move extracted content to target location"
+  ansible.builtin.command:
+    cmd: >
+      sh -c "mv {{ volund_temp_folder }}/{{ repo }}/{{ repo }}-{{ branch | default('master') }}/* {{ local_path }}/"
+  become: true
+  become_user: "{{ as_user | default('root') }}"

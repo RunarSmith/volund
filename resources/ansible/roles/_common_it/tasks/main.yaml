@@ -1,5 +1,0 @@
----
-# tasks file for common_it
-
-- name: "Standard Role Main"
-  ansible.builtin.include_tasks: "{{ role_path }}/../../custom_steps/role_main_standard.yaml"

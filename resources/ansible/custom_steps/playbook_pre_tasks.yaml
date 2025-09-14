@@ -1,0 +1,26 @@
+---
+
+- name: "Ensure active actions are valids"
+  ansible.builtin.assert:
+    that: >
+      active_actions | difference(allowed_actions) | length == 0
+    fail_msg: "active_actions contain unknown values : {{ active_actions | difference(allowed_actions) }}"
+
+- name: Display active actions
+  ansible.builtin.debug:
+    msg: "Actions : {{ active_actions | join(', ') }}"
+
+- name: Include OS-specific variables
+  ansible.builtin.debug:
+    msg:
+      - "OS Familly:   {{ ansible_os_family }}"
+      - "Distribution: {{ ansible_distribution }}"
+      - "Version:      {{ ansible_distribution_version }}"
+      - "Architecture: {{ ansible_architecture}}"
+
+- name: Create temporary folder
+  ansible.builtin.file:
+    path: "{{ volund_temp_folder }}"
+    state: directory
+    mode: '0777'
+  become: true

@@ -2,7 +2,7 @@
 # vars file for devsecops
 
 # list of packages to install on all OS
-install_packages_os_common:
+install_packages:
   - yamllint
   - trivy
 

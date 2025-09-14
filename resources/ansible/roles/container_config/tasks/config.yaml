@@ -48,118 +48,26 @@
   with_items:
     - 90-volund.sh
   become: true
-  
-- name: Create default user
-  ansible.builtin.user:
-    name: "{{ default_username }}"
-    uid: "{{ default_user_UID }}"
-    shell: "{{ default_user_shell }}"
-    groups: sudo
-    append: true
-    state: present
-  when: ansible_os_family in ['Debian']
-  become: true
-
-- name: Create default user
-  user:
-    name: "{{ default_username }}"
-    uid: "{{ default_user_UID }}"
-    shell: "{{ default_user_shell }}"
-    groups: wheel
-    append: true
-    state: present
-  when: ansible_os_family in ['Archlinux', 'RedHat']
-  become: true
-
-- name: Set sudo to NOPASSWD for this user
-  lineinfile:
-    path: /etc/sudoers
-    line: "{{ default_username }} ALL=(ALL) NOPASSWD: ALL"
-    validate: 'visudo -cf %s'
-  when: ansible_os_family in ['Debian', 'RedHat']
-  become: true
-
-- name: Set sudo to NOPASSWD for this user (wheel group)
-  lineinfile:
-    path: /etc/sudoers
-    line: "%wheel ALL=(ALL) NOPASSWD: ALL"
-    validate: 'visudo -cf %s'
-  when: ansible_os_family in ['Archlinux']
-  become: true
-
-# --- ca-certificates -----------------------------------------
-
-- name: Check presence of certificates files
-  stat:
-    path: "{{ build_resource_path }}/certs/"
-  register: certs_dir
-
-- name: Deploy custom CA certificates directory
-  block:
-    - name: Copy certs if sourcePath is defined
-      copy:
-        src: "{{ build_resource_path }}/certs/"
-        dest: "{{ ca_trust_path }}"
-        owner: root
-        group: root
-        mode: '0644'
-        remote_src: true
-
-    - name: Update CA trust store
-      command: update-ca-trust
-      when:
-        - ansible_os_family in ['RedHat']
-
-    - name: Update CA trust store
-      command: update-ca-certificates
-      when:
-        - ansible_os_family in ['Debian']
-
-    - name: Update CA trust store
-      command: trust extract-compat
-      when:
-        - ansible_os_family in ['Archlinux']
-  become: true
-  when:
-    - certs_dir.stat.exists
-    - certs_dir.stat.isdir
 
 # --- Archlinux AUR packages ---------------------------------
 
 - name: Configure AUR packages building (Archlinux)
   block:
-    #- name: create user aur_user to build AUR packages
-    #  ansible.builtin.user:
-    #    name: aur_builder
-        #group: aur_builder
-    #    comment: "AUR builder user"
-    #    shell: /bin/bash
-    #  become: true
-
-    #- name: add user aur_builder to sudoers
-    #  ansible.builtin.lineinfile:
-    #    path: /etc/sudoers.d/aur_builder-allow-to-sudo-pacman
-    #    state: present
-    #    line: "aur_builder ALL=(ALL) NOPASSWD: /usr/bin/pacman"
-    #    validate: /usr/sbin/visudo -cf %s
-    #    create: true
-    #  become: true
-    
     - name: cleaning
       ansible.builtin.file:
-        path: "/tmp/paru-bin/"
+        path: "{{ volund_temp_folder }}/paru-bin/"
         state: absent
       become: true
 
     - name: Clone paru PKGBUILD
       git:
         repo: https://aur.archlinux.org/paru-bin.git
-        dest: "/tmp/paru-bin"
+        dest: "{{ volund_temp_folder }}/paru-bin"
         update: true
 
     - name: changing owner
       ansible.builtin.file:
-        path: "/tmp/paru-bin/"
+        path: "{{ volund_temp_folder }}/paru-bin/"
         state: directory
         owner: nobody
         group: nobody
@@ -167,37 +75,21 @@
         recurse: true
       become: true
 
-    #- name: give rights to 'aur_builder' user on compilation files
-    #  ansible.builtin.file:
-    #    dest: "/tmp/paru-bin/"
-    #    owner: aur_builder
-    #    group: aur_builder
-    #    mode: 'u=rwx,g=rwx,o=rx'
-    #    recurse: true
-    #  become: true
-
-    #- name: ensure PKGBUILD is in Unix format
-    #  command:
-    #    chdir: "/tmp/paru-bin/"
-    #    cmd: "dos2unix PKGBUILD > PKGBUILD.2 ; mv PKGBUILD.2 PKGBUILD"
-    #  become_user: aur_builder
-
     - name: ensure PKGBUILD is in Unix format
       ansible.builtin.command:
-        chdir: "/tmp/paru-bin/"
+        chdir: "{{ volund_temp_folder }}/paru-bin/"
         cmd: "runuser -u nobody -- dos2unix PKGBUILD"
       become: true
 
     - name: Build 'paru'
       command:
-        chdir: "/tmp/paru-bin/"
+        chdir: "{{ volund_temp_folder }}/paru-bin/"
         cmd: "runuser -u nobody -- makepkg --syncdeps --noconfirm"
       become: true
-      #become_user: aur_builder
 
     - name: changing owner
       ansible.builtin.file:
-        path: "/tmp/paru-bin/"
+        path: "{{ volund_temp_folder }}/paru-bin/"
         state: directory
         owner: "{{ default_username }}"
         recurse: true
@@ -205,7 +97,7 @@
 
     - name: search for files with .pkg.tar.zst extension except for *debug* files
       find:
-        paths: "/tmp/paru-bin/"
+        paths: "{{ volund_temp_folder }}/paru-bin/"
         patterns: "*.pkg.tar.zst"
         recurse: true
         file_type: file
@@ -219,23 +111,15 @@
 
     - name: installing 'paru'
       command:
-        chdir: "/tmp/paru-bin/"
-     #   cmd: "runuser -u {{ default_username }} -- makepkg --install --clean --noconfirm"
-     # become_user: "{{ default_username }}"
+        chdir: "{{ volund_temp_folder }}/paru-bin/"
         cmd: "pacman -U {{ item.path }} --noconfirm --needed"
       become: true
       when: found_packages.matched > 0
       with_items: "{{ found_packages.files }}"
 
-    #- name: installing 'paru'
-    #  command:
-    #    chdir: "/tmp/paru-bin/"
-    #    cmd: "makepkg --clean --noconfirm"
-    #  become_user: aur_builder
-      
     - name: cleaning
       ansible.builtin.file:
-        path: "/tmp/paru-bin/"
+        path: "{{ volund_temp_folder }}/paru-bin/"
         state: absent
       become: true
   when: ansible_os_family == 'Archlinux' and false # Experimental
@@ -261,5 +145,25 @@
     path: /opt/resources/bin/volund_entrypoint.sh
     mode: '0755'
     owner: "{{ default_username }}"
-    #group: root
   become: true
+
+- name: Add missing ansible link from pipx
+  ansible.builtin.file:
+    src: "/home/volund/.local/share/pipx/venvs/ansible/bin/{{ link_item }}"
+    dest: "/home/volund/.local/bin/{{ link_item }}"
+    state: link
+  become: true
+  become_user: "{{ default_username }}"
+  loop_control:
+    loop_var: link_item
+  loop:
+    - ansible
+    - ansible-config
+    - ansible-console
+    - ansible-doc
+    - ansible-galaxy
+    - ansible-inventory
+    - ansible-playbook
+    - ansible-pull
+    - ansible-test
+    - ansible-vault

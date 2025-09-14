@@ -1,7 +1,7 @@
 ---
 # vars file for web_audit
 
-install_packages_os_common:
+install_packages:
   - gobuster
 
 test_commands: []

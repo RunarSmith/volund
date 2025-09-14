@@ -1,69 +1,19 @@
 ---
 # tasks file for caido
 
-- name: cleanup temporary files
-  include_tasks: "{{ role_path }}/../../custom_steps/cleanup.yaml"
+- name: get latest tag name from github
+  include_tasks: "{{ role_path }}/../../custom_steps/github_get_latest_tag.yaml"
   vars:
-    path: /tmp
-    cleanup_files: "{{ cleanup_temp }}"
-  when: cleanup_temp is defined and cleanup_temp | length > 0
-
-- name: Install required packages (common for all OS)
-  package:
-    name: >-
-      {{
-        (install_packages_os        | default([]) ) +
-        (install_packages_os_common | default([]) )
-      }}
-    state: present
-  become: true
-  when : install_packages_os_common is defined and install_packages_os_common | length > 0
-
-- name: install pipx tools
-  community.general.pipx:
-    name: "{{ item }}"
-    state: present
-  with_items: "{{ install_pipx_tools | default([]) }}"
-  become: true
-  become_user: "{{ default_username }}"
-  when: install_pipx_tools is defined and install_pipx_tools | length > 0
-  
-
-
-
-
-- name: Get caido latest tag
-  uri:
-    url: https://api.github.com/repos/caido/caido/releases/latest
-    return_content: true
-  register: caido_release
-
-- name: Latest release
-  ansible.builtin.debug:
-    msg: "Caido version: {{ caido_release.json.name }}"
+    owner: caido
+    repo: caido
 
 - name: Download Linux artifact
   ansible.builtin.get_url:
-    url:  "https://caido.download/releases/{{ caido_release.json.name }}/caido-desktop-{{ caido_release.json.name }}-linux-{{ ansible_architecture }}.deb"
-    dest: "/tmp/caido-desktop-{{ caido_release.json.name }}-linux-{{ ansible_architecture }}.deb"
+    url:  "https://caido.download/releases/{{ latest_tag }}/caido-desktop-{{ latest_tag }}-linux-{{ ansible_architecture }}.deb"
+    dest: "{{ volund_temp_folder }}/caido-desktop-{{ latest_tag }}-linux-{{ ansible_architecture }}.deb"
 
 - name: "install caido"
   apt:
-    deb: "/tmp/caido-desktop-{{ caido_release.json.name }}-linux-{{ ansible_architecture }}.deb"
+    deb: "{{ volund_temp_folder }}/caido-desktop-{{ caido_release.json.name }}-linux-{{ ansible_architecture }}.deb"
     state: present
   become: true
-
-- name: Remove tmp file
-  ansible.builtin.file:
-    path: "/tmp/caido-desktop-{{ caido_release.json.name }}-linux-{{ ansible_architecture }}.deb"
-    state: absent
-
-
-
-- name: cleanup temporary files
-  include_tasks: "{{ role_path }}/../../custom_steps/cleanup.yaml"
-  vars:
-    path: /tmp
-    cleanup_files: "{{ cleanup_temp }}"
-  when: cleanup_temp is defined and cleanup_temp | length > 0
-

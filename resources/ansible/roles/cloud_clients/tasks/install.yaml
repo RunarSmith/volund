@@ -2,42 +2,24 @@
 
 - name: Install required packages (common for all OS)
   package:
-    name: >-
-      {{
-        (install_packages_os        | default([]) ) +
-        (install_packages_os_common | default([]) )
-      }}
+    name: "{{ install_packages | flatten }}"
     state: present
   become: true
-  when : install_packages_os_common is defined and install_packages_os_common | length > 0
-
-- name: cleanup temporary files
-  include_tasks: "{{ role_path }}/../../custom_steps/cleanup.yaml"
-  vars:
-    path: /tmp
-    cleanup_files: "{{ cleanup_temp }}"
 
 # === argocd cli ==========================================
 
-- name: Appeler l'API GitHub pour récupérer les infos de la dernière release
-  uri:
-    url: https://api.github.com/repos/argoproj/argo-cd/releases/latest
-    return_content: yes
-  register: github_release
-
-- name: Extraire le tag de version depuis la réponse JSON
-  set_fact:
-    argocd_version: "{{ github_release.json.tag_name }}"
-
-- name: Télécharger le binaire Argo CD CLI
-  get_url:
-    url: "https://github.com/argoproj/argo-cd/releases/download/{{ argocd_version }}/argocd-linux-{{ binary_arch_name }}"
-    dest: "/tmp/argocd"
-    mode: '0555'
+- name: download argocd artifact from github
+  include_tasks: "{{ role_path }}/../../custom_steps/github_download_artifact.yaml"
+  vars:
+    owner: argoproj
+    repo: argo-cd
+    local_path: "{{ volund_temp_folder }}/argocd"
+    artifact_name_prefix: argocd-linux-
+    artifact_name_suffix: amd64
 
 - name: Installer le binaire Argo CD CLI
   copy:
-    src: "/tmp/argocd"
+    src: "{{ volund_temp_folder }}/argocd"
     dest: "/usr/local/bin/argocd"
     remote_src: yes
     mode: '0555'
@@ -45,30 +27,21 @@
 
 # === helm ================================================
 
-- name: Récupérer la dernière version de Helm depuis GitHub
-  uri:
-    url: https://api.github.com/repos/helm/helm/releases/latest
-    return_content: yes
-  register: helm_release
+- name: get latest tag name from github
+  include_tasks: "{{ role_path }}/../../custom_steps/github_get_latest_tag.yaml"
+  vars:
+    owner: helm
+    repo: helm
 
-- name: Extraire le tag de version
-  set_fact:
-    helm_version: "{{ helm_release.json.tag_name }}"
-
-- name: Télécharger l'archive Helm
-  get_url:
-    url: "https://get.helm.sh/helm-{{ helm_version }}-linux-{{ binary_arch_name }}.tar.gz"
-    dest: "/tmp/helm.tar.gz"
-
-- name: Extraire l'archive Helm
+- name: Download and extract Helm
   unarchive:
-    src: "/tmp/helm.tar.gz"
-    dest: "/tmp/"
+    src: "https://get.helm.sh/helm-{{ latest_tag }}-linux-{{ binary_arch_name }}.tar.gz"
+    dest: "{{ volund_temp_folder }}/"
     remote_src: yes
 
 - name: Installer le binaire Helm
   copy:
-    src: "/tmp/linux-{{ binary_arch_name }}/helm"
+    src: "{{ volund_temp_folder }}/linux-{{ binary_arch_name }}/helm"
     dest: "/usr/local/bin/helm"
     mode: '0755'
     remote_src: yes
@@ -90,28 +63,22 @@
 
 # === k9s =================================================
 
-- name: Récupérer la dernière version de K9s
-  uri:
-    url: https://api.github.com/repos/derailed/k9s/releases/latest
-    return_content: yes
-  register: k9s_release
-
-- name: Définir la version de K9s
-  set_fact:
-    k9s_version: "{{ k9s_release.json.tag_name }}"
-
-- name: Télécharger et extraire K9s
-  unarchive:
-    src: "https://github.com/derailed/k9s/releases/download/{{ k9s_version }}/k9s_Linux_{{ binary_arch_name }}.tar.gz"
-    dest: /tmp/
-    remote_src: yes
+- name: download artifact from github
+  include_tasks: "{{ role_path }}/../../custom_steps/github_download_artifact.yaml"
+  vars:
+    owner: derailed
+    repo: k9s
+    local_path: "{{ volund_temp_folder }}/"
+    as_user: volund  # optional: default to root
+    artifact_name_prefix: k9s_Linux
+    artifact_name_suffix: "{{ binary_arch_name }}.tar.gz"
+    unarchive: true
 
 - name: Installer K9s
   copy:
-    src: "/tmp/k9s"
+    src: "{{ volund_temp_folder }}/k9s"
     dest: "/usr/local/bin/k9s"
     mode: '0755'
-    remote_src: yes
   become: true
 
 # === kubectl =============================================
@@ -131,14 +98,9 @@
 
 # === openshift cli oc ====================================
 
-- name: Install OpenShift CLI (oc)
-  ansible.builtin.get_url:
-    url: "{{ oc_client_url }}"
-    dest: /tmp/openshift-client-linux.tar.gz
-
-- name: Extract oc binary
+- name: Download and Extract oc binary
   ansible.builtin.unarchive:
-    src: /tmp/openshift-client-linux.tar.gz
+    src: "{{ oc_client_url }}"
     dest: /usr/local/bin/
     remote_src: true
     creates: /usr/local/bin/oc
@@ -152,42 +114,20 @@
 
 # === stern ===============================================
 
-- name: Récupérer la dernière version de Stern
-  uri:
-    url: https://api.github.com/repos/stern/stern/releases/latest
-    return_content: yes
-  register: stern_release
-
-- name: Définir la version de Stern
-  set_fact:
-    stern_version: "{{ stern_release.json.tag_name }}"
-
-- name: Récupérer l'URL de téléchargement de Stern pour linux_amd64
-  set_fact:
-    stern_download_url: "{{ stern_release.json.assets | selectattr('browser_download_url', 'search', '_linux_amd64\\.tar\\.gz$') | map(attribute='browser_download_url') | list | first }}"
-
-- name: Télécharger Stern
-  get_url:
-    url: "{{ stern_download_url }}"
-    dest: "/tmp/stern.tar.gz"
-
-- name: Extraire Stern
-  unarchive:
-    src: "/tmp/stern.tar.gz"
-    dest: "/tmp/"
-    remote_src: yes
+- name: download artifact from github
+  include_tasks: "{{ role_path }}/../../custom_steps/github_download_artifact.yaml"
+  vars:
+    owner: stern
+    repo: stern
+    local_path: "{{ volund_temp_folder }}"
+    artifact_name_prefix: ""
+    artifact_name_suffix: "_linux_{{ binary_arch_name }}.tar.gz"
+    unarchive:  true
 
 - name: Installer Stern
   copy:
-    src: "/tmp/stern"
+    src: "{{ volund_temp_folder }}/stern"
     dest: "/usr/local/bin/stern"
     mode: '0755'
     remote_src: yes
   become: true
-
-
-- name: cleanup temporary files
-  include_tasks: "{{ role_path }}/../../custom_steps/cleanup.yaml"
-  vars:
-    path: /tmp
-    cleanup_files: "{{ cleanup_temp }}"

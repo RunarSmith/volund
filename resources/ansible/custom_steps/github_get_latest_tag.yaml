@@ -1,0 +1,27 @@
+---
+
+# get latest tag name from github
+
+#
+# - name: get latest tag name from github
+#   include_tasks: "{{ role_path }}/../../custom_steps/github_get_latest_tag.yaml"
+#   vars:
+#     owner: RunarSmith
+#     repo: volund
+#
+# return variables:
+#   latest_tag  => latest tag name
+
+- name: "{{repo}}: Get latest tag"
+  uri:
+    url: https://api.github.com/repos/{{ owner }}/{{repo}}/releases/{{tag | default('latest') }}
+    return_content: true
+  register: github_release
+
+- name: "Latest release"
+  ansible.builtin.debug:
+    msg: "{{repo}} version: {{ github_release.json.tag_name }}"
+
+- name: "{{repo}}: Set latest tag fact"
+  set_fact:
+    latest_tag: "{{ github_release.json.tag_name }}"

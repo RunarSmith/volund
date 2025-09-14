@@ -1,24 +1,11 @@
 ---
 # tasks file for web_audit
 
-
-- name: cleanup temporary files
-  include_tasks: "{{ role_path }}/../../custom_steps/cleanup.yaml"
-  vars:
-    path: /tmp
-    cleanup_files: "{{ cleanup_temp }}"
-  when: cleanup_temp is defined and cleanup_temp | length > 0
-
 - name: Install required packages (common for all OS)
   package:
-    name: >-
-      {{
-        (install_packages_os        | default([]) ) +
-        (install_packages_os_common | default([]) )
-      }}
+    name: "{{ install_packages | flatten }}"
     state: present
   become: true
-  when : install_packages_os_common is defined and install_packages_os_common | length > 0
 
 - name: install pipx tools
   community.general.pipx:
@@ -28,10 +15,3 @@
   when: install_pipx_tools is defined and install_pipx_tools | length > 0
   become: true
   become_user: "{{ default_username }}"
-
-- name: cleanup temporary files
-  include_tasks: "{{ role_path }}/../../custom_steps/cleanup.yaml"
-  vars:
-    path: /tmp
-    cleanup_files: "{{ cleanup_temp }}"
-  when: cleanup_temp is defined and cleanup_temp | length > 0

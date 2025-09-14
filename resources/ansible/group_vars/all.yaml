@@ -28,3 +28,10 @@ binary_arch_name: >-
 
 csv_path: "./tools-{{ volund_role }}.csv"
 
+# default path to store data files
+data_root_path: /opt/data/
+
+# default path to store applications (except for application installed with pipx, of system packages managers)
+apps_root_path: /opt/apps/
+
+volund_temp_folder: /tmp/volund_temp/

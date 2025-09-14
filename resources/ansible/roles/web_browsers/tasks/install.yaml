@@ -1,17 +1,14 @@
 ---
 # tasks file for web_browser
 
-- name: Install required packages (common for all OS)
-  package:
-    name: "{{ install_packages_os_common | flatten }}"
-    state: present
-
-- name: Install required packages (OS specific)
+- name: Install required packages
   package:
     name: "{{ install_packages | flatten }}"
     state: present
+  become: true
 
 - name: Install audio packages
   package:
     name: "{{ install_gui_packages_drivers | flatten }}"
     state: present
+  become: true

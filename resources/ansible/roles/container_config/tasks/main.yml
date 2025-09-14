@@ -1,5 +1,90 @@
 ---
 
+- name: Create default user
+  ansible.builtin.user:
+    name: "{{ default_username }}"
+    uid: "{{ default_user_UID }}"
+    shell: "{{ default_user_shell }}"
+    groups: sudo
+    append: true
+    state: present
+  when: ansible_os_family in ['Debian']
+  become: true
+
+- name: Create default user
+  user:
+    name: "{{ default_username }}"
+    uid: "{{ default_user_UID }}"
+    shell: "{{ default_user_shell }}"
+    groups: wheel
+    append: true
+    state: present
+  when: ansible_os_family in ['Archlinux', 'RedHat']
+  become: true
+
+- name: install sudo
+  ansible.builtin.package:
+    name:
+      - sudo
+    state: present
+  become: true
+
+- name: Set sudo to NOPASSWD for this user
+  lineinfile:
+    path: /etc/sudoers
+    line: "{{ default_username }} ALL=(ALL) NOPASSWD: ALL"
+    validate: 'visudo -cf %s'
+  when: ansible_os_family in ['Debian', 'RedHat']
+  become: true
+
+- name: Set sudo to NOPASSWD for this user (wheel group)
+  lineinfile:
+    path: /etc/sudoers
+    line: "%wheel ALL=(ALL) NOPASSWD: ALL"
+    validate: 'visudo -cf %s'
+  when: ansible_os_family in ['Archlinux']
+  become: true
+
+# --- ca-certificates -----------------------------------------
+
+- name: Check presence of certificates files
+  stat:
+    path: "{{ build_resource_path }}/certs/"
+  register: certs_dir
+
+- name: Deploy custom CA certificates directory
+  block:
+    - name: Copy certs if sourcePath is defined
+      copy:
+        src: "{{ build_resource_path }}/certs/"
+        dest: "{{ ca_trust_path }}"
+        owner: root
+        group: root
+        mode: '0644'
+        remote_src: true
+
+    - name: Update CA trust store
+      command: update-ca-trust
+      when:
+        - ansible_os_family in ['RedHat']
+
+    - name: Update CA trust store
+      command: update-ca-certificates
+      when:
+        - ansible_os_family in ['Debian']
+
+    - name: Update CA trust store
+      command: trust extract-compat
+      when:
+        - ansible_os_family in ['Archlinux']
+  become: true
+  when:
+    - certs_dir.stat.exists
+    - certs_dir.stat.isdir
+
+
+
+
 - name: "Standard Role Main"
   ansible.builtin.include_tasks: "{{ role_path }}/../../custom_steps/role_main_standard.yaml"
 
@@ -11,9 +96,8 @@
 - name: "register installed tools"
   ansible.builtin.include_tasks: "{{ role_path }}/../../custom_steps/register_tool.yaml"
   vars:
-    name: "{{ item.name }}"
+    tool_name: "{{ item.name }}"
     command_version: "{{ item.command_version }}"
     description: "{{ item.description }}"
     category: "{{ item.category }}"
   loop: "{{ tools_descriptions }}"
-  

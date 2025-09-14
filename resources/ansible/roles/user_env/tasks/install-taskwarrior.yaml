@@ -4,7 +4,7 @@
 
 - name: Create symlink 't' to taskwarrior
   ansible.builtin.file:
-    src: /usr/sbin/task
+    src: /usr/bin/task
     dest: /usr/local/bin/t
     state: link
   become: true

@@ -1,6 +1,6 @@
 ---
 
-install_packages_os:
+install_packages:
   - ca-certificates
   - ftp
   - man

@@ -44,11 +44,6 @@ cat <<EOF > $role/defaults/main.yaml
 ---
 # default vars for $role
 
-# default path to store data files
-data_root_path: /opt/data/
-
-# default path to store applications (except for application installed with pipx, of system packages managers)
-apps_root_path: /opt/apps/
 EOF
 
 # ---------------------------------------------------------
@@ -80,23 +75,11 @@ cat <<EOF > $role/tasks/install.yaml
 ---
 # tasks file for $role
 
-- name: cleanup temporary files
-  include_tasks: "{{ role_path }}/../../custom_steps/cleanup.yaml"
-  vars:
-    path: /tmp
-    cleanup_files: "{{ cleanup_temp }}"
-  when: cleanup_temp is defined and cleanup_temp | length > 0
-
 - name: Install required packages (common for all OS)
   package:
-    name: >-
-      {{
-        (install_packages_os        | default([]) ) +
-        (install_packages_os_common | default([]) )
-      }}
+    name: "{{ install_packages | flatten }}"
     state: present
   become: true
-  when : install_packages_os_common is defined and install_packages_os_common | length > 0
 
 - name: install pipx tools
   community.general.pipx:
@@ -106,13 +89,6 @@ cat <<EOF > $role/tasks/install.yaml
   when: install_pipx_tools is defined and install_pipx_tools | length > 0
   become: true
   become_user: "{{ default_username }}"
-
-- name: cleanup temporary files
-  include_tasks: "{{ role_path }}/../../custom_steps/cleanup.yaml"
-  vars:
-    path: /tmp
-    cleanup_files: "{{ cleanup_temp }}"
-  when: cleanup_temp is defined and cleanup_temp | length > 0
 
 EOF
 
@@ -155,14 +131,14 @@ cat <<EOF > $role/vars/archlinux.yaml
 ---
 # vars file for $role
 
-install_packages_os: []
+install_packages: []
 EOF
 
 cat <<EOF > $role/vars/debian.yaml
 ---
 # vars file for $role
 
-install_packages_os: []
+install_packages: []
 EOF
 
 unlink $role/vars/main.yml
@@ -170,14 +146,8 @@ cat <<EOF > $role/vars/main.yaml
 ---
 # vars file for $role
 
-# list of packages to install on all OS
-install_packages_os_common: []
-
 # list of commands to execute after install step, to ensure that applications are running properly
 test_commands: []
-
-# list of files to cleanup before/after install step execution
-cleanup_temp: []
 
 # list of python packages to install with pipx, in user home directory
 install_pipx_tools: []
@@ -187,7 +157,7 @@ cat <<EOF > $role/vars/redhat.yaml
 ---
 # vars file for $role
 
-install_packages_os: []
+install_packages: []
 EOF
 
 # ---------------------------------------------------------

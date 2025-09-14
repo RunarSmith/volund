@@ -9,12 +9,19 @@
     mode: '0755'
   become: true
 
-- name: Get Arsenal cheats from Stephane Robert
-  ansible.builtin.git:
-    repo: https://github.com/stephrobert/arsenal-devops-cheats.git
-    dest: /usr/share/arsenal-cheats/stephane-robert-devops
-  become: true
+# - name: Get Arsenal cheats from Stephane Robert
+#   ansible.builtin.git:
+#     repo: https://github.com/stephrobert/arsenal-devops-cheats.git
+#     dest: /usr/share/arsenal-cheats/stephane-robert-devops
+#   become: true
 
+- name: Get Arsenal cheats from Stephane Robert
+  include_tasks: "{{ role_path }}/../../custom_steps/github_download_code_zip.yaml"
+  vars:
+    owner: stephrobert
+    repo: arsenal-devops-cheats
+    local_path: /usr/share/arsenal-cheats/stephane-robert-devops
+    branch: main
 
 - name: allow some piece of arsenal-cheats to be used by arsenal
   block:

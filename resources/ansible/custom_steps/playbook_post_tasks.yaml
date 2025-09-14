@@ -1,0 +1,15 @@
+---
+
+- name: Temporary folder cleanup
+  ansible.builtin.file:
+    path: "{{ volund_temp_folder }}"
+    state: absent
+  become: true
+
+- name: Display completion message
+  ansible.builtin.debug:
+    msg: ✅ Playbook completed successfully!
+
+- name: Display active actions
+  ansible.builtin.debug:
+    msg: "Actions : {{ active_actions | join(', ') }}"

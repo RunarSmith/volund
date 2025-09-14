@@ -159,11 +159,6 @@ esac
 
 print_step "Install Ansible in a virtual env"
 
-#python3 -m venv /opt/ansible-venv || die "Failed to create Python virtual environment"
-#source /opt/ansible-venv/bin/activate 
-#pip install --no-cache-dir --upgrade pip || die "Failed to upgrade pip"
-#pip install ansible || die "Failed to install Ansible"
-
 python3 -m pipx ensurepath || die "Failed to ensure pipx path"
 export PATH=$PATH:$HOME/.local/bin:$HOME/.local/pipx/venvs/ansible/bin/:$HOME/.local/share/pipx/venvs/ansible/bin/
 python3 -m pipx install ansible || die "Failed to install Ansible with pipx"
@@ -174,18 +169,17 @@ cd /opt/resources/ansible
 
 print_header "Ansible Playbook Execution : Container Configuration"
 
-#echo "Image : ${VOLUND_IMAGE_NAME}"
-
-#export IMAGE_ROLE=$(echo ${VOLUND_IMAGE_NAME} | cut -d "-" -f 1)
-#export IMAGE_DISTRIBUTION=$(echo ${VOLUND_IMAGE_NAME} | cut -d "-" -f 2)
-
-#echo "role:    $IMAGE_ROLE"
-#echo "distrib: $IMAGE_DISTRIBUTION"
-
 export ANSIBLE_FORCE_COLOR=True
 export ACTIVE_ACTIONS=install,config,check,data,hardening
-if [ -f ./playbook-${VOLUND_IMAGE_ROLE}.yaml ]; then
-    echo "===> Using playbook-${VOLUND_IMAGE_ROLE}.yaml <==="
+
+export ANSIBLE_ROLES_PATH="/opt/my-resources/ansible/roles:/opt/resources/ansible/roles"
+
+if [ -f /opt/my-resources/ansible/playbook-${VOLUND_IMAGE_ROLE}.yaml ]; then
+    echo "--- Using Custom playbook-${VOLUND_IMAGE_ROLE}.yaml from My-Resources ----------------"
+    # chmod +x /opt/my-resources/setup/bin/build_image.sh
+    ansible-playbook -i ./inventory.yaml /opt/my-resources/ansible/playbook-${VOLUND_IMAGE_ROLE}.yaml || die "Failed to execute Ansible playbook"
+elif [ -f ./playbook-${VOLUND_IMAGE_ROLE}.yaml ]; then
+    echo "===> Using playbook-${VOLUND_IMAGE_ROLE}.yaml from Resources <==="
     ansible-playbook -i ./inventory.yaml ./playbook-${VOLUND_IMAGE_ROLE}.yaml || die "Failed to execute Ansible playbook"
 else
     echo "===> Using playbook.yaml <==="
@@ -194,15 +188,9 @@ fi
 
 # =========================================================
 
-print_header "Execute Custom Build Script (my-resources)"
-
-if [ -f /opt/my-resources/bin/volund_build_my_image.sh ]; then
-    echo "--- Custom build script found, executing it ----------------"
-    # chmod +x /opt/my-resources/setup/bin/build_image.sh
-    bash /opt/my-resources/bin/volund_build_my_image.sh || die "Failed to execute custom build script"
-else
-    echo "--- No custom build script found, skipping execution -------"
-fi
+print_step "volung image flag file"
+cat /.volund
+echo ""
 
 # =========================================================
 

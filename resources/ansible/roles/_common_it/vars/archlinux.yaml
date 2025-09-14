@@ -1,6 +1,0 @@
----
-# vars file for common_it
-
-install_packages:
-  - bind  # dnsutils, nslookup, dig
-  - iputils

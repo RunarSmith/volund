@@ -1,25 +1,76 @@
 ---
 
-install_packages_os:
-  - base-devel
-  - bind  # dnsutils, nslookup, dig
-  - ca-certificates
-  - ca-certificates-utils
-  - gnu-netcat
-  - inetutils
-  - iputils
-  - man-db
-  - nfs-utils
-  - openssh
-  - procps
-  - python-pip
-  - python-pyftpdlib
-  - python-virtualenv
-  - python-pipx
-  - which
-  - xz
+install_packages:
+  archive:
+    - bzip2
+    - gzip
+    # - p7zip
+    - tar
+    - unzip
+    - zip
+  devel:
+    - autoconf
+    - automake
+    - base-devel
+    - cmake
+    - gcc
+    - gdb
+    - git
+    - go
+    - make
+  python:
+    - python3
+    - python-pip
+    - python-pyftpdlib
+    - python-virtualenv
+    - python-pipx
+  system:
+    - bash
+    - bind  # dnsutils, nslookup, dig
+    - btop
+    - ca-certificates
+    - ca-certificates-utils
+    - dnsutils
+    - inetutils
+    - iputils
+    - iproute2
+    - logrotate
+    - lsof
+    - man-db
+    #- mise
+    - net-tools
+    - nfs-utils
+    - openresolv
+    - openssh
+    - plocate
+    - procps
+    - sudo
+    - zsh
+  utils:
+    - binutils
+    - bison
+    - diffutils
+    - dos2unix
+    - expect
+    - filezilla
+    - gnupg
+    - jq
+    - less
+    - rlwrap
+    - samba
+    - smbclient
+    - socat
+    - tidy
+    - time
+    - tk
+    - tree
+    - websocat
+    - yq
+    - which
+    - xz
+  web:
+    - curl
+    - openssl
+    - wget
 
 ca_trust_path: /etc/ca-certificates/trust-source/anchors/
-
-install_packages_go:
-  - go

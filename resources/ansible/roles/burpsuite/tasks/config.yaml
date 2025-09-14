@@ -1,35 +1,36 @@
 ---
 # tasks file for burpsuite
 
-- name: "burp > Create directory for Burp Suite"
+- name: "Create directory for Burp Suite"
   ansible.builtin.file:
     path: "/usr/share/burpsuite"
     state: directory
     mode: '0755'
   become: true
 
-- name: "burp > Check if BurpSuiteCA.der exists"
+- name: "Check if BurpSuiteCA.der exists"
   stat:
     path: /usr/share/burpsuite/BurpSuiteCA.der
   register: burp_cert
-  
-- name: "burp > Copying Burp Script"
+
+# This script will be purged with the global temp folder
+- name: "Copying Burp Script"
   copy:
     src: files/getburpcert.sh
-    dest: /tmp/getburpcert.sh
+    dest: "{{ volund_temp_folder }}/getburpcert.sh"
     mode: 0744
   become: true
   become_user: "{{ default_username }}"
   when: burp_cert.stat.exists == False
 
-- name: "burp > Executing bash script to Download CA Certificate"
+- name: "Executing bash script to Download CA Certificate"
   shell:
-    /tmp/getburpcert.sh
+    "{{ volund_temp_folder }}/getburpcert.sh"
   become: true
   become_user: "{{ default_username }}"
   when: burp_cert.stat.exists == False
   
-- name: "burp > Copying CA Certificate to /opt/burpsuite"
+- name: "Copying CA Certificate to /opt/burpsuite"
   copy:
     src: /tmp/cacert.der
     dest: /usr/share/burpsuite/BurpSuiteCA.der
@@ -39,14 +40,7 @@
   become: true
   when: burp_cert.stat.exists == False
 
-#- name: "burp > Create directory for Burp Suite extras"
-#  ansible.builtin.file:
-#    path: "{{ burpsuite_extras_dir }}"
-#    state: directory
-#    mode: '0755'
-#  become: true
-
-- name: "burp > Create directory for Burp Suite user config"
+- name: "Create directory for Burp Suite user config"
   ansible.builtin.file:
     path: "/home/{{ default_username }}/.BurpSuite/"
     state: directory
@@ -54,15 +48,9 @@
   become: true
   become_user: "{{ default_username }}"
 
-- name: "burp > Copy BurpSuite Community Config"
+- name: "Copy BurpSuite Community Config"
   template:
     src: "templates/UserConfigCommunity.json.j2"
     dest: "/home/{{ default_username }}/.BurpSuite/UserConfigCommunity.json"
   become: true
   become_user: "{{ default_username }}"
-
-- name: clean up getburpcert script
-  ansible.builtin.file:
-    path: /tmp/getburpcert.sh
-    state: absent
-  become: true

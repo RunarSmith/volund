@@ -26,10 +26,10 @@
     state: absent
   become: true
 
-- name: Install PowerLevel10K
-  ansible.builtin.git:
-    repo: https://github.com/romkatv/powerlevel10k.git
-    dest: "/home/{{ default_username }}/.oh-my-zsh/custom/themes/powerlevel10k"
-    depth: 1
-  become: true
-  become_user: "{{ default_username }}"
+- name: execute test commands
+  include_tasks: "{{ role_path }}/../../custom_steps/github_download_code_zip.yaml"
+  vars:
+    owner: romkatv
+    repo: powerlevel10k
+    local_path: "/home/{{ default_username }}/.oh-my-zsh/custom/themes/powerlevel10k"
+    as_user: "{{ default_username }}"

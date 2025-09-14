@@ -3,18 +3,13 @@
 
 - name: Install required packages (common for all OS)
   package:
-    name: >-
-      {{
-        (install_packages_os_common | default([])) +
-        (install_packages | default([]))
-      }}
+    name: "{{ install_packages | flatten }}"
     state: present
   become: true
 
 - name: install Autorecon (https://github.com/Tib3rius/AutoRecon)
   community.general.pipx:
-    name: autorecon
+    name: "{{ install_pipx_tools | flatten }}"
     state: present
-  when: "'autorecon' in install_packages_os_common"
   become: true
   become_user: "{{ default_username }}"

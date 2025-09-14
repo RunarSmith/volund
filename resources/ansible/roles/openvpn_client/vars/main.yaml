@@ -1,0 +1,9 @@
+---
+# vars file for openvpn_client
+
+
+install_packages:
+  - openvpn
+
+test_commands:
+  - openvpn --version

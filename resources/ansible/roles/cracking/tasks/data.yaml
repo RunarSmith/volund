@@ -1,11 +1,11 @@
 ---
 
-- name: cleanup target repo
-  include_tasks: "{{ role_path }}/../../custom_steps/cleanup.yaml"
-  vars:
-    path: "{{ data_root_path }}"
-    cleanup_files:
-      - lists
+# - name: cleanup target repo
+#   include_tasks: "{{ role_path }}/../../custom_steps/cleanup.yaml"
+#   vars:
+#     path: "{{ data_root_path }}"
+#     cleanup_files:
+#       - lists
 
 - name: Create dictionary root path
   file: 
@@ -22,12 +22,25 @@
   when: dictionaries_files | length > 0
   become: true
 
-- name: Clone dictionaries repos
-  ansible.builtin.git:
-    repo: "{{ item.url }}"
-    dest: "{{ dictionary_root_path }}{{ item.path }}"
-    clone: true
-    update: true
+# - name: Clone dictionaries repos
+#   ansible.builtin.git:
+#     repo: "{{ item.url }}"
+#     dest: "{{ dictionary_root_path }}{{ item.path }}"
+#     clone: true
+#     update: true
+#     single_branch : true
+#   loop: "{{ dictionaries_repos }}"
+#   when: dictionaries_repos | length > 0
+#   become: true
+
+- name: Get dictionaries repos
+  include_tasks: "{{ role_path }}/../../custom_steps/github_download_code_zip.yaml"
+  vars:
+    owner: "{{ repo_item.owner}}"
+    repo: "{{ repo_item.repo}}"
+    local_path: "{{ dictionary_root_path }}/{{ repo_item.repo}}"
+    branch: "{{ repo_item.branch | default('master') }}"
   loop: "{{ dictionaries_repos }}"
+  loop_control:
+    loop_var: repo_item
   when: dictionaries_repos | length > 0
-  become: true

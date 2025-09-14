@@ -1,7 +1,7 @@
 ---
 # vars file for network_scan
 
-install_packages_os_common:
+install_packages:
   #- autorecon
   #- chisel
   #- sslscan
@@ -10,5 +10,8 @@ install_packages_os_common:
   #- putty
   #- ssh
   #- sshpass
+
+install_pipx_tools:
+  - autorecon
 
 test_commands: []

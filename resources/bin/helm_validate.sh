@@ -63,11 +63,11 @@ if [ -f ./values.yaml ]; then
   if [ ! -z $subPath ]; then
     set -x
       helm lint --strict . --values values.yaml --values $subPath/values-static.yaml
-    set -x
+    set +x
   else
     set -x
       helm lint --strict . --values values.yaml
-    set -x
+    set +x
   fi
 else
   set -x
@@ -89,7 +89,7 @@ if [ -f values.yaml ]; then
   if [ ! -z $subPath ]; then
     set -x
       helm template . --values values.yaml --values $subPath/values-static.yaml > $yamlResult
-    set -x
+    set +x
   else
     set -x
       helm template . --values values.yaml > $yamlResult

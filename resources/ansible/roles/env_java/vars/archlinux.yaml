@@ -1,5 +1,5 @@
 ---
 # vars file for env_java
 
-install_packages_os:
+install_packages:
   - jdk-openjdk # OpenJDK package for Java development and runtime

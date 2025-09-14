@@ -2,48 +2,11 @@
 
 # ---------------------------------------------------------
 
-- name: "{{ ansible_role_name }} :: check requirements"
-  block:
-    - name: Include OS-specific variables.
-      ansible.builtin.include_vars: "{{ ansible_os_family | lower }}.yaml"
+- name: "{{ ansible_role_name }} :: Include common variables"
+  ansible.builtin.include_vars: main.yaml
 
-# ---------------------------------------------------------
-
-- name: "Check if string variables ares defined and non-empty"
-  ansible.builtin.assert:
-    that:
-      - vars[loop_item.var] is defined
-      - vars[loop_item.var] | length > 0
-      - vars[loop_item.var] is string
-      - vars[loop_item.var].startswith('/')
-    fail_msg: "The variable '{{ loop_item.var }}' must be defined as a non-empty string."
-  vars:
-    item: "{{ loop_item.var }}"
-    item_var: "{{ loop_item.name }}"
-  loop:
-    - { var: apps_root_path, name: "apps_root_path" }
-    - { var: data_root_path, name: "data_root_path" }
-  loop_control:
-    loop_var: loop_item
-
-
-- name: "Check if lists variables are defined and are lists"
-  ansible.builtin.assert:
-    that:
-      - vars[loop_item.var] is defined
-      - vars[loop_item.var] is iterable
-      - vars[loop_item.var] is sequence
-    fail_msg: "The variable '{{ loop_item.var }}' must be defined as a list (can be empty)."
-  vars:
-    item: "{{ loop_item.var }}"
-    item_var: "{{ loop_item.name }}"
-  loop:
-    - { var: cleanup_temp,                name: "cleanup_temp" }
-    - { var: install_packages_os,         name: "install_packages_os" }
-    - { var: install_packages_os_common,  name: "install_packages_os_common" }
-    - { var: install_pipx_tools,          name: "install_pipx_tools" }
-  loop_control:
-    loop_var: loop_item
+- name: "{{ ansible_role_name }} :: Include OS-specific variables"
+  ansible.builtin.include_vars: "{{ ansible_os_family | lower }}.yaml"
 
 # ---------------------------------------------------------
 

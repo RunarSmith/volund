@@ -1,0 +1,29 @@
+---
+
+# clone a github repository to a local path
+
+#
+# - name: execute test commands
+#   include_tasks: "{{ role_path }}/../../custom_steps/github_clone_repo.yaml"
+#   vars:
+#     owner: "RunarSmith"
+#     repo: "volund"
+#     local_path: "/opt/volund/"
+#     branch: "master"  # optional: default to master
+#     as_user: "volund"  # optional: default to root
+#
+
+- name: "{{repo}}: Remove existing local_path if it exists"
+  ansible.builtin.file:
+    path: "{{ local_path }}"
+    state: absent
+  become: true
+
+- name: "{{repo}}: Git checkout"
+  ansible.builtin.git:
+    repo: "https://github.com/{{owner}}/{{repo}}.git"
+    dest: "{{ local_path }}"
+    single_branch : true
+    version: "{{ branch | default('main') }}"
+  become: true
+  become_user: "{{ as_user | default('root') }}"

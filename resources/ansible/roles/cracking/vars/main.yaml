@@ -1,7 +1,7 @@
 ---
 # vars file for cracking
 
-install_packages_os_common:
+install_packages:
   - fcrackzip
   - hashcat
   - hydra
@@ -9,7 +9,7 @@ install_packages_os_common:
 
 test_commands: []
 
-dictionary_root_path: "{{ data_root_path }}/lists/"
+dictionary_root_path: "{{ data_root_path }}/wordlists/"
 
 dictionaries_files:
   - name: rockyou
@@ -18,35 +18,38 @@ dictionaries_files:
 
 dictionaries_repos:
   - name: PayloadsAllTheThings
-    url: https://github.com/swisskyrepo/PayloadsAllTheThings
-    path: PayloadsAllTheThings
+    owner: swisskyrepo
+    repo: PayloadsAllTheThings
   - name: Fuzzing-Templates
-    url: https://github.com/projectdiscovery/fuzzing-templates
-    path: fuzzing-templates
+    owner: projectdiscovery
+    repo: fuzzing-templates
+    branch: main
   - name: BruteX
-    url: https://github.com/1N3/BruteX
-    path: BruteX
+    owner: 1N3
+    repo: BruteX
   - name: IntruderPayloads
-    url: https://github.com/1N3/IntruderPayloads
-    path: IntruderPayloads
+    owner: 1N3
+    repo: IntruderPayloads
   - name: Probable-Wordlists
-    url: https://github.com/berzerk0/Probable-Wordlists
-    path: Probable-Wordlists
+    owner: berzerk0
+    repo: Probable-Wordlists
   - name: Open-Redirect-Payloads
-    url: https://github.com/cujanovic/Open-Redirect-Payloads
-    path: Open-Redirect-Payloads
+    owner: cujanovic
+    repo: Open-Redirect-Payloads
   - name: SecLists
-    url: https://github.com/danielmiessler/SecLists
-    path: SecLists
+    owner: danielmiessler
+    repo: SecLists
   - name: Pwdb-Public
-    url: https://github.com/ignis-sec/Pwdb-Public
-    path: Pwdb-Public
+    owner: ignis-sec
+    repo: Pwdb-Public
   - name: Bug-Bounty-Wordlists
-    url: https://github.com/Karanxa/Bug-Bounty-Wordlists
-    path: Bug-Bounty-Wordlists
+    owner: Karanxa
+    repo: Bug-Bounty-Wordlists
+    branch: main
   - name: richelieu
-    url: https://github.com/tarraschk/richelieu
-    path: richelieu
+    owner: tarraschk
+    repo: richelieu
   - name: webapp-wordlists
-    url: https://github.com/p0dalirius/webapp-wordlists
-    path: webapp-wordlists
+    owner: p0dalirius
+    repo: webapp-wordlists
+    branch: main

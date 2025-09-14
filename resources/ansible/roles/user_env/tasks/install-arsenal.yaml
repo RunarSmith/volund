@@ -2,13 +2,20 @@
 
 # --- arsenal ------------------------------------------------
 
+# - name: Install Arsenal
+#   ansible.builtin.git:
+#     repo: https://github.com/Orange-Cyberdefense/arsenal.git
+#     dest: /opt/arsenal
+#     update: yes
+#     force: yes
+#   become: true
+
 - name: Install Arsenal
-  ansible.builtin.git:
-    repo: https://github.com/Orange-Cyberdefense/arsenal.git
-    dest: /opt/arsenal
-    update: yes
-    force: yes
-  become: true
+  include_tasks: "{{ role_path }}/../../custom_steps/github_download_code_zip.yaml"
+  vars:
+    owner: Orange-Cyberdefense
+    repo: arsenal
+    local_path: /opt/arsenal
 
 - name: Create symlink 'a' to arsenal
   ansible.builtin.file:
@@ -16,4 +23,3 @@
     dest: /usr/local/bin/a
     state: link
   become: true
-

@@ -1,1 +1,8 @@
 ---
+
+- name: set volund flag file
+  template:
+    src: volund_flag.j2
+    dest: /.volund
+    mode: '0444'
+  become: true

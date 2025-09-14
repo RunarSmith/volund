@@ -3,11 +3,7 @@
 
 - name: Install required packages (common for all OS)
   package:
-    name: >-
-      {{
-        (install_packages_os        | default([]) ) +
-        (install_packages_os_common | default([]) )
-      }}
+    name: "{{ install_packages | flatten }}"
     state: present
   #when : install_packages_os_common is defined and install_packages_os_common | length > 0
   become: true

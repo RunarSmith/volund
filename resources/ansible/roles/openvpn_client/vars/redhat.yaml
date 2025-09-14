@@ -1,4 +1,2 @@
 ---
 # vars file for openvpn_client
-
-install_packages_os: []

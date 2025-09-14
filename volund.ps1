@@ -174,7 +174,6 @@ class Configuration {
             "podman" = @{
                 "init" = @{
                     "command" = "--rootful=true --user-mode-networking=true"
-                    #"command" = "--user-mode-networking=true"
                 }
                 "wsl_image" = "podman-machine-default"
             }
@@ -199,7 +198,6 @@ class Configuration {
             "labelVolumes" = "volund"
 
             "buildOpts" = "" # "--tls-verify=false"
-            # "pullOpts" = @("--log-level", "debug")  # "--tls-verify=false"
 
             "sharedResourcesVolume" = @{
                 "name"      = "sharedResources"
@@ -333,7 +331,7 @@ class ContainerDriver {
         try {
             $status = [ExternalCommandHelper]::ExecCommand("podman machine inspect --format '{{.State}}'")
             LogDbg("< ContainerDriver::IsRunning() - $status")
-            return $status #-eq "running"
+            return $status
         } catch {
             LogError "Podman not responding to inspect"
             return $null
@@ -341,7 +339,6 @@ class ContainerDriver {
 
         return $null
     }
-
 
     [void] CheckWslConfig() {
 
@@ -355,8 +352,6 @@ class ContainerDriver {
    
         # Chemin complet vers le fichier wsl.conf de la distribution
         $wslConfPath = "\\wsl$\" + $this.config.get("podman").wsl_image + "\etc\wsl.conf"
-        #$requiredSection = '[automount]'
-        #$requiredOption = 'options = "metadata"'
 
         # Vérifier si le fichier existe, sinon le créer
         if (-Not (Test-Path $wslConfPath)) {
@@ -382,49 +377,21 @@ class ContainerDriver {
     [void] Start() {
         LogDbg "> ContainerDriver::Start()"
 
-        # Start Podman service if not running
-        #try {
-            # Linux
-            # podman system service --time=0 --log-level=error --no-headers &
-
-            # on Windows, podman is managed via WSL
-            #Write-host "wsl image need to be restarted to take updated DNS config"
-        #    LogInfo( "Restarting Podman WSL images to ensure proper configuration")
-        #    [ExternalCommandHelper]::ExecCommand("wsl --terminate podman-machine-default")
-        #    [ExternalCommandHelper]::ExecCommand("wsl --terminate podman-net-usermode")
-        #    [ExternalCommandHelper]::ExecCommand("wsl --shutdown")
-        #} catch {
-        #    LogWarn "Problème d'arrêt des images WSL."
-            # exit 1
-        #}
         # Check if WSL machine "podman-machine-default" exists
         $wslMachines = wsl --list --quiet
         if ($wslMachines -notcontains "podman-machine-default") {
             LogInfo("WSL machine 'podman-machine-default' does not exist. Creating it now...")
             try {
                 # initialise / create the VM
-                #if ($this.config.get("podman").init.command) {
-                #    LogInfo( "Initializing Podman WSL image")
-                #    [ExternalCommandHelper]::ExecCommand($this.config.get("podman").init.command + " ; echo OK")
-                #} else {
-                #    LogInfo( "Initializing Podman WSL image with default command")
-                #    [ExternalCommandHelper]::ExecCommand("podman machine init  ; echo OK")
-                #}
-                #podman machine init --rootful=false --user-mode-networking=true
-
-                #Invoke-execute ("{0}" -f $this.config.get("podman").init.command)
                 podman machine init $($this.config.get("podman").init.command -split " ")
             } catch {
                 LogWarn "Problème d'init de Podman."
-                #exit 1
             }
         } else {
             LogInfo("WSL machine 'podman-machine-default' already exists.")
         }
 
         try {
-            #LogInfo( "start podman")
-            # [ExternalCommandHelper]::ExecCommand("podman machine start")
             podman machine start
             if ($LastExitCode -ne 0) {
                 throw "Failed to start podman machine"
@@ -495,6 +462,8 @@ class ContainerDriver {
 
         if ($res -ne 0) {
             LogError "Failed to build image: $res"
+            LogInfo "Pruning images..."
+            podman image prune --force
             return $null
         }
 
@@ -648,7 +617,6 @@ class ContainerDriver {
         return ""
     }
 
-
     [object[]] ListContainers() {
         LogDbg ("> ContainerDriver::ListContainers()")
         return $this.ListObjects( "container", @("-a"),  $null )
@@ -800,12 +768,19 @@ class ImageManager {
             LogDbg ( ">>>> image: {0}" -f ($_ | out-string ) )
 
             $image = $this.Driver.GetImage( $_.id )
-            #$image | Select-Object -Property RepoTags[0],Labels.distribution
 
             $imagesout += [PSCustomObject]@{
                 Name = ($image.RepoTags -replace "localhost/","")
                 Distribution = $image.Labels.distribution
                 Role = ($image.Config.Env | Where-Object { $_ -like "VOLUND_IMAGE_ROLE=*"} | Select-Object -First 1) -replace "VOLUND_IMAGE_ROLE=",""
+                BuildDate = (Get-Date $image.Labels.build_date -Format "yyyy-MM-dd HH:mm")
+                Size = if ($image.Size -gt 1GB) { 
+                        "{0} GB" -f [Math]::Round( ($image.Size / 1GB), 1)
+                    } elseif ($image.Size -lt 1MB) { 
+                        "{0} MB" -f [Math]::Round( ($image.Size / 1MB), 1)
+                    } else { 
+                        "{0} kB" -f [Math]::Round( ($image.Size / 1kB), 1)
+                    }
             }
         }
         return $imagesout
@@ -817,8 +792,8 @@ class ImageManager {
         LogInfo "Ensure bash scripts are in UNIX line ending format for proper image build"
         # convert all files in folder $this.config.get("sharedResourcesVolume") from windows line endings to unix line endings
         Get-ChildItem -Path $this.config.get("sharedResourcesVolume").HostPath -Recurse | ForEach-Object {
-            if ($_.PSIsContainer -eq $false) { # skip directories
-                #(Get-Content $_.FullName) | Set-Content $_.FullName 
+            if ($_.PSIsContainer -eq $false) {
+                # skip directories
                 $file = $_.FullName
                 # Replace CR+LF with LF
                 $text = [IO.File]::ReadAllText($file) -replace "`r`n", "`n"
@@ -826,8 +801,8 @@ class ImageManager {
             }
         }
         Get-ChildItem -Path $this.config.get("myResourcesVolume").HostPath -Recurse | ForEach-Object {
-            if ($_.PSIsContainer -eq $false) { # skip directories
-                #(Get-Content $_.FullName) | Set-Content $_.FullName 
+            if ($_.PSIsContainer -eq $false) {
+                # skip directories
                 $file = $_.FullName
                 # Replace CR+LF with LF
                 $text = [IO.File]::ReadAllText($file) -replace "`r`n", "`n"
@@ -838,15 +813,6 @@ class ImageManager {
         # change between parameter / real distribution name on dockerhub
         $distribImageRef = $this.config.Get( "base_image" ).$Distribution
         LogDbg( ( "Distribution ref: {0} -> {1}" -f $Distribution, $distribImageRef) )
-
-        #[ExternalCommandHelper]::ExecCommand(("podman pull $distribImageRef {0}" -f $this.config.get("pullOpts")))
-        #podman image ls
-        #LogExec( "podman image pull $distribImageRef " + $this.config.get("pullOpts") )
-        #podman image pull $distribImageRef $this.config.get("pullOpts")
-        #if ($LastExitCode -ne 0) { 
-        #    LogError "Failed to pull base distribution image: $distribImageRef"
-        #    return $null
-        #}
 
         $params = @{
             Name        = $ImageName
@@ -889,9 +855,6 @@ class ImageManager {
             return $null
         }
 
-        # Write-Host $image
-
-        # return [Image]::new( $image.RepoTags[0], "" )
         return $image
     }
 
@@ -953,8 +916,6 @@ class WorkspaceManager {
 
     [string] CreateVSCodeProject( [string]$name, [string]$Path  ) {
         LogDbg ( "> WorkspaceManager::CreateVSCodeProject() - name:{0} - path:{1}" -f $name,$Path)
-
-        #$workspacePath = join-path -path $this.GetWorkspacePath($name) -childpath $Path
 
         # create sub-workspace folder if not exists
         if (-not (Test-Path $Path)) {
@@ -1026,64 +987,8 @@ class WorkspaceManager {
             LogInfo ("Workspace directory already exists at {0}" -f $workspacePath)
         }
 
-        ## Create a VSCode workspace file for the container
-        #$workspaceFilePath = Join-Path $workspacePath ("{0}.code-workspace" -f $name)
-
-        #$workspaceContent = @{
-        #    "folders" = @(
-        #        @{
-        #            "path" = "."
-        #        }
-        #    )
-        #    "settings" = @{
-        #        "remote.containers.dockerPath" = "podman"
-        #        "remote.containers.workspaceFolder" = $workspacePath
-        #    }
-        #}
-
-        #$workspaceContent | ConvertTo-Json -Depth 10 | Out-File -FilePath $workspaceFilePath -Encoding utf8
-
-        #LogSuccess ("VSCode workspace created at {0}" -f $workspaceFilePath)
-
+        # Create a VSCode workspace file for the container
         $projectFilePath = $this.CreateVSCodeProject( $name, $workspacePath )
-
-        # Add VSCode Project Manager configuration
-        #$projectManagerDir = Join-Path $containerDescriptor.workspacePath ".vscode"
-        #$projectManagerFile = "$env:APPDATA\Code\User\globalStorage\alefragnani.project-manager\projects.json"
-
-        #if (-not (Test-Path $projectManagerDir)) {
-        #    New-Item -ItemType Directory -Path $projectManagerDir -Force | Out-Null
-        #}
-
-        #$projectEntry = @{
-        #    "name" = $name
-        #    "rootPath" = $workspacePath
-        #    "paths" = @()
-        #    "tags" = @()
-        #    "enabled" = $true
-        #}
-
-        # If the Project Manager file exists, append to its projects array, else create new
-        #$existingContent = ""
-        #if (Test-Path $projectManagerFile) {
-
-        #    $existingContent = Get-Content $projectManagerFile -Raw | ConvertFrom-Json
-        #    if ($existingContent ) {
-        #        # Avoid duplicates by name or rootPath
-        #        $alreadyExists = $existingContent | Where-Object {
-        #            $_.name -eq $projectEntry.name -or $_.rootPath -eq $projectEntry.rootPath
-        #        }
-        #        if (-not $alreadyExists) {
-        #            $existingContent += $projectEntry
-        #        }
-        #    }
-        #}
-
-        #$json = $existingContent | ConvertTo-Json -Depth 5
-        ## Write file with UTF-8 without BOM
-        #[System.IO.File]::WriteAllText($projectManagerFile, $json, [System.Text.UTF8Encoding]::new($false))
-
-        #LogSuccess ("VSCode Project Manager config created at {0}" -f $projectManagerFile)
 
         $this.AddVSCodeProjectManager( $name, $projectFilePath )
     }
@@ -1123,11 +1028,8 @@ class WorkspaceManager {
                 LogInfo ("Removed project '{0}' from VSCode Project Manager." -f $name)
             }
         }
-
     }
-
 }
-
 
 class ContainerManager {
     [ContainerDriver]$Driver
@@ -1172,11 +1074,6 @@ class ContainerManager {
             }
         }
 
-        #if ( $VpnConfig -and -not (Test-Path -Path $VpnConfig) -and -not (Test-Path -Path ( Join-Path -Path $myresourcesPaths -ChildPath setup/openvpn/$VpnConfig)) ) {
-        #    LogError ("VPN configuration file '{0}' does not exist." -f $VpnConfig)
-        #    return $null
-        #}
-
         $rslt = $this.Driver.GetContainer( $Name )
         if ( $null -eq $rslt ) {
 
@@ -1210,14 +1107,6 @@ class ContainerManager {
 
             if ($VpnConfig) {
                 $BackendMountVpn = $null
-                #if (Test-Path -Path $VpnConfig) { 
-                #    $BackendMountVpn = ( "{0}:/opt/openvpn-config.ovpn" -f $VpnConfig )
-                #} elseif (Test-Path -Path ( Join-Path -Path $myresourcesPaths -ChildPath setup/openvpn/$VpnConfig)) {
-                #    $BackendMountVpn = ( "{0}:/opt/openvpn-config.ovpn" -f ( Join-Path -Path $myresourcesPaths -ChildPath setup/openvpn/$VpnConfig) )
-                #} else {
-                #    LogError ("VPN configuration file '{0}' dose not exists !" -f $VpnConfig)
-                #    return $null
-                #}
                 $BackendMountVpn = ( "{0}:/opt/openvpn-config.ovpn" -f $realVpnConfigFile )
                 $volumesList += @($BackendMountVpn)
                 $labelsList += @( "VPNConfig=true" )
@@ -1230,13 +1119,10 @@ class ContainerManager {
                 $labelsList += @( "X11Gui=true" )
                 $volumesList += @(
                     "/mnt/wslg/.X11-unix:/tmp/.X11-unix",
-                    #"/mnt/wslg/runtime-dir:/mnt/wslg/runtime-dir"
                     "/mnt/wslg/runtime-dir/pulse/native:/mnt/pulse/native"
                 )
                 $envsList += @(
-                    #"XDG_RUNTIME_DIR=/mnt/wslg/runtime-dir",
-#                    "WAYLAND_DISPLAY=wayland-0",
-                    "DISPLAY=:0" #,
+                    "DISPLAY=:0"
                     "PULSE_SERVER=unix:/mnt/pulse/native"
                     )
             }
@@ -1276,10 +1162,7 @@ class ContainerManager {
                 $this.Driver.RunShell($Name,$shell)
             }
         }
-
-        #return [Container]::new( "","") #  $name, $name )
     }
-
 
     [void] StopContainer([string]$containerId) {
 
@@ -1292,11 +1175,7 @@ class ContainerManager {
     
         LogInfo ("Stopping container {0} ..." -f $containerId)
         $this.Driver.StopContainer( @{ Id = $containerId } )
-
-        #$this.ContainerListener.Remove()
-
     }
-
     
     [Object[]] ListContainers() {
 
@@ -1322,6 +1201,8 @@ class ContainerManager {
                 Role = ($container.Config.Env | Where-Object { $_ -like "VOLUND_IMAGE_ROLE=*"} | Select-Object -First 1) -replace "VOLUND_IMAGE_ROLE=",""
                 Gui = $container.Config.Labels.X11Gui
                 Vpn = $container.Config.Labels.VPNConfig
+                Created = (Get-Date $container.Created -Format "yyyy-MM-dd HH:mm")
+                LastStart = if ($container.State.StartedAt -and $container.State.StartedAt -ne "0001-01-01T00:00:00Z") { (Get-Date $container.State.StartedAt -Format "yyyy-MM-dd HH:mm") } else { "N/A" }
             }
         }
         return $containersout
@@ -1335,8 +1216,6 @@ class ContainerManager {
         }
 
         $containers | ForEach-Object {
-
-
             LogInfo ("Container: {0}, Image: {1}, Created: {2}" -f $_.Name, $_.Image, $_.Created)
         }
     }
@@ -1345,11 +1224,7 @@ class ContainerManager {
         LogDbg( "> ContainerManager::RemoveContainer()" )
         $this.Driver.RemoveContainer( $containerId )
     }
-
-
-
 }
-
 
 class ContainerListener {
 
@@ -1398,15 +1273,10 @@ class ContainerListener {
     [void] Start( ) {
         LogDbg ("> ContainerListener::Start()")
 
-        $listenerStatus = $this.TestListenerStatus(  )
-
-        if ($listenerStatus) {
-            LogSuccess ("Listener for container '{0}' is already running." -f $this.containerId)
-            return
-        }
+        $this.TestListenerStatus(  )
 
         # supprime les job en doublon
-        Get-Job -Name $this.containerId -ErrorAction SilentlyContinue | Remove-Job -Force
+        Get-Job -ErrorAction SilentlyContinue | Remove-Job -Force
 
         # Démarre un thread de surveillance des fichiers open_url.txt
         # Write job info to a file so other PowerShell instances can find it
@@ -1424,7 +1294,7 @@ class ContainerListener {
 
             try {
                 while ($true) {
-                    Get-ChildItem -Path $watchPath -Filter "open_url*.txt" -ErrorAction SilentlyContinue | ForEach-Object {
+                    Get-ChildItem -Path $watchPath -Filter "open_url-*.txt" -ErrorAction SilentlyContinue | ForEach-Object {
                         try {
                             $url = Get-Content $_.FullName -Raw
                             if ($url -match '^https?://') {
@@ -1434,6 +1304,17 @@ class ContainerListener {
                         } catch {
                             LogError( "Erreur lors de l'ouverture de l'URL : $_")
                         }
+                    }
+
+                    Get-ChildItem -Path $watchPath -Filter "open_code-*.txt" -ErrorAction SilentlyContinue | ForEach-Object {
+                        try {
+                            $codeFile = Get-Content $_.FullName -Raw
+                            $codeFilePath=join-path -path $worspacePath -childpath $codeFile
+                            Start-Process vscode://file/$codeFilePath
+                        } catch {
+                            LogError( "Erreur lors de l'ouverture du fichier code : $_")
+                        }
+                        Remove-Item $_.FullName -Force
                     }
                     Start-Sleep -Seconds 2
                 }
@@ -1461,8 +1342,6 @@ class ContainerListener {
 
         Stop-Process -Id $jobPid -Force -ErrorAction SilentlyContinue
     }
-
-    
 }
 
 # =========================================================
@@ -1493,7 +1372,7 @@ class VolumeManager {
 
             $volume = $this.Driver.GetVolume( $_.Name )
 
-            $volumesout += $volume # [Volume]::new( $volume.Name)
+            $volumesout += $volume
         }
         return $volumesout
     }
@@ -1523,8 +1402,6 @@ class VolumeManager {
 # = Main Script
 # =========================================================
 
-# FIXME: verifier la coherence des parametres
-
 # Vérifie Podman avant toute commande
 
 $config = [Configuration]::new()
@@ -1553,19 +1430,6 @@ if ( $driver.isRunning() -ne "running" ) {
     LogInfo "Container driver is not running, starting it now..."
     $driver.Start()
 
-    #wsl --list
-
-    #podman system connection list
-
-    #podman machine inspect
-    
-    #$Env:DOCKER_HOST = 'npipe:////./pipe/podman-machine-default'
-
-    #podman machine start --quiet
-    #$wslMachines = wsl --list --quiet
-    #if ($wslMachines -notcontains "podman-machine-default") {
-    #}
-
     if ( $driver.isRunning() -ne "running" ) {
         LogError "Could not start Container Driver !"
         exit 1
@@ -1579,18 +1443,12 @@ $volumeMngr = [VolumeManager]::new( $driver, $config )
 
 switch ($Command) {
     "setup" {
-
         $driver.CheckWslConfig()
 
         podman system connection list
-
-        
         podman machine inspect
-
         podman system info
-
         podman version
-            
     }
     "info"                { 
         $images = $imageMngr.ListImages()
@@ -1619,7 +1477,6 @@ switch ($Command) {
         }
         $res = $imageMngr.BuildImage( $Image, $Role, $Distribution, $Version )
         if ($null -eq $res) {
-            # $host.SetShouldExit(1)
             exit 1
         }
     } 
@@ -1648,7 +1505,6 @@ switch ($Command) {
             LogError("Missing parameter: -Container <container name>")
             return
         }
-        #Init-ContainerDescriptor -shortName $Container -imageName "$Image"
         $containerMngr.StopContainer( $Container )
     } 
     "ls"                  {

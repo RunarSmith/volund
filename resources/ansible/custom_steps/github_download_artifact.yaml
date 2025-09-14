@@ -1,0 +1,65 @@
+---
+
+# clone a github repository to a local path
+
+#
+# - name: download artifact from github
+#   include_tasks: "{{ role_path }}/../../custom_steps/github_download_artifcat.yaml"
+#   vars:
+#     owner: RunarSmith
+#     repo: volund
+#     tag: "v1.0.0" # optional: default to latest
+#     local_path: /opt/volund/volund.deb
+#     as_user: volund  # optional: default to root
+#     artifact_name_prefix: volund-linux  # optional: default to repo name
+#     artifact_name_suffix: amd64.deb     # optional: default to architecture
+#     unarchive: false  # optional: default to false
+#
+
+- name: "{{repo}}: Get latest tag"
+  uri:
+    url: https://api.github.com/repos/{{ owner }}/{{repo}}/releases/{{tag | default('latest') }}
+    return_content: true
+  register: github_release
+
+- name: Latest release
+  ansible.builtin.debug:
+    msg: "{{repo}} version: {{ github_release.json.tag_name }}"
+
+- name: "{{repo}}: Find matching artifact"
+  set_fact:
+    matched_asset: >-
+      {{
+        github_release.json.assets
+        | selectattr('name', 'search', (artifact_name_prefix | default(repo)) ~ '.*' ~ (artifact_name_suffix | default(ansible_architecture ) ))
+        | list
+        | first
+      }}
+
+- name: "{{repo}}: No matching artifact found"
+  ansible.builtin.fail:
+    msg: "No matching artifact found for prefix '{{ artifact_name_prefix | default(repo) }}' and suffix '{{ artifact_name_suffix | default(ansible_architecture ) }}'"
+  when: matched_asset is not defined
+
+- name: "{{repo}}: download URL"
+  ansible.builtin.debug:
+    msg: "{{ matched_asset.browser_download_url }}"
+
+- name: "{{repo}}: Download matched artifact"
+  ansible.builtin.get_url:
+    url: "{{ matched_asset.browser_download_url }}"
+    dest: "{{ local_path }}"
+  become: true
+  become_user: "{{ as_user | default('root') }}"
+  when: (unarchive is not defined) or (unarchive == false)
+
+- name: "{{repo}}: Download and extract matched artifact"
+  ansible.builtin.unarchive:
+    src: "{{ matched_asset.browser_download_url }}"
+    dest: "{{ local_path }}"
+    remote_src: true
+  become: true
+  become_user: "{{ as_user | default('root') }}"
+  when: 
+    - unarchive is defined
+    - unarchive == true

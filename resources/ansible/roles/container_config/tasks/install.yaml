@@ -1,16 +1,47 @@
 ---
 
-- name: Install required packages
+- name: Install required packages (archives)
   package:
-    name: >-
-      {{
-        (install_packages.archive | default([])) +
-        (install_packages.devel   | default([])) +
-        (install_packages.python  | default([])) +
-        (install_packages.system  | default([])) +
-        (install_packages.utils   | default([])) +
-        (install_packages.web     | default([])) +
-        (install_packages_os      | default([]))
-      }}
+    name: "{{install_packages.archive | flatten }}"
     state: present
   become: true
+
+- name: Install required packages (devel)
+  package:
+    name: "{{install_packages.devel | flatten }}"
+    state: present
+  become: true
+
+- name: Install required packages (python)
+  package:
+    name: "{{install_packages.python | flatten }}"
+    state: present
+  become: true
+
+- name: Install required packages (system)
+  package:
+    name: "{{install_packages.system | flatten }}"
+    state: present
+  become: true
+
+- name: Install required packages (utils)
+  package:
+    name: "{{install_packages.utils | flatten }}"
+    state: present
+  become: true
+
+- name: Install required packages (web)
+  package:
+    name: "{{install_packages.web | flatten }}"
+    state: present
+  become: true
+
+- name: install pipx tools
+  community.general.pipx:
+    name: "{{ item_pipx }}"
+    state: present
+  loop: "{{ install_pipx_tools }}"
+  loop_control:
+    loop_var: item_pipx
+  become: true
+  become_user: "{{ default_username }}"

@@ -1,0 +1,50 @@
+---
+# vars file for user_env
+
+install_packages:
+  - asciinema
+  - fzf
+  - glow
+  - kitty
+  - nano
+  - neovim
+  - screen
+  - task
+  - tmux
+  - vi
+  - vim
+  - zsh
+  # arsenal dependencies
+  - python-pyperclip
+  - python-docutils
+  - python-libtmux
+
+
+# FIXME: huh ? on kali:
+#      - openjdk-17-jre
+#      - openjdk-17-jdk
+#      - openjdk-17-jdk-headless
+install_packages_java:
+  - jdk11-openjdk
+  - jre11-openjdk
+  - jre11-openjdk-headless
+  - jdk17-openjdk
+  - jre17-openjdk
+  - jre17-openjdk-headless
+
+install_packages_perl:
+  - perl
+
+install_packages_node:
+  - npm
+
+install_packages_ruby:
+  - ruby
+  - ruby-bundler
+
+install_packages_rust:
+  - rustup
+
+test_commands: []
+
+arsenal_config_mode: "{{ 'full' if volund_role == 'offsec' else 'normal' }}"

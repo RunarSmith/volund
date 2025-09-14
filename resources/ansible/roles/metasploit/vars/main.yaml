@@ -1,7 +1,7 @@
 ---
 # vars file for metasploit
 
-install_packages_os_common:
+install_packages:
   - metasploit
 
 test_commands: []
