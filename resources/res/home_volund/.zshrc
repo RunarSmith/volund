@@ -115,6 +115,7 @@ source $ZSH/oh-my-zsh.sh
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
-source /opt/resources/res/zsh/zsh_aliases.sh
+# required by arsenal
+sudo sysctl -w dev.tty.legacy_tiocsti=1 > /dev/null
 
 [[ -f /opt/my-resources/res/zsh/zsh_aliases.sh ]] && source /opt/my-resources/res/zsh/zsh_aliases.sh

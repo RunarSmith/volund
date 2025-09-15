@@ -2,7 +2,7 @@
 data.location=/workspace/.task
 
 # https://github.com/GothenburgBitFactory/taskwarrior/tree/develop/doc/rc
-include /usr/share/taskwarrior/dark-green-256.theme
+include /usr/share/taskwarrior/solarized-dark-256.theme
 
 # taskwarrior config file
 data.location=/workspace/.task

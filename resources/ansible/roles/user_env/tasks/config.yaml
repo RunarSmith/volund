@@ -10,6 +10,34 @@
   become: true
   become_user: "{{ default_username }}"
 
+- name: clean user home
+  ansible.builtin.file:
+    path: "/home/{{ default_username }}/{{ link_item }}"
+    state: absent
+  loop:
+    - .zshrc
+  loop_control:
+    loop_var: link_item
+  become: true
+
+
+- name: setup user home links to resources
+  ansible.builtin.file:
+    src: "/opt/resources/res/home_volund/{{ link_item }}"
+    dest: "/home/{{ default_username }}/{{ link_item }}"
+    state: link
+  loop:
+    - .config
+    - .p10k.zsh
+    - .taskrc
+    - .tmux.conf
+    - .zshrc
+  loop_control:
+    loop_var: link_item
+  become: true
+  become_user: "{{ default_username }}"
+
+
 # --- zsh ------------------------------------------------
 
 # set user default shell as zsh

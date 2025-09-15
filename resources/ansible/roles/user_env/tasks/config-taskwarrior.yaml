@@ -11,13 +11,13 @@
 
 - name: get taskwarrior theme files from github
   ansible.builtin.get_url:
-    url: "https://raw.githubusercontent.com/GothenburgBitFactory/taskwarrior/refs/heads/develop/doc/rc/{{ item }}"
-    dest: "/usr/share/taskwarrior/dark-green-256.theme"
+    url: "https://raw.githubusercontent.com/GothenburgBitFactory/taskwarrior/refs/heads/develop/doc/rc/{{ theme_item }}"
+    dest: "/usr/share/taskwarrior/{{ theme_item }}"
     mode: '0644'
   become: true
   loop_control:
-    loop_var: item
-  with_items: 
+    loop_var: theme_item
+  with_items:
     - bubblegum-256.theme
     - dark-16.theme
     - dark-256.theme
