@@ -35,16 +35,6 @@
       loop_control:
         loop_var: item
       with_items:
-        - Archive
-        - Cloud
-        - Crypto
-        - Databases
-        - Files
-        - Install
-        - Linux
-        - Services
-        - Tools
-        - Windows
         - arsenal.md
 
     - name: Create symlink to selected sub-cheats

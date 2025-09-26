@@ -1,0 +1,4 @@
+---
+# vars file for meta-devsecops
+
+install_packages: []

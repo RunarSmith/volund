@@ -16,14 +16,26 @@
     regexp: 'CHEATS_PATHS\s*=\s*\[[^\]]*\]'
     replace: |
       CHEATS_PATHS = [
-        {% if arsenal_config_mode == "full" -%}
+      {% if arsenal_config_mode == "full" -%}
           join(DATAPATH, "cheats"),  # DEFAULT
-        {% endif %}
+      {% else -%}
+          join(DATAPATH, "cheats", "Archive"),
+          join(DATAPATH, "cheats", "Cloud"),
+          join(DATAPATH, "cheats", "Crypto"),
+          join(DATAPATH, "cheats", "Databases"),
+          join(DATAPATH, "cheats", "Files"),
+          join(DATAPATH, "cheats", "Install"),
+          join(DATAPATH, "cheats", "Linux"),
+          join(DATAPATH, "cheats", "Services"),
+          join(DATAPATH, "cheats", "Tools"),
+          join(DATAPATH, "cheats", "Windows"),
+      {% endif %}
           # Additional paths below, add comma to line above
           join(BASEPATH, "my_cheats"),
           join(HOMEPATH, ".cheats"),
           # Volund folders
           "/usr/share/arsenal-cheats",
-          "/opt/resources/arsenal-cheats",
-          "/opt/my-resources/arsenal-cheats"     ]
+          "/opt/resources/res/arsenal-cheats",
+          "/opt/my-resources/res/arsenal-cheats"
+      ]
   become: true

@@ -19,6 +19,8 @@
   pre_tasks:
     - name: include generic pre_task
       ansible.builtin.include_tasks: custom_steps/playbook_pre_tasks.yaml
+      vars:
+        allowed_distribs: ['blackarch', 'parrot', 'kali']
   
   post_tasks:
     - name: include generic pre_task
@@ -42,13 +44,9 @@
     #       - "Version:      {{ ansible_distribution_version }}"
     #       - "Architecture: {{ ansible_architecture}}"
 
-
   roles:
-    - container_config  # base configuration for the container
 
-    - openvpn_client
-    - user_env
-    - web_browsers
+    - meta_offsec
     
         # OSINT tools
         # theHarvester
@@ -68,8 +66,8 @@
         # nessus / openvas
     
     # web audit
-    - web_audit
-    - burpsuite
+    # - web_audit
+    # - burpsuite
     #- caido
         # nikto
         # OWASP ZAP
@@ -84,12 +82,12 @@
         # crackmapexec
 
     # cloud audit
-    - cloud_clients
+    # - cloud_clients
 
     # cracking
-    - name: cracking
-      vars:
-        data_root_path: /opt/data/
+    # - name: cracking
+      # vars:
+      #   data_root_path: /opt/data/
         # hydra
         # hashcat
         # cewl

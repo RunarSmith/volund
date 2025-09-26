@@ -59,7 +59,31 @@
     cmd: helm plugin install https://github.com/helm-unittest/helm-unittest.git
   become: true
   become_user: "{{ default_username }}"
-  when: helm_plugin_list.stdout is search('^unittest')
+  when: helm_plugin_list.stdout is not search('^unittest')
+
+
+- name: List installed Helm plugins
+  ansible.builtin.command:
+    cmd: helm plugin list
+  register: helm_plugins_output
+  become: true
+  become_user: "{{ default_username }}"
+
+- name: Display installed Helm plugins
+  ansible.builtin.debug:
+    var: helm_plugins_output.stdout_lines
+
+- name: Ensure Helm unittest plugin is installed
+  ansible.builtin.command:
+    cmd: helm plugin list
+  register: helm_plugins_check
+  become: true
+  become_user: "{{ default_username }}"
+
+- name: Fail if Helm unittest plugin is not installed
+  ansible.builtin.fail:
+    msg: "Helm unittest plugin is not installed!"
+  when: helm_plugins_check.stdout is not search('unittest')
 
 # === k9s =================================================
 
@@ -131,3 +155,86 @@
     mode: '0755'
     remote_src: yes
   become: true
+
+# === Azure cli ===========================================
+# https://learn.microsoft.com/fr-fr/cli/azure/install-azure-cli-linux?view=azure-cli-latest&pivots=script
+
+# - name: Download and install Azure CLI (Linux, non-Debian)
+#   ansible.builtin.shell: |
+#     curl -sL https://aka.ms/InstallAzureCli | bash
+#   args:
+#     creates: /usr/bin/az
+#   become: true
+
+# === AWS cli =============================================
+
+# - name: Download AWS CLI v2 installer
+#   get_url:
+#     url: "https://awscli.amazonaws.com/awscli-exe-linux-{{ binary_arch_name }}.zip"
+#     dest: "{{ volund_temp_folder }}/awscliv2.zip"
+#     mode: '0644'
+#   become: true
+
+# - name: Unzip AWS CLI installer
+#   unarchive:
+#     src: "{{ volund_temp_folder }}/awscliv2.zip"
+#     dest: "{{ volund_temp_folder }}/"
+#     remote_src: yes
+#   become: true
+
+# - name: Install AWS CLI v2
+#   command: "{{ volund_temp_folder }}/aws/install"
+#   args:
+#     creates: /usr/local/bin/aws
+#   become: true
+
+# === GCP cli =============================================
+
+# - name: Download Google Cloud SDK installer
+#   get_url:
+#     url: "https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-{{ gcp_sdk_version | default('latest') }}-linux-{{ binary_arch_name }}.tar.gz"
+#     dest: "{{ volund_temp_folder }}/google-cloud-sdk.tar.gz"
+#     mode: '0644'
+#   become: true
+
+# - name: Extract Google Cloud SDK
+#   unarchive:
+#     src: "{{ volund_temp_folder }}/google-cloud-sdk.tar.gz"
+#     dest: "{{ volund_temp_folder }}/"
+#     remote_src: yes
+#   become: true
+
+# - name: Install Google Cloud SDK
+#   command: "{{ volund_temp_folder }}/google-cloud-sdk/install.sh --quiet"
+#   args:
+#     creates: "/usr/local/bin/gcloud"
+#   become: true
+
+# - name: Ensure gcloud CLI is available in /usr/local/bin
+#   file:
+#     src: "{{ volund_temp_folder }}/google-cloud-sdk/bin/gcloud"
+#     dest: "/usr/local/bin/gcloud"
+#     state: link
+#     force: yes
+#     mode: '0755'
+#   become: true
+
+
+
+
+
+
+
+
+
+# - name: Ensure AWS CLI is installed
+#   command: aws --version
+#   register: aws_cli_version
+#   changed_when: false
+#   failed_when: aws_cli_version.rc != 0
+
+# - name: Check gcloud CLI installation
+#   command: gcloud --version
+#   register: gcloud_cli_version
+#   changed_when: false
+#   failed_when: gcloud_cli_version.rc != 0

@@ -81,45 +81,94 @@ else
     die "VOLUND_IMAGE_NAME environment variable is not set."
 fi
 
-if [ "x$VOLUND_IMAGE_ROLE" != "x" ]; then
-    echo "Role : ${VOLUND_IMAGE_ROLE}"
-else 
+if [ ! -z $1 ]; then
+    export VOLUND_IMAGE_ROLE=$1
+    echo "Role (from param): ${VOLUND_IMAGE_ROLE}"
+elif [ "x$VOLUND_IMAGE_ROLE" != "x" ]; then
+    echo "Role (from env var) : ${VOLUND_IMAGE_ROLE}"
+else
     die "VOLUND_IMAGE_ROLE environment variable is not set."
 fi
 
 # =========================================================
 
-print_header "Environment Setup"
+if [ $(id -u) -eq 0 ]; then
+    echo "Running as root => full configuration"
+    RunMode="full"
+else
+    echo "Running as user $(id -u -n) => light configuration"
+    RunMode="user"
+fi
 
-print_step "Install HTTPS certificates"
+# =========================================================
 
-if compgen -G "/opt/my-resources/res/certs/*.pem" > /dev/null; then
-    echo "Found custom certificates to install."
+if [ $RunMode == "full" ]; then
+    # if in user mode: this setup should already be done
+    print_header "Environment Setup"
+
+    print_step "Install HTTPS certificates"
+
+    if compgen -G "/opt/my-resources/res/certs/*.pem" > /dev/null; then
+        echo "Found custom certificates to install."
+
+        case "${OS_FAMILLY_NAME}" in
+            "fedora")
+                cp /opt/my-resources/res/certs/*.pem /etc/pki/ca-trust/source/anchors/ || die "Failed to copy certificates to /etc/pki/ca-trust/source/anchors/"
+                update-ca-trust || die "Failed to update CA trust"
+                ;;
+            "debian")
+                apt update -qqy
+                apt install -qqy --no-install-recommends ca-certificates || die "Failed to install ca-certificates package"
+
+                pushd /opt/my-resources/res/certs
+                for cert in *.pem; do
+                    if [ -f "$cert" ]; then
+                        echo "Installing certificate: $cert"
+                        cp "$cert" /usr/local/share/ca-certificates/$(basename $cert).crt || die "Failed to copy certificate $cert to /usr/local/share/ca-certificates/"
+                    else
+                        echo "No certificates found in /opt/my-resources/res/certs/"
+                    fi
+                done
+                popd
+                update-ca-certificates || die "Failed to update CA certificates"
+                ;;
+            "arch")
+                cp /opt/my-resources/res/certs/*.pem /etc/ca-certificates/trust-source/anchors/ || die "Failed to copy certificates to /etc/ca-certificates/trust-source/anchors/"
+                trust extract-compat || die "Failed to extract CA certificates"
+                ;;
+            *)
+                die "Unsupported OS: ${OS_FAMILLY_NAME}"
+                ;;
+        esac
+    fi
+fi
+
+if [ $RunMode == "full" ]; then
+    # if in user mode: this is not required
+    print_step "Install packages"
 
     case "${OS_FAMILLY_NAME}" in
         "fedora")
-            cp /opt/my-resources/res/certs/*.pem /etc/pki/ca-trust/source/anchors/ || die "Failed to copy certificates to /etc/pki/ca-trust/source/anchors/"
-            update-ca-trust || die "Failed to update CA trust"
+            dnf upgrade --refresh  --assumeyes || die "Failed to update dnf database"
+
+            #packagesList="python3 python3-libdnf5"
+            packagesList="python3 pipx"
+            dnf install --quiet --assumeyes $packagesList || die "Failed to install packages: $packagesList"
             ;;
         "debian")
-            apt update -qqy
-            apt install -qqy --no-install-recommends ca-certificates || die "Failed to install ca-certificates package"
+            apt update -o "Apt::Cmd::Disable-Script-Warning=1" -qq  || die "Failed to update apt database"
+            apt upgrade -o "Apt::Cmd::Disable-Script-Warning=1" -qqy  || die "Failed to update apt packages"
 
-            pushd /opt/my-resources/res/certs
-            for cert in *.pem; do
-                if [ -f "$cert" ]; then
-                    echo "Installing certificate: $cert"
-                    cp "$cert" /usr/local/share/ca-certificates/$(basename $cert).crt || die "Failed to copy certificate $cert to /usr/local/share/ca-certificates/"
-                else
-                    echo "No certificates found in /opt/my-resources/res/certs/"
-                fi
-            done
-            popd
-            update-ca-certificates || die "Failed to update CA certificates"
+            #packagesList="python3 python3-pip python3-venv"
+            packagesList="python3 pipx"
+            apt install -o "Apt::Cmd::Disable-Script-Warning=1" -qq --yes $packagesList || die "Failed to install packages: $packagesList"
             ;;
         "arch")
-            cp /opt/my-resources/res/certs/*.pem /etc/ca-certificates/trust-source/anchors/ || die "Failed to copy certificates to /etc/ca-certificates/trust-source/anchors/"
-            trust extract-compat || die "Failed to extract CA certificates"
+            pacman -Syu --noconfirm --quiet --noprogressbar || die "Failed to update pacman database"
+
+            #packagesList="python3 python-pip python-virtualenv"
+            packagesList="python3 python-pipx"
+            pacman -S --noconfirm --quiet --noprogressbar $packagesList || die "Failed to install packages: $packagesList"
             ;;
         *)
             die "Unsupported OS: ${OS_FAMILLY_NAME}"
@@ -127,41 +176,15 @@ if compgen -G "/opt/my-resources/res/certs/*.pem" > /dev/null; then
     esac
 fi
 
-print_step "Install packages"
+if [ $RunMode == "full" ]; then
+    # if in user mode: ansible should already be installed
+    print_step "Install Ansible in a virtual env"
 
-case "${OS_FAMILLY_NAME}" in
-    "fedora")
-        dnf upgrade --refresh  --assumeyes || die "Failed to update dnf database"
+    python3 -m pipx ensurepath --force || die "Failed to ensure pipx path"
 
-        #packagesList="python3 python3-libdnf5"
-        packagesList="python3 pipx"
-        dnf install --quiet --assumeyes $packagesList || die "Failed to install packages: $packagesList"
-        ;;
-    "debian")
-        apt update -o "Apt::Cmd::Disable-Script-Warning=1" -qq  || die "Failed to update apt database"
-        apt upgrade -o "Apt::Cmd::Disable-Script-Warning=1" -qqy  || die "Failed to update apt packages"
-
-        #packagesList="python3 python3-pip python3-venv"
-        packagesList="python3 pipx"
-        apt install -o "Apt::Cmd::Disable-Script-Warning=1" -qq --yes $packagesList || die "Failed to install packages: $packagesList"
-        ;;
-    "arch")
-        pacman -Syu --noconfirm --quiet --noprogressbar || die "Failed to update pacman database"
-
-        #packagesList="python3 python-pip python-virtualenv"
-        packagesList="python3 python-pipx"
-        pacman -S --noconfirm --quiet --noprogressbar $packagesList || die "Failed to install packages: $packagesList"
-        ;;
-    *)
-        die "Unsupported OS: ${OS_FAMILLY_NAME}"
-        ;;
-esac
-
-print_step "Install Ansible in a virtual env"
-
-python3 -m pipx ensurepath || die "Failed to ensure pipx path"
-export PATH=$PATH:$HOME/.local/bin:$HOME/.local/pipx/venvs/ansible/bin/:$HOME/.local/share/pipx/venvs/ansible/bin/
-python3 -m pipx install ansible || die "Failed to install Ansible with pipx"
+    export PATH=$PATH:$HOME/.local/bin:$HOME/.local/pipx/venvs/ansible/bin/:$HOME/.local/share/pipx/venvs/ansible/bin/
+    python3 -m pipx install ansible || die "Failed to install Ansible with pipx"
+fi
 
 cd /opt/resources/ansible
 

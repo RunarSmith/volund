@@ -44,23 +44,18 @@
     #       - "Architecture: {{ ansible_architecture}}"
 
   roles:
-    - container_config  # base configuration for the container
+    - meta_base
+    - meta_devsecops
 
-    - openvpn_client
-    - user_env
-    - web_browsers
-
-    - cloud_clients
+    
     
     # SAST tools
-    # trivy
     # anchore
     # grype
     # kube-bench : bonnes pratiques Kubernetes CIS Benchmark
     # kube-hunter : Kubernetes security assessment tool
     # etc.
 
-    # ansible
     # nuclei ?
     
   # post_tasks:

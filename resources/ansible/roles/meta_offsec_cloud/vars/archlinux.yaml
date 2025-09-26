@@ -1,0 +1,4 @@
+---
+# vars file for meta-offsec-cloud
+
+install_packages: []

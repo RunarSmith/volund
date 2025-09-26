@@ -1,2 +1,4 @@
 ---
 # default vars for cracking
+
+data_root_path: /opt/data/

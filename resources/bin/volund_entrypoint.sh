@@ -7,8 +7,12 @@ if [ -f $ovpn_file ]; then
   openvpn --log-append /var/log/openvpn/vpn.log --config $ovpn_file &
 fi
 
-if [ -d /opt/my-resources/setup/user/ ]; then
-  cp -av  /opt/my-resources/res/home_volund/. ~/
+if [ -d /opt/my-resources/res/home_volund/ ]; then
+  if [ -d /home/volund/.ssh/ ]; then
+    # allow these files to be replaced
+    chmod 600 ~/.ssh/*
+  fi
+  cp -a /opt/my-resources/res/home_volund/. ~/
 
   if [ -d /home/volund/.ssh/ ]; then
     # fix access rights

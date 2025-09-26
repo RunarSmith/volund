@@ -27,7 +27,6 @@
     dest: "/home/{{ default_username }}/{{ link_item }}"
     state: link
   loop:
-    - .config
     - .p10k.zsh
     - .taskrc
     - .tmux.conf

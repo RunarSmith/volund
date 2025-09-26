@@ -1,0 +1,4 @@
+---
+# vars file for meta-offsec-web
+
+install_packages: []

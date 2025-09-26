@@ -1,0 +1,4 @@
+---
+# vars file for meta-offsec-reverse
+
+install_packages: []

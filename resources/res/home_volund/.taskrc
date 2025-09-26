@@ -1,1 +1,2 @@
 include /opt/resources/res/taskwarrior/taskrc
+news.version=3.4.1

@@ -263,6 +263,17 @@ class Configuration {
         return $res
     }
 
+    [void] DisplayConfig() {
+
+        LogInfo ("Default Configuration :")
+
+        Write-Host ($this.Defaults | ConvertTo-Json )
+
+        LogInfo ("user Configuration :")
+
+        Write-Host ($this.UserConfig | ConvertTo-Json )
+    }
+
 }
 
 # =========================================================
@@ -345,8 +356,11 @@ class ContainerDriver {
         $status = [ExternalCommandHelper]::ExecCommand("podman machine inspect --format '{{.Rootful}}'")
         if ($status -ne "true") {
             podman machine stop
+            Start-Sleep -Seconds 2
             podman machine set --rootful
+            Start-Sleep -Seconds 2
             podman machine start
+            Start-Sleep -Seconds 2
             LogInfo ("Podman machine set to rootful mode" )
         }
    
@@ -363,11 +377,16 @@ class ContainerDriver {
         # Vérifier si la section et l'option existent déjà
         if ($fileContent -notmatch "options = metadata") {
             LogInfo ("Updating wsl.conf in {0} to enable metadata option for automount" -f $this.config.get("podman").wsl_image)
+
             # Ajouter la section et l'option à la fin du fichier via WSL
+            # This option is required for mounting host path to WSL VM (and containers)
+            # IF not, chmod/chown commands from containers will fail with errors
             $cmd = "echo -e '\n[automount]\noptions = `"metadata`"' | sudo tee -a /etc/wsl.conf"
             wsl -d $this.config.get("podman").wsl_image -- bash -c "$cmd"
+            Start-Sleep -Seconds 2
 
             wsl --terminate $this.config.get("podman").wsl_image
+            Start-Sleep -Seconds 2
 
             wsl -d $this.config.get("podman").wsl_image grep -w ID /etc/*ease
         }
@@ -1324,7 +1343,7 @@ class ContainerListener {
             }
         } -ArgumentList $this.listenerWatchPath, $this.listenerPath
 
-        LogInfo("Background Job {0} started" -f $listenerJob)
+        LogInfo("Background Job {0} started" -f $listenerJob.Id)
     }
 
 
@@ -1449,6 +1468,9 @@ switch ($Command) {
         podman machine inspect
         podman system info
         podman version
+    }
+    "config" {
+        $config.DisplayConfig()
     }
     "info"                { 
         $images = $imageMngr.ListImages()

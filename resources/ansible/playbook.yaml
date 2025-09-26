@@ -43,11 +43,12 @@
     #       - "Architecture: {{ ansible_architecture}}"
 
   roles:
-    - container_config  # base configuration for the container
+    - meta_base
+    # - container_config  # base configuration for the container
 
-    - openvpn_client
-    - user_env
-    - web_browsers
+    # - openvpn_client
+    # - user_env
+    # - web_browsers
 
   # post_tasks:
   #   - name: Display completion message

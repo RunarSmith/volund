@@ -1,0 +1,8 @@
+---
+# vars file for meta-devsecops
+
+# list of commands to execute after install step, to ensure that applications are running properly
+test_commands: []
+
+# list of python packages to install with pipx, in user home directory
+install_pipx_tools: []

@@ -1,0 +1,4 @@
+---
+# vars file for meta-base
+
+install_packages: []

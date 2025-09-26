@@ -1,5 +1,13 @@
 ---
 
+# allowed_distribs must be a list of distribution names, e.g. ['blackarch', 'parrot', 'kali']
+# Example of including this task file with the parameter:
+# - name: execute test commands
+#   include_tasks: "{{ role_path }}/../../custom_steps/playbook_pre_tasks.yaml"
+#   vars:
+#     allowed_distribs: ['blackarch', 'parrot', 'kali'] # optional
+
+
 - name: "Ensure active actions are valids"
   ansible.builtin.assert:
     that: >
@@ -10,13 +18,71 @@
   ansible.builtin.debug:
     msg: "Actions : {{ active_actions | join(', ') }}"
 
+# - name: Get distribution name from file
+#   set_fact:
+#     detected_distribution_name: "{{ lookup('file', '/etc/os-release') | regex_search('^NAME=\"?([A-Aa-z]+)\"?', '\\1') }}"
+
+
+- name: Get distribution name using shell command
+  ansible.builtin.shell:
+    cmd: |
+      grep NAME /etc/os-release | cut -d '=' -f 2 | tr -d '"' | head -n 1
+  register: distro_name_result
+  changed_when: false
+
+- name: Set detected_distribution_name fact
+  set_fact:
+    detected_distribution_name: "{{ distro_name_result.stdout }}"
+
+- name: Display detected distribution name
+  ansible.builtin.debug:
+    msg: "Detected distribution name: {{ detected_distribution_name }}"
+
 - name: Include OS-specific variables
   ansible.builtin.debug:
     msg:
       - "OS Familly:   {{ ansible_os_family }}"
       - "Distribution: {{ ansible_distribution }}"
+      - "Release:      {{ ansible_distribution_release }}"
+      - "Variety:      {{ ansible_distribution_file_variety }}"
       - "Version:      {{ ansible_distribution_version }}"
-      - "Architecture: {{ ansible_architecture}}"
+      - "Architecture: {{ ansible_architecture }}"
+      # - "{{ ansible_distribution_file_path }} content:"
+      # - "{{ lookup('ansible.builtin.file', ansible_distribution_file_path) }}"
+
+# - name: List all /etc/*ease files
+#   ansible.builtin.shell: "ls -1 /etc/*ease"
+#   register: ease_files
+#   changed_when: false
+#   failed_when: ease_files.rc != 0
+
+# - name: Display /etc/*ease files
+#   ansible.builtin.debug:
+#     var: ease_files.stdout_lines
+
+
+# - name: Display content of /etc/arch-release
+#   ansible.builtin.debug:
+#     msg: "{{ lookup('ansible.builtin.file', '/etc/arch-release') }}"
+#   ignore_errors: yes
+
+# - name: Display content of /etc/os-release
+#   ansible.builtin.debug:
+#     msg: "{{ lookup('ansible.builtin.file', '/etc/os-release') }}"
+#   ignore_errors: yes
+
+
+
+
+- name: Ensure target distribution is allowed
+  ansible.builtin.assert:
+    that:
+      - (ansible_distribution | lower in allowed_distribs | map('lower') | list) or (detected_distribution_name | lower in allowed_distribs | map('lower') | list)
+    fail_msg: "This playbook must be run on one of the allowed distributions: {{ allowed_distribs | join(', ') }}."
+    success_msg: "Target distribution {{ ansible_distribution }} is allowed."
+  when: allowed_distribs is defined
+
+
 
 - name: Create temporary folder
   ansible.builtin.file:
@@ -24,3 +90,14 @@
     state: directory
     mode: '0777'
   become: true
+
+# determine if /opt/resources is mounted as R/O or R/W
+- name: "Obtenir les options de montage de {{ resource_path }}"
+  command: "findmnt -no OPTIONS {{ resource_path }}"
+  register: mount_options
+  changed_when: false
+  failed_when: mount_options.rc != 0
+
+- name: Définir le fact resources_rw
+  set_fact:
+    resources_rw: "{{ 'rw' in mount_options.stdout.split(',') }}"

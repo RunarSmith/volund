@@ -79,7 +79,7 @@ ZSH_THEME="powerlevel10k/powerlevel10k"
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git)
+plugins=(argocd git kubectl oc)
 
 source $ZSH/oh-my-zsh.sh
 
@@ -117,5 +117,10 @@ source $ZSH/oh-my-zsh.sh
 
 # required by arsenal
 sudo sysctl -w dev.tty.legacy_tiocsti=1 > /dev/null
+
+# source all scripts in /opt/[my-]resources/res/zsh
+for f in $( ls /opt/(my-|)resources/res/zsh/*.sh ); do
+  [[ -r $f ]] && source $f
+done
 
 [[ -f /opt/my-resources/res/zsh/zsh_aliases.sh ]] && source /opt/my-resources/res/zsh/zsh_aliases.sh

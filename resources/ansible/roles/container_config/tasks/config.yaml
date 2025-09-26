@@ -139,6 +139,7 @@
   ansible.builtin.command:
     cmd: "dos2unix /opt/resources/bin/volund_entrypoint.sh"
   become: true
+  when: resources_rw is true
 
 - name: Make entrypoint.sh executable
   ansible.builtin.file:
@@ -146,6 +147,7 @@
     mode: '0755'
     owner: "{{ default_username }}"
   become: true
+  when: resources_rw is true
 
 - name: Add missing ansible link from pipx
   ansible.builtin.file:
