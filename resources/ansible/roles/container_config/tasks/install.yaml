@@ -141,6 +141,8 @@
 
 # install git flow manually on Archlinux as it is not in the official repos
 - name: Install git-flow (Archlinux)
+  become: true
+  become_user: "{{ default_username }}"
   block:
     - name: Cloner le PKGBUILD de gitflow-cjs avec paru
       command: paru -G gitflow-cjs
@@ -158,8 +160,6 @@
       command: makepkg -si --noconfirm
       args:
         chdir: "{{ volund_temp_folder }}/gitflow-cjs"
-      become: true
-      become_user: "{{ default_username }}"
 
   when: ansible_os_family == 'Archlinux'
 
