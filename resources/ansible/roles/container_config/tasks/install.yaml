@@ -158,6 +158,8 @@
       command: makepkg -si --noconfirm
       args:
         chdir: "{{ volund_temp_folder }}/gitflow-cjs"
+      become: true
+      become_user: "{{ default_username }}"
 
   when: ansible_os_family == 'Archlinux'
 
