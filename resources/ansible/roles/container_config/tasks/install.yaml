@@ -36,6 +36,22 @@
     state: present
   become: true
 
+
+- name: Download and install latest pipx Debian package
+  block:
+    - name: Download pipx Debian package
+      ansible.builtin.get_url:
+        url: "http://ftp.fr.debian.org/debian/pool/main/p/python-pipx/pipx_1.7.1-1_all.deb"
+        dest: "{{ volund_temp_folder }}/pipx_1.7.1-1_all.deb"
+        mode: '0644'
+
+    - name: Install pipx Debian package
+      ansible.builtin.apt:
+        deb: "{{ volund_temp_folder }}/pipx_1.7.1-1_all.deb"
+        state: present
+  when: ansible_os_family == 'Debian'
+  become: true
+
 - name: install pipx tools
   community.general.pipx:
     name: "{{ item_pipx }}"
@@ -45,3 +61,26 @@
     loop_var: item_pipx
   become: true
   become_user: "{{ default_username }}"
+
+# install git flow manually on Archlinux as it is not in the official repos
+- name: Install git-flow (Archlinux)
+  block:
+    - name: Cloner le PKGBUILD de gitflow-cjs avec paru
+      command: paru -G gitflow-cjs
+      args:
+        chdir: "{{ volund_temp_folder }}"
+      register: clone_result
+
+    - name: Convertir PKGBUILD CRLF en LF
+      ansible.builtin.shell: sed -i 's/\r$//' PKGBUILD
+      args:
+        chdir: "{{ volund_temp_folder }}/gitflow-cjs"
+
+    - name: Installer gitflow-cjs sans confirmation
+          # paru -Sy --noconfirm .
+      command: makepkg -si --noconfirm
+      args:
+        chdir: "{{ volund_temp_folder }}/gitflow-cjs"
+
+  when: ansible_os_family == 'Archlinux'
+

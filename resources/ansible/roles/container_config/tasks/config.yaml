@@ -36,18 +36,28 @@
 
 # --- profile & user --------------------------------------
 
-- name: copy profile file
-  ansible.builtin.template:
-    src: "{{ item }}.j2"
-    dest: "/etc/profile.d/{{ item }}"
-    owner: root
-    group: root
-    mode: '0644'
-  loop_control:
-    loop_var: item
-  with_items:
-    - 90-volund.sh
+# - name: copy profile file
+#   ansible.builtin.template:
+#     src: "{{ item }}.j2"
+#     dest: "/etc/profile.d/{{ item }}"
+#     owner: root
+#     group: root
+#     mode: '0644'
+#   loop_control:
+#     loop_var: item
+#   with_items:
+#     - 90-volund.sh
+#   become: true
+
+
+- name: Ajouter contenu template Jinja2 à /etc/zsh/zprofile s'il n'existe pas
+  ansible.builtin.blockinfile:
+    path: /etc/zsh/zprofile
+    block: "{{ lookup('template', '90-volund.sh.j2') }}"
+    create: yes
+    marker: '# {mark} ANSIBLE BLOCK - Custom zshprofile additions'
   become: true
+
 
 # --- Archlinux AUR packages ---------------------------------
 
@@ -122,7 +132,7 @@
         path: "{{ volund_temp_folder }}/paru-bin/"
         state: absent
       become: true
-  when: ansible_os_family == 'Archlinux' and false # Experimental
+  when: ansible_os_family == 'Archlinux' # and false # Experimental
 
 # --- python ----------------------------------------------
 

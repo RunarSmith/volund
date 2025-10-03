@@ -1,2 +1,11 @@
 ---
 # vars file for user_env
+
+install_packages_os:
+  - glow
+  - task
+  - vi
+  # arsenal dependencies
+  - python-pyperclip
+  - python-docutils
+  - python-libtmux

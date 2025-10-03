@@ -8,3 +8,4 @@
     dest: /usr/local/bin/t
     state: link
   become: true
+  when: ansible_os_family == "Archlinux"

@@ -1,20 +1,90 @@
 ---
 
+# install_packages:
+#   - ca-certificates
+#   - ftp
+#   - man
+#   - man-db
+#   - netcat-traditional
+#   - openssh-client
+#   - pipx
+#   - procps
+#   - sudo
+#   - wget
+#   - yq
+
+
 install_packages:
-  - ca-certificates
-  - ftp
-  - man
-  - man-db
-  - netcat-traditional
-  - openssh-client
-  - pipx
-  - procps
-  - python3
-  - python3-pip
-  - python3-pyftpdlib
-  - python3-venv
-  - sudo
-  - wget
-  - yq
+  archive:
+    - bzip2
+    - gzip
+    # - p7zip
+    - tar
+    - unzip
+    - zip
+  devel:
+    - autoconf
+    - automake
+    - cmake
+    - gcc
+    - gdb
+    - git
+    - git-flow
+    #- go
+    - make
+  python:
+    - python3
+    - python3-pip
+    - python3-pyftpdlib
+    - python3-virtualenv
+    #- pipx
+  system:
+    - bash
+    #- bind  # dnsutils, nslookup, dig
+    - btop
+    - ca-certificates
+    #- ca-certificates-utils
+    - dnsutils
+    #- inetutils
+    #- iputils
+    - iproute2
+    - logrotate
+    - lsof
+    - man-db
+    #- mise
+    - net-tools
+    #- nfs-utils
+    - openresolv
+    - openssh-client
+    - plocate
+    - procps
+    - sudo
+    - zsh
+  utils:
+    - binutils
+    - bison
+    - diffutils
+    - dos2unix
+    - expect
+    - filezilla
+    - gnupg
+    - jq
+    - less
+    - rlwrap
+    - samba
+    - smbclient
+    - socat
+    - tidy
+    - time
+    - tk
+    - tree
+    #- websocat
+    - yq
+    - which
+    #- xz
+  web:
+    - curl
+    - openssl
+    - wget
 
 ca_trust_path: /usr/local/share/ca-certificates/

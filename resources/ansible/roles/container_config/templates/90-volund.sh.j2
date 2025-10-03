@@ -2,10 +2,10 @@
 # >--- PATH management --------------------<
 
 # Append paths to PATH env variable
-append_path '{{ resource_path }}/bin'
-append_path '{{ my_resource_path }}/bin'
+#append_path '{{ resource_path }}/bin'
+#append_path '{{ my_resource_path }}/bin'
 
-export PATH
+export PATH=$PATH:{{ resource_path }}/bin:{{ my_resource_path }}/bin
 
 # >--- terminal management --------------------<
 

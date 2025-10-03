@@ -23,13 +23,13 @@
   become: true
   become_user: "{{ default_username }}"
 
-- name: "Display the output of each command"
-  ansible.builtin.debug:
-    msg: |
-      Command: {{ item.item }}
-      Stdout: {{ item.stdout }}
-      Stderr: {{ item.stderr }}
-  loop: "{{ app_check.results }}"
+# - name: "Display the output of each command"
+#   ansible.builtin.debug:
+#     msg: |
+#       Command: {{ item.item }}
+#       Stdout: {{ item.stdout }}
+#       Stderr: {{ item.stderr }}
+#   loop: "{{ app_check.results }}"
 
 - name: "Assert all required applications are installed"
   ansible.builtin.assert:

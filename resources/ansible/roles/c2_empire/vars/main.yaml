@@ -1,0 +1,7 @@
+---
+# vars file for metasploit
+
+install_packages:
+  - empire
+
+test_commands: []

@@ -184,6 +184,8 @@ if [ $RunMode == "full" ]; then
 
     export PATH=$PATH:$HOME/.local/bin:$HOME/.local/pipx/venvs/ansible/bin/:$HOME/.local/share/pipx/venvs/ansible/bin/
     python3 -m pipx install ansible || die "Failed to install Ansible with pipx"
+else
+    export PATH=$PATH:$HOME/.local/bin:$HOME/.local/pipx/venvs/ansible/bin/:$HOME/.local/share/pipx/venvs/ansible/bin/
 fi
 
 cd /opt/resources/ansible
@@ -220,8 +222,9 @@ echo ""
 print_header "Cleaning"
 
 #deactivate
-#rm -rf /opt/ansible-venv
-pipx uninstall ansible || die "Failed to uninstall Ansible with pipx"
+if [ $RunMode == "full" ]; then
+    pipx uninstall ansible || die "Failed to uninstall Ansible with pipx"
+fi
 
 # =========================================================
 

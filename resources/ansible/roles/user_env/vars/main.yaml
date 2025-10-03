@@ -4,20 +4,13 @@
 install_packages:
   - asciinema
   - fzf
-  - glow
   - kitty
   - nano
   - neovim
   - screen
-  - task
   - tmux
-  - vi
   - vim
   - zsh
-  # arsenal dependencies
-  - python-pyperclip
-  - python-docutils
-  - python-libtmux
 
 
 # FIXME: huh ? on kali:

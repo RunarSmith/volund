@@ -1,4 +1,6 @@
 ---
 # vars file for env_java
 
-install_packages: []
+install_packages:
+  #- openjdk-17-jre
+  - msopenjdk-21      # burpsuite requiere a more recent version than 17

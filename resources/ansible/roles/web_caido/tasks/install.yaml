@@ -1,0 +1,27 @@
+---
+# tasks file for caido
+
+- name: get latest tag name from github
+  include_tasks: "{{ role_path }}/../../custom_steps/github_get_latest_tag.yaml"
+  vars:
+    owner: caido
+    repo: caido
+
+- name: Download Linux artifact
+  ansible.builtin.get_url:
+    url:  "https://caido.download/releases/{{ latest_tag }}/caido-desktop-{{ latest_tag }}-linux-{{ ansible_architecture }}.tar.gz"
+    dest: "{{ volund_temp_folder }}/caido-desktop-{{ latest_tag }}-linux-{{ ansible_architecture }}.deb"
+
+- name: "Caido: Download and extract matched artifact"
+  ansible.builtin.unarchive:
+    src: "https://caido.download/releases/{{ latest_tag }}/caido-desktop-{{ latest_tag }}-linux-{{ ansible_architecture }}.tar.gz"
+    dest: "/opt/"
+    remote_src: true
+  become: true
+
+- name: Create symlink to caido
+  ansible.builtin.file:
+    src: "/opt/caido-desktop-x64-linux/caido"
+    dest: "/usr/local/bin/caido"
+    state: link
+  become: true

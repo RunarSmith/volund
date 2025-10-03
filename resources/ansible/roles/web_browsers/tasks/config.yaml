@@ -21,3 +21,4 @@
     #dest: "/usr/share/firefox-esr/distribution/policies.json"
     dest: "/usr/lib/firefox/distribution/policies.json"
   become: true
+  when: ansible_os_family == "Archlinux"

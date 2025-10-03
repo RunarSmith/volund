@@ -88,16 +88,16 @@
 - name: "Standard Role Main"
   ansible.builtin.include_tasks: "{{ role_path }}/../../custom_steps/role_main_standard.yaml"
 
-- name: "generate CSV header"
-  ansible.builtin.include_tasks: "{{ role_path }}/../../custom_steps/register_tool.yaml"
-  vars:
-    init: true
+# - name: "generate CSV header"
+#   ansible.builtin.include_tasks: "{{ role_path }}/../../custom_steps/register_tool.yaml"
+#   vars:
+#     init: true
 
-- name: "register installed tools"
-  ansible.builtin.include_tasks: "{{ role_path }}/../../custom_steps/register_tool.yaml"
-  vars:
-    tool_name: "{{ item.name }}"
-    command_version: "{{ item.command_version }}"
-    description: "{{ item.description }}"
-    category: "{{ item.category }}"
-  loop: "{{ tools_descriptions }}"
+# - name: "register installed tools"
+#   ansible.builtin.include_tasks: "{{ role_path }}/../../custom_steps/register_tool.yaml"
+#   vars:
+#     tool_name: "{{ item.name }}"
+#     command_version: "{{ item.command_version }}"
+#     description: "{{ item.description }}"
+#     category: "{{ item.category }}"
+#   loop: "{{ tools_descriptions }}"

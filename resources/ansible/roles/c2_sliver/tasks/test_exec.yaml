@@ -1,0 +1,10 @@
+---
+# tasks file for metasploit
+
+# --- applications ----------------------------------------
+
+- name: execute test commands
+  include_tasks: "{{ role_path }}/../../custom_steps/test_applications_exec.yaml"
+  vars:
+    commands_list: "{{ test_commands }}"
+    username: "{{ default_username }}"

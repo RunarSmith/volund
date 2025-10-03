@@ -3,3 +3,7 @@
 
 install_packages_go:
   - golang
+  # arsenal dependencies
+  - python3-pyperclip
+  - python3-docutils
+  - python3-libtmux

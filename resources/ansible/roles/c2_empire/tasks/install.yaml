@@ -6,3 +6,4 @@
   package:
     name: "{{ install_packages | flatten }}"
     state: present
+  become: true

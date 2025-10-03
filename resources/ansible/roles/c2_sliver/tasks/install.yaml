@@ -1,0 +1,9 @@
+---
+# tasks file for metasploit
+
+
+- name: Install required packages (OS specific)
+  package:
+    name: "{{ install_packages | flatten }}"
+    state: present
+  become: true
