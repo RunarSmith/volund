@@ -47,11 +47,12 @@
 
     - name: Install pipx Debian package
       ansible.builtin.apt:
-        deb: "{{ volund_temp_folder }}/pipx_1.7.1-1_all.deb"
+        deb: "{{ volund_temp_folder }}/pipx_1.8.0-1_all.deb"
         state: present
-#  when:
-#    - ansible_os_family == 'Debian'
   become: true
+  when:
+    - ansible_os_distibution == 'Debian'
+    - ansible_os_distibution == 'Parrot'
 
 
 - name: install pipx tools

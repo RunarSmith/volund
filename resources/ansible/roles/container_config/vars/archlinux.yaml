@@ -23,7 +23,7 @@ install_packages:
     - python-pip
     - python-pyftpdlib
     - python-virtualenv
-#    - python-pipx
+    - python-pipx
   system:
     - bash
     - bind  # dnsutils, nslookup, dig
