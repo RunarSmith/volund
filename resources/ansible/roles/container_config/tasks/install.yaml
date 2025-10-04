@@ -37,7 +37,13 @@
   become: true
 
 
-- name: Download and install latest pipx Debian package
+- name: Check if pipx is already installed
+  ansible.builtin.command: pipx --version
+  register: pipx_check
+  ignore_errors: true
+  changed_when: false
+
+- name: Download and install latest pipx Debian package if not already installed
   block:
     - name: Download pipx Debian package
       ansible.builtin.get_url:
@@ -49,8 +55,11 @@
       ansible.builtin.apt:
         deb: "{{ volund_temp_folder }}/pipx_1.7.1-1_all.deb"
         state: present
-  when: ansible_os_family == 'Debian'
+  when:
+    - ansible_os_family == 'Debian'
+    - pipx_check.rc != 0
   become: true
+
 
 - name: install pipx tools
   community.general.pipx:

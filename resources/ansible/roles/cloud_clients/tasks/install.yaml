@@ -156,6 +156,34 @@
     remote_src: yes
   become: true
 
+# === trivy ===============================================
+
+- name: Create /opt/trivy directory
+  file:
+    path: "{{ apps_root_path }}/trivy"
+    state: directory
+    mode: '0755'
+  become: true
+
+- name: download artifact from github
+  include_tasks: "{{ role_path }}/../../custom_steps/github_download_artifact.yaml"
+  vars:
+    owner: aquasecurity
+    repo: trivy
+    local_path: "{{ apps_root_path }}/trivy"
+    artifact_name_prefix: ""
+    artifact_name_suffix: "_Linux-64bit.tar.gz"
+    unarchive:  true
+
+- name: Ensure /usr/local/bin/trivy is a symlink to /opt/trivy/trivy
+  file:
+    src: "{{ apps_root_path }}/trivy/trivy"
+    dest: /usr/local/bin/trivy
+    state: link
+    force: true
+    mode: '0755'
+  become: true
+
 # === Azure cli ===========================================
 # https://learn.microsoft.com/fr-fr/cli/azure/install-azure-cli-linux?view=azure-cli-latest&pivots=script
 

@@ -4,7 +4,7 @@
 # list of packages to install on all OS
 install_packages:
   - yamllint
-  - trivy
+#  - trivy
 
 # list of commands to execute after install step, to ensure that applications are running properly
 test_commands:
