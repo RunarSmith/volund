@@ -7,8 +7,20 @@
     state: present
   become: true
 
+
 - name: Install audio packages
   package:
     name: "{{ install_gui_packages_drivers | flatten }}"
     state: present
   become: true
+  when: ansible_distribution != 'Kali'
+
+- name: Install audio packages
+  package:
+    name: 
+      - pulseaudio
+      - alsa-utils
+      - ffmpeg
+    state: present
+  become: true
+  when: ansible_distribution == 'Kali'

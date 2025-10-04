@@ -2,11 +2,11 @@
 # vars file for web_browser
 
 
-install_gui_packages_drivers_common:
-  - pulseaudio
-  - libasound2
-  - libavcodec-extra
-  - ffmpeg
+#install_gui_packages_drivers_common:
+  #- pulseaudio
+  #- libasound2
+  #- libavcodec-extra
+  #- ffmpeg
 
 test_commands: []
 
