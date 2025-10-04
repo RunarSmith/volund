@@ -12,7 +12,7 @@
     # Archlinux: Archlinux, BlackArch
     # Debian: Kali, Debian
     # RedHat: Fedora
-    allowed_os_familly: ["Archlinux", "Debian", "hardening", "check"]
+    allowed_os_familly: ["archlinux", "debian"]
 
     volund_role: offsec
 
