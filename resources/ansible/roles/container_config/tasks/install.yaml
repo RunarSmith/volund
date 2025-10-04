@@ -51,9 +51,7 @@
         state: present
   become: true
   when:
-    - ansible_os_distibution == 'Debian'
-    - ansible_os_distibution == 'Parrot'
-
+    - ansible_os_family  == 'Debian'
 
 - name: install pipx tools
   community.general.pipx:
