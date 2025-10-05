@@ -42,7 +42,7 @@
     - name: Download pipx Debian package
       ansible.builtin.get_url:
         url: "http://ftp.fr.debian.org/debian/pool/main/p/python-pipx/pipx_1.8.0-1_all.deb"
-        dest: "{{ volund_temp_folder }}/pipx_1.7.1-1_all.deb"
+        dest: "{{ volund_temp_folder }}/pipx_1.8.0-1_all.deb"
         mode: '0644'
 
     - name: Install pipx Debian package
