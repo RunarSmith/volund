@@ -9,6 +9,10 @@ data.location=/workspace/.task
 
 weekstart=monday
 
+# track effort to spent on a task
+uda.timeestimated.type=duration
+uda.timeestimated.label=Time Estimated
+
 # track effort spent on a task
 uda.timespent.type=duration
 uda.timespent.label=Time Spent
@@ -23,7 +27,7 @@ default.priority=M
 
 # billing report to effort spent on tasks
 report.billing.description=Report for billing
-report.billing.labels= UUID,ID,St,Age,Deps,Prio,Project,Tags,Effort,Description,Urg
-report.billing.columns=uuid.short,id,status.short,start.age,depends,priority,project,tags,timespent,description,urgency
-report.billing.filter=(status:pending or status:completed) timespent.not:''
+report.billing.labels= UUID,ID,St,Age,Deps,Prio,Project,Tags,TimeEst,TimeSpent,Description,Urg
+report.billing.columns=uuid.short,id,status.short,start.age,depends,priority,project,tags,timeestimated,timespent,description,urgency
+report.billing.filter=(status:pending or status:completed) (timespent.not:'' or timeestimated.not:'')
 report.billing.sort=tags
