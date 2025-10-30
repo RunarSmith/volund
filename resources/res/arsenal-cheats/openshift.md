@@ -228,3 +228,9 @@ echo "CIDR\t\t\t\tTYPE\tPORT"
 oc get egressfirewall $egressName -o json | jq -r '.spec.egress[] | select(.to.dnsName      != null) | [.to.dnsName,.type,.ports[]?.port ] | @tsv' | grep -Ev '^$'
 oc get egressfirewall $egressName -o json | jq -r '.spec.egress[] | select(.to.cidrSelector != null) | [.to.cidrSelector,.type,.ports[]?.port ] | @tsv' | grep -Ev '^$'
 ```
+
+## get all resources in a namespace
+#platform/linux  #target/local  #cat/UTIL
+```
+oc api-resources --verbs=list --namespaced -o name | xargs -n 1 oc get --show-kind --ignore-not-found -n <namespace>
+```

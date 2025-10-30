@@ -156,6 +156,25 @@
     remote_src: yes
   become: true
 
+# === tekton ==============================================
+- name: download artifact from github
+  include_tasks: "{{ role_path }}/../../custom_steps/github_download_artifact.yaml"
+  vars:
+    owner: tektoncd
+    repo: cli
+    local_path: "{{ volund_temp_folder }}"
+    artifact_name_prefix: ""
+    artifact_name_suffix: "Linux_{{ ansible_architecture }}.tar.gz"
+    unarchive:  true
+
+- name: Installer Tekton
+  copy:
+    src: "{{ volund_temp_folder }}/tkn"
+    dest: "/usr/local/bin/tkn"
+    mode: '0755'
+    remote_src: yes
+  become: true
+
 # === trivy ===============================================
 
 - name: Create /opt/trivy directory

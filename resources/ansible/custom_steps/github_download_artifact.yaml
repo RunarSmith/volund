@@ -26,6 +26,10 @@
   ansible.builtin.debug:
     msg: "{{repo}} version: {{ github_release.json.tag_name }}"
 
+- name : "{{repo}}: Total assets found"
+  ansible.builtin.debug:
+    msg: "{{ github_release.json.assets }}"
+
 - name: "{{repo}}: Find matching artifact"
   set_fact:
     matched_asset: >-

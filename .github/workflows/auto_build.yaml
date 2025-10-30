@@ -2,7 +2,11 @@ name: Parallel and Sequential Jobs Example
 
 on:
   push:
-    branches: [ main ] # Ou tout autre déclencheur voulu
+    branches:
+      - develop
+
+  # For manual launch
+  workflow_dispatch:
 
 jobs:
 

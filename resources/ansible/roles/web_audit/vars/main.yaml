@@ -3,6 +3,8 @@
 
 install_packages:
   - gobuster
+  - whatweb
+  - nikto
 
 test_commands: []
 

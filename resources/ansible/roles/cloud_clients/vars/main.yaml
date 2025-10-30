@@ -3,6 +3,7 @@
 
 # list of packages to install on all OS
 install_packages:
+  - rsync
   - yamllint
 #  - trivy
 
@@ -13,6 +14,7 @@ test_commands:
   - k9s version
   - kubectl version --client
   - stern --version
+  - tkn version
   - trivy --version
   - yamllint --version
 

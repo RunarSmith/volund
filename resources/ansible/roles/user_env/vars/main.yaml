@@ -38,6 +38,8 @@ install_packages_ruby:
 install_packages_rust:
   - rustup
 
-test_commands: []
+test_commands:
+  - tmux -c whoami
+  - vim --version
 
 arsenal_config_mode: "{{ 'full' if volund_role == 'offsec' else 'normal' }}"

@@ -36,6 +36,7 @@ dependencies:
   - meta_base
   - meta_offsec_ad
   - meta_offsec_cloud
+  - meta_offsec_cracking
   - meta_offsec_reverse
   - meta_offsec_web
   - c2_metasploit
