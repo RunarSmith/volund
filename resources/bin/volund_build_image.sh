@@ -188,6 +188,15 @@ else
     export PATH=$PATH:$HOME/.local/bin:$HOME/.local/pipx/venvs/ansible/bin/:$HOME/.local/share/pipx/venvs/ansible/bin/
 fi
 
+# =========================================================
+
+print_step "Convert script files to UNIX line endings"
+
+if [ $RunMode == "full" ]; then
+    find /opt/resources/ -name "*.sh" -exec sed -i 's/\r$//' {} +
+fi
+find /opt/my-resources/ -name "*.sh" -exec sed -i 's/\r$//' {} +
+
 cd /opt/resources/ansible
 
 # =========================================================
