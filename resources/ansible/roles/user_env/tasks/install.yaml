@@ -19,3 +19,19 @@
 - include_tasks: install-taskwarrior.yaml
 
 - include_tasks: install-zsh.yaml
+
+- name: download glow artifact from github
+  include_tasks: "{{ role_path }}/../../custom_steps/github_download_artifact.yaml"
+  vars:
+    owner: charmbracelet
+    repo: glow
+    local_path: "{{ volund_temp_folder }}/glow.deb"
+    artifact_name_prefix: "glow_"
+    artifact_name_suffix: "_{{ binary_arch_name }}.deb"
+  when: ansible_os_family == "Debian"
+
+- name: Install glow package
+  apt:
+    deb: "{{ volund_temp_folder }}/glow.deb"
+  become: true
+  when: ansible_os_family == "Debian"

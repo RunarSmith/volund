@@ -1,5 +1,47 @@
 ---
 
+# --- Verify mount paths and options --------------------------
+
+- name: Check that mount paths exist
+  ansible.builtin.stat:
+    path: "{{ item }}"
+  loop:
+    - /home/volund/
+    - /opt/resources
+    - /opt/my-resources
+    - /tmp
+  register: mount_paths_stat
+  changed_when: false
+
+- name: Fail if any required path is missing or not a directory
+  ansible.builtin.assert:
+    that:
+      - mount_paths_stat.results | map(attribute='stat.exists') | list | min
+      - mount_paths_stat.results | map(attribute='stat.isdir') | list | min
+    fail_msg: "One or more paths among /home/volund/, /opt/resources, /opt/my-resources, /tmp are missing or not directories"
+  changed_when: false
+
+
+- name: Get mount options
+  include_tasks: check_fs_rw.yaml
+  loop:
+    - /home/volund/
+    - /opt/my-resources
+    - /tmp
+  loop_control:
+    loop_var: mount_path
+
+
+- name: Get mount options
+  include_tasks: check_fs_ro.yaml
+  loop:
+    - /opt/resources
+  loop_control:
+    loop_var: mount_path
+
+
+# --- default user setup --------------------------------------
+
 - name: Create default user
   ansible.builtin.user:
     name: "{{ default_username }}"

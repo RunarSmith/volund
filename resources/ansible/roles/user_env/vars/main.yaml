@@ -39,6 +39,7 @@ install_packages_rust:
   - rustup
 
 test_commands:
+  - glow --version
   - tmux -c whoami
   - vim --version
 
