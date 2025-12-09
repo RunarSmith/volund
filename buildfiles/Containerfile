@@ -11,4 +11,4 @@ USER volund
 
 WORKDIR /workspace
 
-ENTRYPOINT [ "zsh", "/opt/resources/bin/volund_entrypoint.sh" ]
+ENTRYPOINT [ "zsh", "/opt/resources/bin/volund_entrypoint.sh", "Full" ]

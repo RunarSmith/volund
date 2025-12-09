@@ -7,10 +7,59 @@
 #set -e
 #set -x
 
-# source folder containing "Chart.yaml" file
-ChartPath="$1"
-# 
-subPath="$2"
+usage() {
+    echo "**Usage:** $0 [-a][-h][-t][-u] -p <path> [-s <sub-path>]
+
+helm templating and validation
+
+* -a :            execute all
+* -f :            specify a values.yaml file to use
+* -h :            show this helm message
+* -p \<path\>:      path to the root folder that contain the 'Chart.yaml' and 'values.yaml' files
+* -s \<sub-path\> : sub path in the component that contain a 'values-static.yaml' file
+* -t :            execute trivy chec
+* -u :            execute unit tests
+
+" | glow -w0 1>&2;
+    exit 1;
+}
+
+useTrivy=0
+execUnitTests=0
+valuesFile=""
+
+while getopts "af:htup:s:" option; do
+    case "${option}" in
+        a)
+            useTrivy=1
+            execUnitTests=1
+            ;;
+        f)
+            valuesFile="$OPTARG"
+            ;;
+        h)
+            usage
+            ;;
+        p)
+            ChartPath="$OPTARG"
+            ;;
+        s)
+            subPath="$2"
+            ;;
+        t)
+            useTrivy=1
+            ;;
+        u)
+            execUnitTests=1
+            ;;
+        *)
+            usage
+            ;;
+    esac
+done
+
+
+. /opt/resources/lib/term.sh
 
 tmpPath=$(mktemp --directory "/tmp/lint-XXXXXX")
 srcPath="$tmpPath/sources/"
@@ -30,82 +79,92 @@ on_exit(){
 trap 'on_exit' EXIT
 
 if [ -z "$ChartPath" ]; then
-  echo "Usage: $0 <path_to_helm_chart>"
+  _ERROR "Usage: $0 <path_to_helm_chart>"
   exit 1
 fi
 
 if [ ! -d "$ChartPath" ]; then
-  echo "Error: Directory $ChartPath does not exist."
+  _ERROR "Error: Directory $ChartPath does not exist."
   exit 1
 fi
 
+if [ ! -z "$valuesFile" ]; then
+  if [ ! -f "$valuesFile" ]; then
+    _ERROR "Error: Faile $valuesFile does not exist."
+    exit 1
+  fi
+fi
 
 echo "Result file will be: $yamlResult"
 
 pushd $srcPath > /dev/null
 
-echo "=== Update helm dependencies ==============================="
+_INFO "Update helm dependencies"
 echo "Updating Helm chart dependencies..."
 set -x
   helm dependency update .
 set +x
 if [ $? -ne 0 ]; then
-  echo "Helm chart dependency update failed."
+  _ERROR "Helm chart dependency update failed."
   exit 1
 fi
 
-echo "Helm chart dependencies updated successfully."
+_SUCCESS "Helm chart dependencies updated successfully."
 
-echo "=== Validating Helm chart in $ChartPath ===================="
+
+if [ ! -z "$valuesFile" ]; then
+  customValueFile="--values $valuesFile"
+fi
+
+if [ ! -z $subPath ]; then
+  subPathValueFile="--values $subPath/values-static.yaml"
+fi
+
+allValuesFiles="--values values.yaml $subPathValueFile $customValueFile"
+
+_INFO "Validating Helm chart in $ChartPath"
 if [ -f ./values.yaml ]; then
   echo "=>> Using 'values.yaml' for validation."
 
-  if [ ! -z $subPath ]; then
-    set -x
-      helm lint --strict . --values values.yaml --values $subPath/values-static.yaml
-    set +x
-  else
-    set -x
-      helm lint --strict . --values values.yaml
-    set +x
-  fi
+  set -x
+    helm lint --strict . $allValuesFiles
+  set +x
 else
   set -x
     helm lint --strict .
   set +x
 fi
 if [ $? -ne 0 ]; then
-  echo "Helm chart validation failed."
+  _ERROR "Helm chart validation failed."
   exit 1
 fi
 
-echo "Helm chart validation successful."
+_SUCCESS "Helm chart validation successful."
 
-echo "=== Resolve Helm chart templating =========================="
+
+
+_INFO "Resolve Helm chart templating"
 echo "Resolving Helm chart tempalting..."
 if [ -f values.yaml ]; then
   echo "=>> Using 'values.yaml' for templating."
 
-  if [ ! -z $subPath ]; then
-    set -x
-      helm template . --values values.yaml --values $subPath/values-static.yaml > $yamlResult
-    set +x
-  else
-    set -x
-      helm template . --values values.yaml > $yamlResult
-    set +x
-  fi
+  set -x
+    helm template . $allValuesFiles > $yamlResult
+  set +x
+
 else
   helm template . > $yamlResult
 fi
 if [ $? -ne 0 ]; then
-  echo "Helm chart templating failed."
+  _ERROR "Helm chart templating failed."
   exit 1
 fi
 
-echo "Helm chart templating successful."
+_SUCCESS "Helm chart templating successful."
 
-echo "=== Validate the rendered YAML ============================="
+
+
+_INFO "Validate the rendered YAML"
 echo "Validating rendered YAML..."
 # https://yamllint.readthedocs.io/en/stable/rules.html
 cat <<EOF > .yamllint
@@ -145,34 +204,40 @@ set -x
   yamllint $yamlResult
 set +x
 if [ $? -ne 0 ]; then 
-  echo "YAML validation failed."
+  _ERROR "YAML validation failed."
   exit 1
 fi
 
-echo "YAML validation successful."
+_SUCCESS "YAML validation successful."
 
-echo "=== Execute helm unit tests ================================"
-if [ -d "./tests" ]; then
-  echo "Executing Helm tests..."
-  set -x
-    helm unittest "."
-  set +x
-  if [ $? -ne 0 ]; then
-    echo "Helm tests failed."
-    exit 1
+
+if [[ $execUnitTests -eq 1 ]]; then
+  _INFO "Execute helm unit tests"
+  if [ -d "./tests" ]; then
+    echo "Executing Helm tests..."
+    set -x
+      helm unittest "."
+    set +x
+    if [ $? -ne 0 ]; then
+      _ERROR "Helm tests failed."
+      exit 1
+    fi
+  else
+    _WARN "No Helm tests found in $ChartPath/tests."
   fi
-else
-  echo "No Helm tests found in $ChartPath/tests."
+
+  _SUCCESS "Helm tests executed successfully."
 fi
 
-echo "Helm tests executed successfully."
+if [[ $useTrivy -eq 1 ]]; then
+  _INFO "=== Execute trivy / SAST ==================================="
+  set -x
+    trivy config --output $trivyReport $yamlResult
+  set +x
 
-echo "=== Execute trivy / SAST ==================================="
-set -x
-  trivy config --output $trivyReport $yamlResult
-set +x
+fi
 
 # Clean up
-echo "All validations completed successfully."
+_SUCCESS "All validations completed successfully."
 
 # --- End of script ----------------------------------------

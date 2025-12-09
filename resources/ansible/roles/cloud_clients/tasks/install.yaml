@@ -56,7 +56,7 @@
 
 - name: install helm plugin unittest
   ansible.builtin.command:
-    cmd: helm plugin install https://github.com/helm-unittest/helm-unittest.git
+    cmd: helm plugin install https://github.com/helm-unittest/helm-unittest.git --verify=false
   become: true
   become_user: "{{ default_username }}"
   when: helm_plugin_list.stdout is not search('unittest')

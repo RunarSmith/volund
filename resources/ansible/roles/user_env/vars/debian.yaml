@@ -1,8 +1,9 @@
 ---
 # vars file for user_env
 
-install_packages_go:
-  - golang
+install_packages_os:
+  - taskwarrior
+  #- vi
   # arsenal dependencies
   - python3-pyperclip
   - python3-docutils

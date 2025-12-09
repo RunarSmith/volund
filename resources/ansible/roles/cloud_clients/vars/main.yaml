@@ -6,6 +6,7 @@ install_packages:
   - rsync
   - yamllint
 #  - trivy
+  - python3-kubernetes
 
 # list of commands to execute after install step, to ensure that applications are running properly
 test_commands:

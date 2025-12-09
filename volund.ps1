@@ -24,6 +24,9 @@ param(
     # when starting a container, open the workspace in VSCode
     [switch]$OpenWorkspace,
 
+    # enable session recording
+    [switch]$SessionRecord,
+
     # Generic parameter
     [string]$Path
 )
@@ -213,6 +216,10 @@ class Configuration {
                 "name"      = "workspace"
                 "mountPath" = "/workspace"
                 "hostPath"  = "${env:USERPROFILE}\volund\workspaces"
+            }
+
+            "sessionRecording" = @{
+                "recordPath" = "/workspace/"
             }
         }
 
@@ -697,7 +704,9 @@ class ContainerDriver {
 
     [void] RunShell([string]$containerId, [string]$shell) {
         LogDbg "> ContainerDriver::RunShell()"
-        [ExternalCommandHelper]::RunCommandInteractive('podman', @('exec', '-it', $containerId) + $shell -split " ")
+        #[ExternalCommandHelper]::RunCommandInteractive('podman', @('exec', '-it', $containerId) + $shell -split " " )
+
+        [ExternalCommandHelper]::RunCommandInteractive('podman', @('exec', '-it', $containerId) + "zsh /opt/resources/bin/volund_entrypoint.sh" -split " " )
     }
 
     [object[]] ListVolumes() {
@@ -1063,8 +1072,8 @@ class ContainerManager {
         $this.ContainerListener = $null
     }
 
-    [void] StartContainer([string]$Name, [string]$ImageName, [string]$Volume, [boolean]$WithGui, [Boolean]$OpenWorkspace, [string]$VpnConfig = $null) {
-        LogDbg ( "> ContainerManager::StartContainer() - c:{0} iamge:{1} Gui:{2} openWorkspece:{3}" -f $Name,$ImageName,$WithGui, $OpenWorkspace)
+    [void] StartContainer([string]$Name, [string]$ImageName, [string]$Volume, [boolean]$WithGui, [Boolean]$OpenWorkspace, [string]$VpnConfig = $null, [boolean]$SessionRecording = $false) {
+        LogDbg ( "> ContainerManager::StartContainer() - c:{0} iamge:{1} Gui:{2} openWorkspece:{3} sessionRecording:{4}" -f $Name,$ImageName,$WithGui, $OpenWorkspace, $SessionRecording)
         
         $workspaceFilePath = $this.WorkspaceManager.GetWorkspacePath( $Name )
         $this.ContainerListener = [ContainerListener]::new( $this.WorkspaceManager, $Name )
@@ -1143,6 +1152,15 @@ class ContainerManager {
                 $envsList += @(
                     "DISPLAY=:0"
                     "PULSE_SERVER=unix:/mnt/pulse/native"
+                    )
+            }
+
+            if ( $SessionRecording ) {
+                $sessionRecordingObj = $this.config.Get("sessionRecording")
+                LogDbg("Adding Session recording")
+                $envsList += @(
+                    "VOLUND_SESSION_RECORD=true",
+                    ("VOLUND_SESSION_RECORD_PATH={0}" -f $sessionRecordingObj.recordPath)
                     )
             }
 
@@ -1520,7 +1538,7 @@ switch ($Command) {
             return
         }
 
-        $containerMngr.StartContainer( $Container, $Image, $Volume, $WithGui.IsPresent, $OpenWorkspace, $VpnConfig)
+        $containerMngr.StartContainer( $Container, $Image, $Volume, $WithGui.IsPresent, $OpenWorkspace, $VpnConfig, $SessionRecord.IsPresent)
     } 
     "stop"                {
         if ($Container -eq "") {
