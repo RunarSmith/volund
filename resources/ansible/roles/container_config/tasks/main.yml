@@ -6,7 +6,7 @@
   ansible.builtin.stat:
     path: "{{ item }}"
   loop:
-    - /home/volund/
+    #- /home/volund/
     - /opt/resources
     - /opt/my-resources
     - /tmp
@@ -25,7 +25,7 @@
 - name: Get mount options
   include_tasks: check_fs_rw.yaml
   loop:
-    - /home/volund/
+    #- /home/volund/
     - /opt/my-resources
     - /tmp
   loop_control:
