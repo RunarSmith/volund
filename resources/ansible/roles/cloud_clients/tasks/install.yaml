@@ -107,9 +107,11 @@
 
 # === kubectl =============================================
 
+# set a timeout becaus of accasional very slow respond times (> 30sec.)
 - name: Récupérer la dernière version stable de kubectl
   uri:
     url: https://dl.k8s.io/release/stable.txt
+    timeout: 60
     return_content: yes
   register: kubectl_version
 
