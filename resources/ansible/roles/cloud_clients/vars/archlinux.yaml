@@ -1,1 +1,8 @@
 ---
+
+# list of packages to install
+install_packages:
+  - rsync
+  - yamllint
+#  - trivy
+  - python-kubernetes
